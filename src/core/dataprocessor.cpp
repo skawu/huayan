@@ -1,146 +1,141 @@
-#include "dataprocessor.h"
-#include "../communication/modbustcpdriver.h"
-#include "tagmanager.h"
+#include "hydataprocessor.h"
+#include "../communication/hymodbustcpdriver.h"
+#include "hytagmanager.h"
 
-DataProcessor::DataProcessor(QObject *parent) : QObject(parent)
+HYDataProcessor::HYDataProcessor(QObject *parent) : QObject(parent),
+    m_hyModbusDriver(nullptr),
+    m_hyTagManager(nullptr),
+    m_hyCollectionTimer(nullptr),
+    m_hyCollectionInterval(1000)
 {
-    m_modbusDriver = nullptr;
-    m_tagManager = nullptr;
-    m_collectionTimer = new QTimer(this);
-    m_collectionInterval = 1000; // 1 second default
-
-    connect(m_collectionTimer, &QTimer::timeout, this, &DataProcessor::collectData);
+    m_hyCollectionTimer = new QTimer(this);
+    connect(m_hyCollectionTimer, &QTimer::timeout, this, &HYDataProcessor::collectData);
 }
 
-DataProcessor::~DataProcessor()
+HYDataProcessor::~HYDataProcessor()
 {
     stopDataCollection();
-    delete m_collectionTimer;
+    if (m_hyCollectionTimer) {
+        delete m_hyCollectionTimer;
+        m_hyCollectionTimer = nullptr;
+    }
 }
 
-void DataProcessor::initialize(ModbusTcpDriver *driver, TagManager *tagManager)
+void HYDataProcessor::initialize(HYModbusTcpDriver *driver, HYTagManager *tagManager)
 {
-    m_modbusDriver = driver;
-    m_tagManager = tagManager;
+    m_hyModbusDriver = driver;
+    m_hyTagManager = tagManager;
 }
 
-void DataProcessor::startDataCollection(int interval)
+void HYDataProcessor::startDataCollection(int interval)
 {
-    m_collectionInterval = interval;
-    m_collectionTimer->start(m_collectionInterval);
+    setCollectionInterval(interval);
+    m_hyCollectionTimer->start(m_hyCollectionInterval);
     emit dataCollectionStarted();
 }
 
-void DataProcessor::stopDataCollection()
+void HYDataProcessor::stopDataCollection()
 {
-    m_collectionTimer->stop();
-    emit dataCollectionStopped();
-}
-
-void DataProcessor::setCollectionInterval(int interval)
-{
-    m_collectionInterval = interval;
-    if (m_collectionTimer->isActive()) {
-        m_collectionTimer->setInterval(m_collectionInterval);
+    if (m_hyCollectionTimer->isActive()) {
+        m_hyCollectionTimer->stop();
+        emit dataCollectionStopped();
     }
 }
 
-bool DataProcessor::sendCommand(const QString &tagName, const QVariant &value)
+void HYDataProcessor::setCollectionInterval(int interval)
 {
-    if (!m_modbusDriver || !m_tagManager || !m_modbusDriver->isConnected()) {
-        emit commandSent(tagName, value, false);
+    m_hyCollectionInterval = interval;
+    if (m_hyCollectionTimer->isActive()) {
+        m_hyCollectionTimer->start(m_hyCollectionInterval);
+    }
+}
+
+bool HYDataProcessor::sendCommand(const QString &tagName, const QVariant &value)
+{
+    QMutexLocker locker(&m_hyMutex);
+
+    if (!m_hyModbusDriver || !m_hyTagManager) {
         return false;
     }
 
-    QMutexLocker locker(&m_mutex);
-
-    // Check if tag is mapped to a device register
-    if (!m_tagRegisterMappings.contains(tagName)) {
-        emit commandSent(tagName, value, false);
+    if (!m_hyTagRegisterMappings.contains(tagName)) {
         return false;
     }
 
-    const RegisterMapping &mapping = m_tagRegisterMappings[tagName];
+    const RegisterMapping &mapping = m_hyTagRegisterMappings[tagName];
     bool success = false;
 
-    // Write value to device register
     if (mapping.isHoldingRegister) {
-        quint16 registerValue = value.toUInt();
-        success = m_modbusDriver->writeHoldingRegister(mapping.address, registerValue);
+        // Write to holding register
+        quint16 registerValue = value.toInt();
+        success = m_hyModbusDriver->writeHoldingRegister(mapping.address, registerValue);
     } else {
+        // Write to coil
         bool coilValue = value.toBool();
-        success = m_modbusDriver->writeCoil(mapping.address, coilValue);
+        success = m_hyModbusDriver->writeCoil(mapping.address, coilValue);
     }
 
-    // Update tag value if successful
     if (success) {
-        m_tagManager->setTagValue(tagName, value);
+        m_hyTagManager->setTagValue(tagName, value);
     }
 
     emit commandSent(tagName, value, success);
     return success;
 }
 
-bool DataProcessor::mapTagToDeviceRegister(const QString &tagName, int registerAddress, bool isHoldingRegister)
+bool HYDataProcessor::mapTagToDeviceRegister(const QString &tagName, int registerAddress, bool isHoldingRegister)
 {
-    if (!m_tagManager || !m_tagManager->getTag(tagName)) {
+    QMutexLocker locker(&m_hyMutex);
+
+    if (!m_hyTagManager || !m_hyTagManager->getTag(tagName)) {
         return false;
     }
-
-    QMutexLocker locker(&m_mutex);
 
     RegisterMapping mapping;
     mapping.address = registerAddress;
     mapping.isHoldingRegister = isHoldingRegister;
-    m_tagRegisterMappings[tagName] = mapping;
 
+    m_hyTagRegisterMappings[tagName] = mapping;
     return true;
 }
 
-bool DataProcessor::unmapTagFromDeviceRegister(const QString &tagName)
+bool HYDataProcessor::unmapTagFromDeviceRegister(const QString &tagName)
 {
-    QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(&m_hyMutex);
 
-    if (!m_tagRegisterMappings.contains(tagName)) {
+    if (!m_hyTagRegisterMappings.contains(tagName)) {
         return false;
     }
 
-    m_tagRegisterMappings.remove(tagName);
+    m_hyTagRegisterMappings.remove(tagName);
     return true;
 }
 
-void DataProcessor::collectData()
+void HYDataProcessor::collectData()
 {
-    if (!m_modbusDriver || !m_tagManager || !m_modbusDriver->isConnected()) {
+    QMutexLocker locker(&m_hyMutex);
+
+    if (!m_hyModbusDriver || !m_hyTagManager || m_hyTagRegisterMappings.isEmpty()) {
         return;
     }
 
-    QMutexLocker locker(&m_mutex);
+    // Read data from all mapped registers
+    for (auto it = m_hyTagRegisterMappings.constBegin(); it != m_hyTagRegisterMappings.constEnd(); ++it) {
+        const QString &tagName = it.key();
+        const RegisterMapping &mapping = it.value();
 
-    // Iterate through all mapped tags and collect data
-    for (const QString &tagName : m_tagRegisterMappings.keys()) {
-        const RegisterMapping &mapping = m_tagRegisterMappings[tagName];
-        QVariant value;
-        bool success = false;
-
-        // Read value from device register
         if (mapping.isHoldingRegister) {
-            quint16 registerValue;
-            success = m_modbusDriver->readHoldingRegister(mapping.address, registerValue);
-            if (success) {
-                value = registerValue;
+            // Read holding register
+            quint16 value;
+            if (m_hyModbusDriver->readHoldingRegister(mapping.address, value)) {
+                m_hyTagManager->setTagValue(tagName, value);
             }
         } else {
-            bool coilValue;
-            success = m_modbusDriver->readCoil(mapping.address, coilValue);
-            if (success) {
-                value = coilValue;
+            // Read coil
+            bool value;
+            if (m_hyModbusDriver->readCoil(mapping.address, value)) {
+                m_hyTagManager->setTagValue(tagName, value);
             }
-        }
-
-        // Update tag value if successful
-        if (success) {
-            m_tagManager->setTagValue(tagName, value);
         }
     }
 }

@@ -1,0 +1,65 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.8.3'
+        arch: ${{ matrix.os == 'ubuntu-latest' ? 'gcc_64' : 'win64_msvc2022_64' }}
+        cache: true
+
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libgl1-mesa-dev
+
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build project
+      run: cmake --build build --config Release --parallel
+
+    - name: Run tests (if available)
+      run: |
+        if [ -f build/test/run-tests ]; then
+          cd build/test && ./run-tests
+        else
+          echo "No tests found"
+        fi
+      if: matrix.os == 'ubuntu-latest'
+
+    - name: Run tests (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        if (Test-Path "build\test\Release\run-tests.exe") {
+          cd build\test\Release
+          .\run-tests.exe
+        } else {
+          Write-Host "No tests found"
+        }
+      shell: pwsh
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.os }}-build
+        path: build/
+        retention-days: 7

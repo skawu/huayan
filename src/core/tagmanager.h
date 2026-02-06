@@ -1,5 +1,5 @@
-#ifndef TAGMANAGER_H
-#define TAGMANAGER_H
+#ifndef HYTAGMANAGER_H
+#define HYTAGMANAGER_H
 
 #include <QObject>
 #include <QMap>
@@ -8,7 +8,7 @@
 #include <QVector>
 #include <QMutex>
 
-class Tag : public QObject
+class HYTag : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name CONSTANT)
@@ -17,8 +17,8 @@ class Tag : public QObject
     Q_PROPERTY(QString description READ description CONSTANT)
 
 public:
-    explicit Tag(QObject *parent = nullptr);
-    Tag(const QString &name, const QString &group, const QVariant &value, const QString &description = "", QObject *parent = nullptr);
+    explicit HYTag(QObject *parent = nullptr);
+    HYTag(const QString &name, const QString &group, const QVariant &value, const QString &description = "", QObject *parent = nullptr);
 
     // Getters
     QString name() const;
@@ -34,26 +34,26 @@ signals:
     void valueChanged(const QVariant &newValue);
 
 private:
-    QString m_name;
-    QString m_group;
-    QVariant m_value;
-    QString m_description;
+    QString m_hyName;
+    QString m_hyGroup;
+    QVariant m_hyValue;
+    QString m_hyDescription;
 };
 
-class TagManager : public QObject
+class HYTagManager : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit TagManager(QObject *parent = nullptr);
-    ~TagManager();
+    explicit HYTagManager(QObject *parent = nullptr);
+    ~HYTagManager();
 
     // Tag management
     bool addTag(const QString &name, const QString &group, const QVariant &value, const QString &description = "");
     bool removeTag(const QString &name);
-    Tag *getTag(const QString &name) const;
-    QVector<Tag *> getTagsByGroup(const QString &group) const;
-    QVector<Tag *> getAllTags() const;
+    HYTag *getTag(const QString &name) const;
+    QVector<HYTag *> getTagsByGroup(const QString &group) const;
+    QVector<HYTag *> getAllTags() const;
     QVector<QString> getGroups() const;
 
     // Tag value operations
@@ -73,16 +73,16 @@ private slots:
     void onTagValueChanged(const QVariant &newValue);
 
 private:
-    QMap<QString, Tag *> m_tags;
-    QMap<QString, QVector<Tag *>> m_tagsByGroup;
-    QMutex m_mutex;
+    QMap<QString, HYTag *> m_hyTags;
+    QMap<QString, QVector<HYTag *>> m_hyTagsByGroup;
+    QMutex m_hyMutex;
 
     // Binding management
     struct Binding {
         QObject *object;
         const char *propertyName;
     };
-    QMap<QString, QVector<Binding>> m_bindings;
+    QMap<QString, QVector<Binding>> m_hyBindings;
 };
 
-#endif // TAGMANAGER_H
+#endif // HYTAGMANAGER_H

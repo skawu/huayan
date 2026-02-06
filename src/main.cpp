@@ -3,9 +3,9 @@
 #include <QQmlContext>
 #include <QDir>
 
-#include "communication/modbustcpdriver.h"
-#include "core/tagmanager.h"
-#include "core/dataprocessor.h"
+#include "communication/hymodbustcpdriver.h"
+#include "core/hytagmanager.h"
+#include "core/hydataprocessor.h"
 
 int main(int argc, char *argv[])
 {
@@ -24,9 +24,9 @@ int main(int argc, char *argv[])
     engine.addImportPath(QDir::currentPath() + "/qml/plugins");
 
     // Create core modules
-    ModbusTcpDriver *modbusDriver = new ModbusTcpDriver(&app);
-    TagManager *tagManager = new TagManager(&app);
-    DataProcessor *dataProcessor = new DataProcessor(&app);
+    HYModbusTcpDriver *modbusDriver = new HYModbusTcpDriver(&app);
+    HYTagManager *tagManager = new HYTagManager(&app);
+    HYDataProcessor *dataProcessor = new HYDataProcessor(&app);
 
     // Initialize data processor with driver and tag manager
     dataProcessor->initialize(modbusDriver, tagManager);

@@ -25,6 +25,7 @@ Makefile*
 # IDE 相关
 .idea/
 .vscode/
+.qtcreator/
 *.swp
 *.swo
 *~

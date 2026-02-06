@@ -1,8 +1,14 @@
-# Qt 6 Industrial SCADA System
+# 华颜工业SCADA系统 (Huayan Industrial SCADA System)
 
 ## Project Overview
 
-This is a light-weight industrial SCADA (Supervisory Control and Data Acquisition) system built with Qt 6.8 LTS, C++20, and QML. The system provides real-time monitoring and control of industrial processes through a modular, extensible architecture.
+**华颜** (Huayan) is a light-weight industrial SCADA (Supervisory Control and Data Acquisition) system built with Qt 6.8 LTS, C++20, and QML. The system provides real-time monitoring and control of industrial processes through a modular, extensible architecture.
+
+### About the Name
+
+- **Project Name**: 华颜 (Huayan)
+- **Full Name**: 华颜工业SCADA系统 (Huayan Industrial SCADA System)
+- **Code Naming Convention**: Key functions and variables in the codebase use the prefix "HY" (Huayan abbreviation) for consistency.
 
 ### Language Support
 - [English](README.md) (Current)
@@ -31,7 +37,7 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 ## Project Structure
 
 ```
-SCADASystem/
+huayan/
 ├── CMakeLists.txt          # Top-level CMake configuration
 ├── src/
 │   ├── CMakeLists.txt      # Main application CMake configuration
@@ -69,7 +75,7 @@ SCADASystem/
 │           └── BarChart.qml
 ├── bin/                    # Self-contained installation directory
 │   ├── bin/
-│   │   └── SCADASystem     # Main executable
+│   │   └── huayan          # Main executable
 │   ├── lib/                # Required Qt libraries
 │   ├── plugins/
 │   │   └── platforms/      # Qt platform plugins
@@ -137,7 +143,7 @@ SCADASystem/
    ../bin/run.sh
    
    # Or manually with environment variables
-   LD_LIBRARY_PATH=../bin/lib QT_QPA_PLATFORM_PLUGIN_PATH=../bin/plugins/platforms ../bin/bin/SCADASystem
+   LD_LIBRARY_PATH=../bin/lib QT_QPA_PLATFORM_PLUGIN_PATH=../bin/plugins/platforms ../bin/bin/huayan
    ```
 
 ## QML Dynamic Plugins
@@ -232,9 +238,14 @@ The application loads plugins at runtime through the following mechanism:
 
 ## Summary
 
-This Qt 6-based industrial SCADA system provides a comprehensive solution for monitoring and controlling industrial processes. Its modular architecture, dynamic QML plugins, and real-time data processing capabilities make it suitable for a wide range of industrial applications.
+**华颜** (Huayan) Industrial SCADA System is a Qt 6-based comprehensive solution for monitoring and controlling industrial processes. Its modular architecture, dynamic QML plugins, and real-time data processing capabilities make it suitable for a wide range of industrial applications.
 
-The system's key strengths include:
+### Project Identity
+
+- **Open Source**: This project is released under the Apache License 2.0
+- **Code Naming Convention**: Key functions and variables use the "HY" prefix for consistency
+
+### System Strengths
 
 - **Extensible Component Architecture**: Easy to add new custom components
 - **Real-time Data Processing**: Continuous monitoring with configurable intervals
@@ -242,4 +253,4 @@ The system's key strengths include:
 - **Robust Communication**: Modbus TCP driver with error handling and reconnection logic
 - **Cross-platform Support**: Works on both Windows and Linux
 
-With its focus on modularity, performance, and ease of use, this SCADA system provides a solid foundation for industrial automation projects.
+With its focus on modularity, performance, and ease of use, **华颜** Industrial SCADA System provides a solid foundation for industrial automation projects, carrying the brand's commitment to quality and innovation.
