@@ -4,6 +4,14 @@
 
 This is a light-weight industrial SCADA (Supervisory Control and Data Acquisition) system built with Qt 6.8 LTS, C++20, and QML. The system provides real-time monitoring and control of industrial processes through a modular, extensible architecture.
 
+### Language Support
+- [English](README.md) (Current)
+- [中文](README_CN.md) (Chinese version)
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
 ### Key Features
 
 - **Device Communication**: Modbus TCP driver with connection management, data reading/writing, and error handling
