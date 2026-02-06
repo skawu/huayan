@@ -1,5 +1,9 @@
 # 华颜工业SCADA系统 (Huayan Industrial SCADA System)
 
+[![CI/CD Pipeline](https://github.com/skawu/huayan/actions/workflows/ci.yml/badge.svg)](https://github.com/skawu/huayan/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Qt Version](https://img.shields.io/badge/Qt-6.8.3-green.svg)](https://www.qt.io/)
+
 ## Project Overview
 
 **华颜** (Huayan) is a light-weight industrial SCADA (Supervisory Control and Data Acquisition) system built with Qt 6.8 LTS, C++20, and QML. The system provides real-time monitoring and control of industrial processes through a modular, extensible architecture.
@@ -33,6 +37,8 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - **Build System**: CMake 3.24+
 - **Qt Components**: Core, Quick, Network, SerialBus, Sql, Charts, QuickControls2
 - **QML Plugin Architecture**: Dynamic plugins for component modularity
+- **CI/CD Pipeline**: GitHub Actions for automated building and testing
+- **Version Control**: Git with GitHub
 
 ## Project Structure
 
