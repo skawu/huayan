@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/">
+    <file alias="/IndustrialComponents">/home/hdzk/workspace/project/qml/plugins/IndustrialComponents</file>
+
+  </qresource>
+</RCC>

@@ -1,0 +1,17 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>../qml/main.qml</file>
+    <file>../qml/DragAndDropHelper.qml</file>
+    <file>../qml/plugins/BasicComponents/Indicator.qml</file>
+    <file>../qml/plugins/BasicComponents/PushButton.qml</file>
+    <file>../qml/plugins/BasicComponents/TextLabel.qml</file>
+    <file>../qml/plugins/IndustrialComponents/Valve.qml</file>
+    <file>../qml/plugins/IndustrialComponents/Tank.qml</file>
+    <file>../qml/plugins/IndustrialComponents/Motor.qml</file>
+    <file>../qml/plugins/ChartComponents/TrendChart.qml</file>
+    <file>../qml/plugins/ChartComponents/BarChart.qml</file>
+    <file>../qml/plugins/BasicComponents/qmldir</file>
+    <file>../qml/plugins/IndustrialComponents/qmldir</file>
+    <file>../qml/plugins/ChartComponents/qmldir</file>
+</qresource>
+</RCC>

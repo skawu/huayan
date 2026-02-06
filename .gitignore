@@ -1,0 +1,48 @@
+# Qt 项目忽略规则
+build/
+bin/
+*.pro.user
+*.pro.user.*
+*.qmake.stash
+Makefile*
+!Makefile.*
+*.moc
+*.moc.cpp
+*.o
+*.obj
+*.ui.h
+*.gch
+*.autosave
+*.orig.*
+*.qm
+.qmake.cache
+.qmake.stash
+.moc/
+.rcc/
+.qtc_clangd/
+.cxx/
+
+# IDE 相关
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+temp/
+tmp/
+
+# 配置文件（如果包含敏感信息）
+# 注意：如果配置文件不包含敏感信息，可移除以下规则
+config/
+*.ini
+*.conf
