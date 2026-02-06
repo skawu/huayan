@@ -1,5 +1,5 @@
-#ifndef DATAPROCESSOR_H
-#define DATAPROCESSOR_H
+#ifndef HYDATAPROCESSOR_H
+#define HYDATAPROCESSOR_H
 
 #include <QObject>
 #include <QTimer>
@@ -9,19 +9,19 @@
 #include <QString>
 #include <QVariant>
 
-class ModbusTcpDriver;
-class TagManager;
+class HYModbusTcpDriver;
+class HYTagManager;
 
-class DataProcessor : public QObject
+class HYDataProcessor : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit DataProcessor(QObject *parent = nullptr);
-    ~DataProcessor();
+    explicit HYDataProcessor(QObject *parent = nullptr);
+    ~HYDataProcessor();
 
     // Initialization
-    void initialize(ModbusTcpDriver *driver, TagManager *tagManager);
+    void initialize(HYModbusTcpDriver *driver, HYTagManager *tagManager);
 
     // Data collection
     void startDataCollection(int interval = 1000); // Default 1 second
@@ -50,12 +50,12 @@ private:
         bool isHoldingRegister;
     };
 
-    ModbusTcpDriver *m_modbusDriver;
-    TagManager *m_tagManager;
-    QTimer *m_collectionTimer;
-    int m_collectionInterval;
-    QMutex m_mutex;
-    QMap<QString, RegisterMapping> m_tagRegisterMappings;
+    HYModbusTcpDriver *m_hyModbusDriver;
+    HYTagManager *m_hyTagManager;
+    QTimer *m_hyCollectionTimer;
+    int m_hyCollectionInterval;
+    QMutex m_hyMutex;
+    QMap<QString, RegisterMapping> m_hyTagRegisterMappings;
 };
 
-#endif // DATAPROCESSOR_H
+#endif // HYDATAPROCESSOR_H

@@ -1,8 +1,18 @@
-# Qt 6 工业 SCADA 系统
+# 华颜工业SCADA系统
 
 ## 项目概述
 
-这是一个基于 Qt 6.8 LTS、C++20 和 QML 构建的轻量级工业 SCADA（监控与数据采集）系统。该系统通过模块化、可扩展的架构提供工业过程的实时监控和控制。
+**华颜**（Huayan）是一个基于 Qt 6.8 LTS、C++20 和 QML 构建的轻量级工业 SCADA（监控与数据采集）系统。该系统通过模块化、可扩展的架构提供工业过程的实时监控和控制。
+
+### 关于项目名称
+
+- **项目名称**：华颜（Huayan）
+- **全称**：华颜工业SCADA系统（Huayan Industrial SCADA System）
+- **代码命名规范**：代码库中的关键函数和变量使用"HY"前缀（华颜缩写）以保持一致性
+
+### 语言支持
+- [中文](README_CN.md)（当前）
+- [English](README.md)（英文版）
 
 ### 主要功能
 
@@ -23,7 +33,7 @@
 ## 项目结构
 
 ```
-SCADASystem/
+huayan/
 ├── CMakeLists.txt          # 顶层 CMake 配置
 ├── src/
 │   ├── CMakeLists.txt      # 主应用 CMake 配置
@@ -61,7 +71,7 @@ SCADASystem/
 │           └── BarChart.qml
 ├── bin/                    # 自包含安装目录
 │   ├── bin/
-│   │   └── SCADASystem     # 主可执行文件
+│   │   └── huayan          # 主可执行文件
 │   ├── lib/                # 所需的 Qt 库
 │   ├── plugins/
 │   │   └── platforms/      # Qt 平台插件
@@ -129,7 +139,7 @@ SCADASystem/
    ../bin/run.sh
    
    # 或手动设置环境变量
-   LD_LIBRARY_PATH=../bin/lib QT_QPA_PLATFORM_PLUGIN_PATH=../bin/plugins/platforms ../bin/bin/SCADASystem
+   LD_LIBRARY_PATH=../bin/lib QT_QPA_PLATFORM_PLUGIN_PATH=../bin/plugins/platforms ../bin/bin/huayan
    ```
 
 ## QML 动态插件
@@ -224,9 +234,14 @@ QML 组件被构建为动态插件（Windows 上为 DLL，Linux 上为 SO 文件
 
 ## 总结
 
-这个基于 Qt 6 的工业 SCADA 系统为监控和控制工业过程提供了全面的解决方案。其模块化架构、动态 QML 插件和实时数据处理能力使其适用于各种工业应用。
+**华颜**工业SCADA系统是一个基于 Qt 6 的工业过程监控与控制综合解决方案。其模块化架构、动态 QML 插件和实时数据处理能力使其适用于各种工业应用。
 
-该系统的主要优势包括：
+### 项目标识
+
+- **开源项目**：本项目基于 Apache License 2.0 开源
+- **代码命名规范**：关键函数和变量使用"HY"前缀以保持一致性
+
+### 系统优势
 
 - **可扩展的组件架构**：易于添加新的自定义组件
 - **实时数据处理**：具有可配置间隔的连续监控
@@ -234,4 +249,4 @@ QML 组件被构建为动态插件（Windows 上为 DLL，Linux 上为 SO 文件
 - **强大的通信**：具有错误处理和重连逻辑的 Modbus TCP 驱动
 - **跨平台支持**：可在 Windows 和 Linux 上运行
 
-凭借其对模块化、性能和易用性的关注，这个 SCADA 系统为工业自动化项目提供了坚实的基础。
+凭借其对模块化、性能和易用性的关注，**华颜**工业SCADA系统为工业自动化项目提供了坚实的基础，承载着品牌对品质和创新的承诺。

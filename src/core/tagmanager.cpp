@@ -1,177 +1,177 @@
-#include "tagmanager.h"
+#include "hytagmanager.h"
 
-// Tag class implementation
+// HYTag class implementation
 
-Tag::Tag(QObject *parent) : QObject(parent)
+HYTag::HYTag(QObject *parent) : QObject(parent)
 {
 }
 
-Tag::Tag(const QString &name, const QString &group, const QVariant &value, const QString &description, QObject *parent) 
+HYTag::HYTag(const QString &name, const QString &group, const QVariant &value, const QString &description, QObject *parent) 
     : QObject(parent),
-      m_name(name),
-      m_group(group),
-      m_value(value),
-      m_description(description)
+      m_hyName(name),
+      m_hyGroup(group),
+      m_hyValue(value),
+      m_hyDescription(description)
 {
 }
 
-QString Tag::name() const
+QString HYTag::name() const
 {
-    return m_name;
+    return m_hyName;
 }
 
-QString Tag::group() const
+QString HYTag::group() const
 {
-    return m_group;
+    return m_hyGroup;
 }
 
-QVariant Tag::value() const
+QVariant HYTag::value() const
 {
-    return m_value;
+    return m_hyValue;
 }
 
-QString Tag::description() const
+QString HYTag::description() const
 {
-    return m_description;
+    return m_hyDescription;
 }
 
-void Tag::setValue(const QVariant &value)
+void HYTag::setValue(const QVariant &value)
 {
-    if (m_value != value) {
-        m_value = value;
-        emit valueChanged(m_value);
+    if (m_hyValue != value) {
+        m_hyValue = value;
+        emit valueChanged(m_hyValue);
     }
 }
 
-void Tag::setDescription(const QString &description)
+void HYTag::setDescription(const QString &description)
 {
-    m_description = description;
+    m_hyDescription = description;
 }
 
-// TagManager class implementation
+// HYTagManager class implementation
 
-TagManager::TagManager(QObject *parent) : QObject(parent)
+HYTagManager::HYTagManager(QObject *parent) : QObject(parent)
 {
 }
 
-TagManager::~TagManager()
+HYTagManager::~HYTagManager()
 {
     // Clean up all tags
-    for (auto tag : m_tags.values()) {
+    for (auto tag : m_hyTags.values()) {
         delete tag;
     }
-    m_tags.clear();
-    m_tagsByGroup.clear();
+    m_hyTags.clear();
+    m_hyTagsByGroup.clear();
 }
 
-bool TagManager::addTag(const QString &name, const QString &group, const QVariant &value, const QString &description)
+bool HYTagManager::addTag(const QString &name, const QString &group, const QVariant &value, const QString &description)
 {
-    QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(&m_hyMutex);
 
     // Check if tag already exists
-    if (m_tags.contains(name)) {
+    if (m_hyTags.contains(name)) {
         return false;
     }
 
     // Create new tag
-    Tag *tag = new Tag(name, group, value, description, this);
-    m_tags[name] = tag;
-    m_tagsByGroup[group].append(tag);
+    HYTag *tag = new HYTag(name, group, value, description, this);
+    m_hyTags[name] = tag;
+    m_hyTagsByGroup[group].append(tag);
 
     // Connect tag's valueChanged signal to our slot
-    connect(tag, &Tag::valueChanged, this, &TagManager::onTagValueChanged);
+    connect(tag, &HYTag::valueChanged, this, &HYTagManager::onTagValueChanged);
 
     emit tagAdded(name);
     return true;
 }
 
-bool TagManager::removeTag(const QString &name)
+bool HYTagManager::removeTag(const QString &name)
 {
-    QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(&m_hyMutex);
 
     // Check if tag exists
-    if (!m_tags.contains(name)) {
+    if (!m_hyTags.contains(name)) {
         return false;
     }
 
-    Tag *tag = m_tags[name];
+    HYTag *tag = m_hyTags[name];
     QString group = tag->group();
 
     // Remove from group map
-    m_tagsByGroup[group].removeAll(tag);
-    if (m_tagsByGroup[group].isEmpty()) {
-        m_tagsByGroup.remove(group);
+    m_hyTagsByGroup[group].removeAll(tag);
+    if (m_hyTagsByGroup[group].isEmpty()) {
+        m_hyTagsByGroup.remove(group);
     }
 
     // Remove bindings
-    if (m_bindings.contains(name)) {
-        m_bindings.remove(name);
+    if (m_hyBindings.contains(name)) {
+        m_hyBindings.remove(name);
     }
 
     // Disconnect signal
-    disconnect(tag, &Tag::valueChanged, this, &TagManager::onTagValueChanged);
+    disconnect(tag, &HYTag::valueChanged, this, &HYTagManager::onTagValueChanged);
 
     // Delete tag
     delete tag;
-    m_tags.remove(name);
+    m_hyTags.remove(name);
 
     emit tagRemoved(name);
     return true;
 }
 
-Tag *TagManager::getTag(const QString &name) const
+HYTag *HYTagManager::getTag(const QString &name) const
 {
-    QMutexLocker locker(const_cast<QMutex *>(&m_mutex));
-    return m_tags.value(name, nullptr);
+    QMutexLocker locker(const_cast<QMutex *>(&m_hyMutex));
+    return m_hyTags.value(name, nullptr);
 }
 
-QVector<Tag *> TagManager::getTagsByGroup(const QString &group) const
+QVector<HYTag *> HYTagManager::getTagsByGroup(const QString &group) const
 {
-    QMutexLocker locker(const_cast<QMutex *>(&m_mutex));
-    return m_tagsByGroup.value(group, QVector<Tag *>());
+    QMutexLocker locker(const_cast<QMutex *>(&m_hyMutex));
+    return m_hyTagsByGroup.value(group, QVector<HYTag *>());
 }
 
-QVector<Tag *> TagManager::getAllTags() const
+QVector<HYTag *> HYTagManager::getAllTags() const
 {
-    QMutexLocker locker(const_cast<QMutex *>(&m_mutex));
-    return m_tags.values().toVector();
+    QMutexLocker locker(const_cast<QMutex *>(&m_hyMutex));
+    return m_hyTags.values().toVector();
 }
 
-QVector<QString> TagManager::getGroups() const
+QVector<QString> HYTagManager::getGroups() const
 {
-    QMutexLocker locker(const_cast<QMutex *>(&m_mutex));
-    return m_tagsByGroup.keys().toVector();
+    QMutexLocker locker(const_cast<QMutex *>(&m_hyMutex));
+    return m_hyTagsByGroup.keys().toVector();
 }
 
-bool TagManager::setTagValue(const QString &name, const QVariant &value)
+bool HYTagManager::setTagValue(const QString &name, const QVariant &value)
 {
-    QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(&m_hyMutex);
 
-    if (!m_tags.contains(name)) {
+    if (!m_hyTags.contains(name)) {
         return false;
     }
 
-    Tag *tag = m_tags[name];
+    HYTag *tag = m_hyTags[name];
     tag->setValue(value);
     return true;
 }
 
-QVariant TagManager::getTagValue(const QString &name) const
+QVariant HYTagManager::getTagValue(const QString &name) const
 {
-    QMutexLocker locker(const_cast<QMutex *>(&m_mutex));
+    QMutexLocker locker(const_cast<QMutex *>(&m_hyMutex));
 
-    if (!m_tags.contains(name)) {
+    if (!m_hyTags.contains(name)) {
         return QVariant();
     }
 
-    return m_tags[name]->value();
+    return m_hyTags[name]->value();
 }
 
-void TagManager::bindTagToProperty(const QString &tagName, QObject *object, const char *propertyName)
+void HYTagManager::bindTagToProperty(const QString &tagName, QObject *object, const char *propertyName)
 {
-    QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(&m_hyMutex);
 
-    if (!m_tags.contains(tagName)) {
+    if (!m_hyTags.contains(tagName)) {
         return;
     }
 
@@ -179,22 +179,22 @@ void TagManager::bindTagToProperty(const QString &tagName, QObject *object, cons
     Binding binding;
     binding.object = object;
     binding.propertyName = propertyName;
-    m_bindings[tagName].append(binding);
+    m_hyBindings[tagName].append(binding);
 
     // Set initial value
-    Tag *tag = m_tags[tagName];
+    HYTag *tag = m_hyTags[tagName];
     object->setProperty(propertyName, tag->value());
 }
 
-void TagManager::unbindTagFromProperty(const QString &tagName, QObject *object, const char *propertyName)
+void HYTagManager::unbindTagFromProperty(const QString &tagName, QObject *object, const char *propertyName)
 {
-    QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(&m_hyMutex);
 
-    if (!m_bindings.contains(tagName)) {
+    if (!m_hyBindings.contains(tagName)) {
         return;
     }
 
-    QVector<Binding> &bindings = m_bindings[tagName];
+    QVector<Binding> &bindings = m_hyBindings[tagName];
     for (int i = bindings.size() - 1; i >= 0; --i) {
         const Binding &binding = bindings[i];
         if (binding.object == object && strcmp(binding.propertyName, propertyName) == 0) {
@@ -204,14 +204,14 @@ void TagManager::unbindTagFromProperty(const QString &tagName, QObject *object, 
     }
 
     if (bindings.isEmpty()) {
-        m_bindings.remove(tagName);
+        m_hyBindings.remove(tagName);
     }
 }
 
-void TagManager::onTagValueChanged(const QVariant &newValue)
+void HYTagManager::onTagValueChanged(const QVariant &newValue)
 {
     // Get the sender tag
-    Tag *tag = qobject_cast<Tag *>(sender());
+    HYTag *tag = qobject_cast<HYTag *>(sender());
     if (!tag) {
         return;
     }
@@ -220,9 +220,9 @@ void TagManager::onTagValueChanged(const QVariant &newValue)
     emit tagValueChanged(tagName, newValue);
 
     // Update all bound properties
-    QMutexLocker locker(&m_mutex);
-    if (m_bindings.contains(tagName)) {
-        const QVector<Binding> &bindings = m_bindings[tagName];
+    QMutexLocker locker(&m_hyMutex);
+    if (m_hyBindings.contains(tagName)) {
+        const QVector<Binding> &bindings = m_hyBindings[tagName];
         for (const Binding &binding : bindings) {
             binding.object->setProperty(binding.propertyName, newValue);
         }
