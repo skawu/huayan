@@ -27,6 +27,15 @@
 - **实时数据处理**：从设备连续收集数据，可配置采集间隔
 - **跨平台支持**：Windows (MSVC 2022) 和 Linux (GCC 11+)
 
+### 新功能（2026-02-07）
+
+- **增强的配置编辑器**：添加了画布分层、对齐吸附和批量编辑功能
+- **丰富的组件库**：添加了工业专用组件（仪表盘、趋势图、工控按钮/指示灯等）
+- **离线工程导出/导入**：支持无网络工业现场部署
+- **优化的实时数据绑定**：动态刷新，延迟＜1s
+- **时序数据库集成**：支持InfluxDB/TimescaleDB用于历史数据查询
+- **增强的3D可视化**：深度集成WebGL/Three.js，支持数字孪生场景
+
 ## 技术栈
 
 - **核心框架**：Qt 6.8 LTS (C++20 + QML)
@@ -35,6 +44,8 @@
 - **QML 插件架构**：组件模块化的动态插件
 - **CI/CD 流水线**：GitHub Actions 自动化构建和测试
 - **版本控制**：Git 与 GitHub
+- **3D 可视化**：Three.js 用于数字孪生场景
+- **时序数据库**：InfluxDB/TimescaleDB 用于历史数据存储
 
 ## 项目结构
 
@@ -46,13 +57,15 @@ huayan/
 │   ├── main.cpp            # 应用程序入口点
 │   ├── resources.qrc       # QML 资源文件
 │   ├── communication/
-│   │   ├── modbustcpdriver.h
-│   │   └── modbustcpdriver.cpp
+│   │   ├── hymodbustcpdriver.h
+│   │   └── hymodbustcpdriver.cpp
 │   └── core/
 │       ├── tagmanager.h
 │       ├── tagmanager.cpp
 │       ├── dataprocessor.h
-│       └── dataprocessor.cpp
+│       ├── dataprocessor.cpp
+│       ├── timeseriesdatabase.h
+│       └── timeseriesdatabase.cpp
 ├── qml/
 │   ├── main.qml            # 主 QML 界面
 │   ├── DragAndDropHelper.qml  # 拖放功能
@@ -69,12 +82,21 @@ huayan/
 │       │   ├── qmldir
 │       │   ├── Valve.qml
 │       │   ├── Tank.qml
-│       │   └── Motor.qml
-│       └── ChartComponents/
+│       │   ├── Motor.qml
+│       │   ├── Gauge.qml
+│       │   ├── IndustrialButton.qml
+│       │   └── IndustrialIndicator.qml
+│       ├── ChartComponents/
+│       │   ├── CMakeLists.txt
+│       │   ├── qmldir
+│       │   ├── TrendChart.qml
+│       │   └── BarChart.qml
+│       └── ThreeDComponents/
 │           ├── CMakeLists.txt
 │           ├── qmldir
-│           ├── TrendChart.qml
-│           └── BarChart.qml
+│           ├── ThreeDScene.qml
+│           ├── ModelLoader.qml
+│           └── CameraController.qml
 ├── bin/                    # 自包含安装目录
 │   ├── bin/
 │   │   └── huayan          # 主可执行文件

@@ -31,6 +31,15 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - **Real-time Data Processing**: Continuous data collection from devices with configurable intervals
 - **Cross-platform Support**: Windows (MSVC 2022) and Linux (GCC 11+)
 
+### New Features (2026-02-07)
+
+- **Enhanced Configuration Editor**: Added canvas layering, alignment snapping, and batch editing capabilities
+- **Rich Component Library**: Added industrial-specific components (gauge, trend chart, industrial buttons/indicators, etc.)
+- **Offline Project Export/Import**: Support for industrial sites without network deployment
+- **Optimized Real-time Data Binding**: Dynamic refresh with latency < 1s
+- **Time Series Database Integration**: Support for InfluxDB/TimescaleDB for historical data query
+- **Enhanced 3D Visualization**: Deep integration with WebGL/Three.js for digital twin scenarios
+
 ## Technical Stack
 
 - **Core Framework**: Qt 6.8 LTS (C++20 + QML)
@@ -39,6 +48,8 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - **QML Plugin Architecture**: Dynamic plugins for component modularity
 - **CI/CD Pipeline**: GitHub Actions for automated building and testing
 - **Version Control**: Git with GitHub
+- **3D Visualization**: Three.js for digital twin scenarios
+- **Time Series Databases**: InfluxDB/TimescaleDB for historical data storage
 
 ## Project Structure
 
@@ -50,13 +61,15 @@ huayan/
 │   ├── main.cpp            # Application entry point
 │   ├── resources.qrc       # QML resource file
 │   ├── communication/
-│   │   ├── modbustcpdriver.h
-│   │   └── modbustcpdriver.cpp
+│   │   ├── hymodbustcpdriver.h
+│   │   └── hymodbustcpdriver.cpp
 │   └── core/
 │       ├── tagmanager.h
 │       ├── tagmanager.cpp
 │       ├── dataprocessor.h
-│       └── dataprocessor.cpp
+│       ├── dataprocessor.cpp
+│       ├── timeseriesdatabase.h
+│       └── timeseriesdatabase.cpp
 ├── qml/
 │   ├── main.qml            # Main QML interface
 │   ├── DragAndDropHelper.qml  # Drag-and-drop functionality
@@ -73,12 +86,21 @@ huayan/
 │       │   ├── qmldir
 │       │   ├── Valve.qml
 │       │   ├── Tank.qml
-│       │   └── Motor.qml
-│       └── ChartComponents/
+│       │   ├── Motor.qml
+│       │   ├── Gauge.qml
+│       │   ├── IndustrialButton.qml
+│       │   └── IndustrialIndicator.qml
+│       ├── ChartComponents/
+│       │   ├── CMakeLists.txt
+│       │   ├── qmldir
+│       │   ├── TrendChart.qml
+│       │   └── BarChart.qml
+│       └── ThreeDComponents/
 │           ├── CMakeLists.txt
 │           ├── qmldir
-│           ├── TrendChart.qml
-│           └── BarChart.qml
+│           ├── ThreeDScene.qml
+│           ├── ModelLoader.qml
+│           └── CameraController.qml
 ├── bin/                    # Self-contained installation directory
 │   ├── bin/
 │   │   └── huayan          # Main executable
