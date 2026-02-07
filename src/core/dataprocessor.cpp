@@ -1,10 +1,13 @@
-#include "hydataprocessor.h"
+#include "dataprocessor.h"
 #include "../communication/hymodbustcpdriver.h"
-#include "hytagmanager.h"
+#include "tagmanager.h"
+#include "timeseriesdatabase.h"
+
 
 HYDataProcessor::HYDataProcessor(QObject *parent) : QObject(parent),
     m_hyModbusDriver(nullptr),
     m_hyTagManager(nullptr),
+    m_hyTimeSeriesDatabase(nullptr),
     m_hyCollectionTimer(nullptr),
     m_hyCollectionInterval(1000)
 {
@@ -111,6 +114,29 @@ bool HYDataProcessor::unmapTagFromDeviceRegister(const QString &tagName)
     return true;
 }
 
+void HYDataProcessor::setTimeSeriesDatabase(HYTimeSeriesDatabase *db)
+{
+    m_hyTimeSeriesDatabase = db;
+}
+
+bool HYDataProcessor::storeHistoricalData(const QString &tagName, const QVariant &value, const QDateTime &timestamp)
+{
+    if (!m_hyTimeSeriesDatabase) {
+        return false;
+    }
+
+    return m_hyTimeSeriesDatabase->storeTagValue(tagName, value, timestamp);
+}
+
+QMap<QDateTime, QVariant> HYDataProcessor::queryHistoricalData(const QString &tagName, const QDateTime &startTime, const QDateTime &endTime, int limit)
+{
+    if (!m_hyTimeSeriesDatabase) {
+        return QMap<QDateTime, QVariant>();
+    }
+
+    return m_hyTimeSeriesDatabase->queryTagHistory(tagName, startTime, endTime, limit);
+}
+
 void HYDataProcessor::collectData()
 {
     QMutexLocker locker(&m_hyMutex);
@@ -118,6 +144,8 @@ void HYDataProcessor::collectData()
     if (!m_hyModbusDriver || !m_hyTagManager || m_hyTagRegisterMappings.isEmpty()) {
         return;
     }
+
+    const QDateTime timestamp = QDateTime::currentDateTime();
 
     // Read data from all mapped registers
     for (auto it = m_hyTagRegisterMappings.constBegin(); it != m_hyTagRegisterMappings.constEnd(); ++it) {
@@ -129,12 +157,16 @@ void HYDataProcessor::collectData()
             quint16 value;
             if (m_hyModbusDriver->readHoldingRegister(mapping.address, value)) {
                 m_hyTagManager->setTagValue(tagName, value);
+                // Store historical data
+                storeHistoricalData(tagName, value, timestamp);
             }
         } else {
             // Read coil
             bool value;
             if (m_hyModbusDriver->readCoil(mapping.address, value)) {
                 m_hyTagManager->setTagValue(tagName, value);
+                // Store historical data
+                storeHistoricalData(tagName, value, timestamp);
             }
         }
     }

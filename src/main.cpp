@@ -4,8 +4,8 @@
 #include <QDir>
 
 #include "communication/hymodbustcpdriver.h"
-#include "core/hytagmanager.h"
-#include "core/hydataprocessor.h"
+#include "core/tagmanager.h"
+#include "core/dataprocessor.h"
 
 int main(int argc, char *argv[])
 {
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     dataProcessor->startDataCollection(1000); // 1 second interval
 
     // Load main QML file
-    const QUrl url(QStringLiteral("qrc:/main.qml"));
+    const QUrl url(QStringLiteral("./qml/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
         if (!obj && url == objUrl) {

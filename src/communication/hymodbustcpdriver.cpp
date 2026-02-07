@@ -1,72 +1,74 @@
-#include "modbustcpdriver.h"
+#include "hymodbustcpdriver.h"
+#include <QCoreApplication>
+using namespace std;
 
-ModbusTcpDriver::ModbusTcpDriver(QObject *parent) : QObject(parent)
+HYModbusTcpDriver::HYModbusTcpDriver(QObject *parent) : QObject(parent)
 {
-    m_modbusClient = new QModbusTcpClient(this);
-    m_reconnectTimer = new QTimer(this);
-    m_reconnectInterval = 5000; // 5 seconds default
-    m_responseTimeout = 1000;  // 1 second default
-    m_autoReconnect = true;
-    m_slaveId = 1;
+    m_hyModbusClient = new QModbusTcpClient(this);
+    m_hyReconnectTimer = new QTimer(this);
+    m_hyReconnectInterval = 5000; // 5 seconds default
+    m_hyResponseTimeout = 1000;  // 1 second default
+    m_hyAutoReconnect = true;
+    m_hySlaveId = 1;
 
     // Connect signals and slots
-    connect(m_modbusClient, &QModbusClient::stateChanged, this, &ModbusTcpDriver::onStateChanged);
-    connect(m_modbusClient, &QModbusClient::errorOccurred, this, &ModbusTcpDriver::onErrorOccurred);
-    connect(m_reconnectTimer, &QTimer::timeout, this, &ModbusTcpDriver::attemptReconnect);
+    connect(m_hyModbusClient, &QModbusClient::stateChanged, this, &HYModbusTcpDriver::onStateChanged);
+    connect(m_hyModbusClient, &QModbusClient::errorOccurred, this, &HYModbusTcpDriver::onErrorOccurred);
+    connect(m_hyReconnectTimer, &QTimer::timeout, this, &HYModbusTcpDriver::attemptReconnect);
 
     // Set default timeout
-    m_modbusClient->setTimeout(m_responseTimeout);
-    m_modbusClient->setNumberOfRetries(3);
+    m_hyModbusClient->setTimeout(m_hyResponseTimeout);
+    m_hyModbusClient->setNumberOfRetries(3);
 }
 
-ModbusTcpDriver::~ModbusTcpDriver()
+HYModbusTcpDriver::~HYModbusTcpDriver()
 {
     disconnectFromDevice();
-    delete m_modbusClient;
-    delete m_reconnectTimer;
+    delete m_hyModbusClient;
+    delete m_hyReconnectTimer;
 }
 
-bool ModbusTcpDriver::connectToDevice(const QString &ipAddress, int port, int slaveId)
+bool HYModbusTcpDriver::connectToDevice(const QString &host, int port, int slaveId)
 {
-    m_ipAddress = ipAddress;
-    m_port = port;
-    m_slaveId = slaveId;
+    m_hyIpAddress = host;
+    m_hyPort = port;
+    m_hySlaveId = slaveId;
 
     // Disconnect if already connected
-    if (m_modbusClient->state() == QModbusDevice::ConnectedState) {
-        m_modbusClient->disconnectDevice();
+    if (m_hyModbusClient->state() == QModbusDevice::ConnectedState) {
+        m_hyModbusClient->disconnectDevice();
     }
 
     // Set connection parameters
-    m_modbusClient->setConnectionParameter(QModbusDevice::NetworkAddressParameter, ipAddress);
-    m_modbusClient->setConnectionParameter(QModbusDevice::NetworkPortParameter, port);
+    m_hyModbusClient->setConnectionParameter(QModbusDevice::NetworkAddressParameter, m_hyIpAddress);
+    m_hyModbusClient->setConnectionParameter(QModbusDevice::NetworkPortParameter, m_hyPort);
 
     // Connect
-    bool success = m_modbusClient->connectDevice();
+    bool success = m_hyModbusClient->connectDevice();
     if (!success) {
-        emit connectionError(tr("Failed to connect to %1:%2").arg(ipAddress).arg(port));
-        if (m_autoReconnect) {
-            m_reconnectTimer->start(m_reconnectInterval);
+        emit connectionError(tr("Failed to connect to %1:%2").arg(m_hyIpAddress).arg(m_hyPort));
+        if (m_hyAutoReconnect) {
+            m_hyReconnectTimer->start(m_hyReconnectInterval);
         }
     }
 
     return success;
 }
 
-void ModbusTcpDriver::disconnectFromDevice()
+void HYModbusTcpDriver::disconnectFromDevice()
 {
-    m_reconnectTimer->stop();
-    if (m_modbusClient->state() == QModbusDevice::ConnectedState) {
-        m_modbusClient->disconnectDevice();
+    m_hyReconnectTimer->stop();
+    if (m_hyModbusClient->state() == QModbusDevice::ConnectedState) {
+        m_hyModbusClient->disconnectDevice();
     }
 }
 
-bool ModbusTcpDriver::isConnected() const
+bool HYModbusTcpDriver::isConnected() const
 {
-    return m_modbusClient->state() == QModbusDevice::ConnectedState;
+    return m_hyModbusClient->state() == QModbusDevice::ConnectedState;
 }
 
-bool ModbusTcpDriver::readCoil(int address, bool &value)
+bool HYModbusTcpDriver::readCoil(int address, bool &value)
 {
     if (!isConnected()) {
         emit dataReadError(tr("Not connected to device"));
@@ -74,9 +76,9 @@ bool ModbusTcpDriver::readCoil(int address, bool &value)
     }
 
     QModbusDataUnit unit(QModbusDataUnit::Coils, address, 1);
-    auto *reply = m_modbusClient->sendReadRequest(unit, m_slaveId);
+    auto *reply = m_hyModbusClient->sendReadRequest(unit, m_hySlaveId);
     if (!reply) {
-        emit dataReadError(tr("Failed to send read request: %1").arg(m_modbusClient->errorString()));
+        emit dataReadError(tr("Failed to send read request: %1").arg(m_hyModbusClient->errorString()));
         return false;
     }
 
@@ -86,7 +88,7 @@ bool ModbusTcpDriver::readCoil(int address, bool &value)
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
-    timer.start(m_responseTimeout);
+    timer.start(m_hyResponseTimeout);
     loop.exec();
 
     if (timer.isActive()) {
@@ -114,7 +116,7 @@ bool ModbusTcpDriver::readCoil(int address, bool &value)
     }
 }
 
-bool ModbusTcpDriver::readDiscreteInput(int address, bool &value)
+bool HYModbusTcpDriver::readDiscreteInput(int address, bool &value)
 {
     if (!isConnected()) {
         emit dataReadError(tr("Not connected to device"));
@@ -122,9 +124,9 @@ bool ModbusTcpDriver::readDiscreteInput(int address, bool &value)
     }
 
     QModbusDataUnit unit(QModbusDataUnit::DiscreteInputs, address, 1);
-    auto *reply = m_modbusClient->sendReadRequest(unit, m_slaveId);
+    auto *reply = m_hyModbusClient->sendReadRequest(unit, m_hySlaveId);
     if (!reply) {
-        emit dataReadError(tr("Failed to send read request: %1").arg(m_modbusClient->errorString()));
+        emit dataReadError(tr("Failed to send read request: %1").arg(m_hyModbusClient->errorString()));
         return false;
     }
 
@@ -134,7 +136,7 @@ bool ModbusTcpDriver::readDiscreteInput(int address, bool &value)
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
-    timer.start(m_responseTimeout);
+    timer.start(m_hyResponseTimeout);
     loop.exec();
 
     if (timer.isActive()) {
@@ -162,7 +164,7 @@ bool ModbusTcpDriver::readDiscreteInput(int address, bool &value)
     }
 }
 
-bool ModbusTcpDriver::readHoldingRegister(int address, quint16 &value)
+bool HYModbusTcpDriver::readHoldingRegister(int address, quint16 &value)
 {
     if (!isConnected()) {
         emit dataReadError(tr("Not connected to device"));
@@ -170,9 +172,9 @@ bool ModbusTcpDriver::readHoldingRegister(int address, quint16 &value)
     }
 
     QModbusDataUnit unit(QModbusDataUnit::HoldingRegisters, address, 1);
-    auto *reply = m_modbusClient->sendReadRequest(unit, m_slaveId);
+    auto *reply = m_hyModbusClient->sendReadRequest(unit, m_hySlaveId);
     if (!reply) {
-        emit dataReadError(tr("Failed to send read request: %1").arg(m_modbusClient->errorString()));
+        emit dataReadError(tr("Failed to send read request: %1").arg(m_hyModbusClient->errorString()));
         return false;
     }
 
@@ -182,7 +184,7 @@ bool ModbusTcpDriver::readHoldingRegister(int address, quint16 &value)
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
-    timer.start(m_responseTimeout);
+    timer.start(m_hyResponseTimeout);
     loop.exec();
 
     if (timer.isActive()) {
@@ -210,7 +212,7 @@ bool ModbusTcpDriver::readHoldingRegister(int address, quint16 &value)
     }
 }
 
-bool ModbusTcpDriver::readInputRegister(int address, quint16 &value)
+bool HYModbusTcpDriver::readInputRegister(int address, quint16 &value)
 {
     if (!isConnected()) {
         emit dataReadError(tr("Not connected to device"));
@@ -218,9 +220,9 @@ bool ModbusTcpDriver::readInputRegister(int address, quint16 &value)
     }
 
     QModbusDataUnit unit(QModbusDataUnit::InputRegisters, address, 1);
-    auto *reply = m_modbusClient->sendReadRequest(unit, m_slaveId);
+    auto *reply = m_hyModbusClient->sendReadRequest(unit, m_hySlaveId);
     if (!reply) {
-        emit dataReadError(tr("Failed to send read request: %1").arg(m_modbusClient->errorString()));
+        emit dataReadError(tr("Failed to send read request: %1").arg(m_hyModbusClient->errorString()));
         return false;
     }
 
@@ -230,7 +232,7 @@ bool ModbusTcpDriver::readInputRegister(int address, quint16 &value)
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
-    timer.start(m_responseTimeout);
+    timer.start(m_hyResponseTimeout);
     loop.exec();
 
     if (timer.isActive()) {
@@ -258,7 +260,7 @@ bool ModbusTcpDriver::readInputRegister(int address, quint16 &value)
     }
 }
 
-bool ModbusTcpDriver::writeCoil(int address, bool value)
+bool HYModbusTcpDriver::writeCoil(int address, bool value)
 {
     if (!isConnected()) {
         emit dataWriteError(tr("Not connected to device"));
@@ -268,9 +270,9 @@ bool ModbusTcpDriver::writeCoil(int address, bool value)
     QModbusDataUnit unit(QModbusDataUnit::Coils, address, 1);
     unit.setValue(0, value ? 1 : 0);
 
-    auto *reply = m_modbusClient->sendWriteRequest(unit, m_slaveId);
+    auto *reply = m_hyModbusClient->sendWriteRequest(unit, m_hySlaveId);
     if (!reply) {
-        emit dataWriteError(tr("Failed to send write request: %1").arg(m_modbusClient->errorString()));
+        emit dataWriteError(tr("Failed to send write request: %1").arg(m_hyModbusClient->errorString()));
         return false;
     }
 
@@ -280,7 +282,7 @@ bool ModbusTcpDriver::writeCoil(int address, bool value)
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
-    timer.start(m_responseTimeout);
+    timer.start(m_hyResponseTimeout);
     loop.exec();
 
     if (timer.isActive()) {
@@ -300,7 +302,7 @@ bool ModbusTcpDriver::writeCoil(int address, bool value)
     }
 }
 
-bool ModbusTcpDriver::writeHoldingRegister(int address, quint16 value)
+bool HYModbusTcpDriver::writeHoldingRegister(int address, quint16 value)
 {
     if (!isConnected()) {
         emit dataWriteError(tr("Not connected to device"));
@@ -310,9 +312,9 @@ bool ModbusTcpDriver::writeHoldingRegister(int address, quint16 value)
     QModbusDataUnit unit(QModbusDataUnit::HoldingRegisters, address, 1);
     unit.setValue(0, value);
 
-    auto *reply = m_modbusClient->sendWriteRequest(unit, m_slaveId);
+    auto *reply = m_hyModbusClient->sendWriteRequest(unit, m_hySlaveId);
     if (!reply) {
-        emit dataWriteError(tr("Failed to send write request: %1").arg(m_modbusClient->errorString()));
+        emit dataWriteError(tr("Failed to send write request: %1").arg(m_hyModbusClient->errorString()));
         return false;
     }
 
@@ -322,7 +324,7 @@ bool ModbusTcpDriver::writeHoldingRegister(int address, quint16 value)
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
-    timer.start(m_responseTimeout);
+    timer.start(m_hyResponseTimeout);
     loop.exec();
 
     if (timer.isActive()) {
@@ -342,7 +344,7 @@ bool ModbusTcpDriver::writeHoldingRegister(int address, quint16 value)
     }
 }
 
-bool ModbusTcpDriver::readMultipleCoils(int startAddress, int count, QVector<bool> &values)
+bool HYModbusTcpDriver::readCoils(int startAddress, int count, QVector<bool> &values)
 {
     if (!isConnected()) {
         emit dataReadError(tr("Not connected to device"));
@@ -350,9 +352,9 @@ bool ModbusTcpDriver::readMultipleCoils(int startAddress, int count, QVector<boo
     }
 
     QModbusDataUnit unit(QModbusDataUnit::Coils, startAddress, count);
-    auto *reply = m_modbusClient->sendReadRequest(unit, m_slaveId);
+    auto *reply = m_hyModbusClient->sendReadRequest(unit, m_hySlaveId);
     if (!reply) {
-        emit dataReadError(tr("Failed to send read request: %1").arg(m_modbusClient->errorString()));
+        emit dataReadError(tr("Failed to send read request: %1").arg(m_hyModbusClient->errorString()));
         return false;
     }
 
@@ -362,7 +364,7 @@ bool ModbusTcpDriver::readMultipleCoils(int startAddress, int count, QVector<boo
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
-    timer.start(m_responseTimeout);
+    timer.start(m_hyResponseTimeout);
     loop.exec();
 
     if (timer.isActive()) {
@@ -388,7 +390,7 @@ bool ModbusTcpDriver::readMultipleCoils(int startAddress, int count, QVector<boo
     }
 }
 
-bool ModbusTcpDriver::readMultipleHoldingRegisters(int startAddress, int count, QVector<quint16> &values)
+bool HYModbusTcpDriver::readMultipleHoldingRegisters(int startAddress, int count, QVector<quint16> &values)
 {
     if (!isConnected()) {
         emit dataReadError(tr("Not connected to device"));
@@ -396,9 +398,9 @@ bool ModbusTcpDriver::readMultipleHoldingRegisters(int startAddress, int count, 
     }
 
     QModbusDataUnit unit(QModbusDataUnit::HoldingRegisters, startAddress, count);
-    auto *reply = m_modbusClient->sendReadRequest(unit, m_slaveId);
+    auto *reply = m_hyModbusClient->sendReadRequest(unit, m_hySlaveId);
     if (!reply) {
-        emit dataReadError(tr("Failed to send read request: %1").arg(m_modbusClient->errorString()));
+        emit dataReadError(tr("Failed to send read request: %1").arg(m_hyModbusClient->errorString()));
         return false;
     }
 
@@ -408,7 +410,7 @@ bool ModbusTcpDriver::readMultipleHoldingRegisters(int startAddress, int count, 
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
-    timer.start(m_responseTimeout);
+    timer.start(m_hyResponseTimeout);
     loop.exec();
 
     if (timer.isActive()) {
@@ -434,7 +436,7 @@ bool ModbusTcpDriver::readMultipleHoldingRegisters(int startAddress, int count, 
     }
 }
 
-bool ModbusTcpDriver::writeMultipleCoils(int startAddress, const QVector<bool> &values)
+bool HYModbusTcpDriver::writeMultipleCoils(int startAddress, const QVector<bool> &values)
 {
     if (!isConnected()) {
         emit dataWriteError(tr("Not connected to device"));
@@ -446,9 +448,9 @@ bool ModbusTcpDriver::writeMultipleCoils(int startAddress, const QVector<bool> &
         unit.setValue(i, values[i] ? 1 : 0);
     }
 
-    auto *reply = m_modbusClient->sendWriteRequest(unit, m_slaveId);
+    auto *reply = m_hyModbusClient->sendWriteRequest(unit, m_hySlaveId);
     if (!reply) {
-        emit dataWriteError(tr("Failed to send write request: %1").arg(m_modbusClient->errorString()));
+        emit dataWriteError(tr("Failed to send write request: %1").arg(m_hyModbusClient->errorString()));
         return false;
     }
 
@@ -458,7 +460,7 @@ bool ModbusTcpDriver::writeMultipleCoils(int startAddress, const QVector<bool> &
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
-    timer.start(m_responseTimeout);
+    timer.start(m_hyResponseTimeout);
     loop.exec();
 
     if (timer.isActive()) {
@@ -478,7 +480,7 @@ bool ModbusTcpDriver::writeMultipleCoils(int startAddress, const QVector<bool> &
     }
 }
 
-bool ModbusTcpDriver::writeMultipleHoldingRegisters(int startAddress, const QVector<quint16> &values)
+bool HYModbusTcpDriver::writeMultipleHoldingRegisters(int startAddress, const QVector<quint16> &values)
 {
     if (!isConnected()) {
         emit dataWriteError(tr("Not connected to device"));
@@ -490,9 +492,9 @@ bool ModbusTcpDriver::writeMultipleHoldingRegisters(int startAddress, const QVec
         unit.setValue(i, values[i]);
     }
 
-    auto *reply = m_modbusClient->sendWriteRequest(unit, m_slaveId);
+    auto *reply = m_hyModbusClient->sendWriteRequest(unit, m_hySlaveId);
     if (!reply) {
-        emit dataWriteError(tr("Failed to send write request: %1").arg(m_modbusClient->errorString()));
+        emit dataWriteError(tr("Failed to send write request: %1").arg(m_hyModbusClient->errorString()));
         return false;
     }
 
@@ -502,7 +504,7 @@ bool ModbusTcpDriver::writeMultipleHoldingRegisters(int startAddress, const QVec
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
-    timer.start(m_responseTimeout);
+    timer.start(m_hyResponseTimeout);
     loop.exec();
 
     if (timer.isActive()) {
@@ -522,28 +524,28 @@ bool ModbusTcpDriver::writeMultipleHoldingRegisters(int startAddress, const QVec
     }
 }
 
-void ModbusTcpDriver::setReconnectInterval(int interval)
+void HYModbusTcpDriver::setReconnectInterval(int interval)
 {
-    m_reconnectInterval = interval;
+    m_hyReconnectInterval = interval;
 }
 
-void ModbusTcpDriver::setResponseTimeout(int timeout)
+void HYModbusTcpDriver::setResponseTimeout(int timeout)
 {
-    m_responseTimeout = timeout;
-    m_modbusClient->setTimeout(timeout);
+    m_hyResponseTimeout = timeout;
+    m_hyModbusClient->setTimeout(timeout);
 }
 
-void ModbusTcpDriver::onStateChanged(QModbusDevice::State state)
+void HYModbusTcpDriver::onStateChanged(QModbusDevice::State state)
 {
     switch (state) {
     case QModbusDevice::ConnectedState:
         emit connected();
-        m_reconnectTimer->stop();
+        m_hyReconnectTimer->stop();
         break;
     case QModbusDevice::UnconnectedState:
         emit disconnected();
-        if (m_autoReconnect) {
-            m_reconnectTimer->start(m_reconnectInterval);
+        if (m_hyAutoReconnect) {
+            m_hyReconnectTimer->start(m_hyReconnectInterval);
         }
         break;
     default:
@@ -551,16 +553,16 @@ void ModbusTcpDriver::onStateChanged(QModbusDevice::State state)
     }
 }
 
-void ModbusTcpDriver::onErrorOccurred(QModbusDevice::Error error)
+void HYModbusTcpDriver::onErrorOccurred(QModbusDevice::Error error)
 {
     if (error != QModbusDevice::NoError) {
-        emit connectionError(tr("Modbus error: %1").arg(m_modbusClient->errorString()));
+        emit connectionError(tr("Modbus error: %1").arg(m_hyModbusClient->errorString()));
     }
 }
 
-void ModbusTcpDriver::attemptReconnect()
+void HYModbusTcpDriver::attemptReconnect()
 {
-    if (m_modbusClient->state() != QModbusDevice::ConnectedState) {
-        m_modbusClient->connectDevice();
+    if (m_hyModbusClient->state() != QModbusDevice::ConnectedState) {
+        m_hyModbusClient->connectDevice();
     }
 }

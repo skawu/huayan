@@ -8,9 +8,11 @@
 #include <QMap>
 #include <QString>
 #include <QVariant>
+#include <QDateTime>
 
 class HYModbusTcpDriver;
 class HYTagManager;
+class HYTimeSeriesDatabase;
 
 class HYDataProcessor : public QObject
 {
@@ -50,8 +52,14 @@ private:
         bool isHoldingRegister;
     };
 
+    // Time-series database methods
+    void setTimeSeriesDatabase(HYTimeSeriesDatabase *db);
+    bool storeHistoricalData(const QString &tagName, const QVariant &value, const QDateTime &timestamp = QDateTime::currentDateTime());
+    QMap<QDateTime, QVariant> queryHistoricalData(const QString &tagName, const QDateTime &startTime, const QDateTime &endTime, int limit = 1000);
+
     HYModbusTcpDriver *m_hyModbusDriver;
     HYTagManager *m_hyTagManager;
+    HYTimeSeriesDatabase *m_hyTimeSeriesDatabase;
     QTimer *m_hyCollectionTimer;
     int m_hyCollectionInterval;
     QMutex m_hyMutex;
