@@ -185,7 +185,9 @@ Item {
             mouseArea.pressed.connect(function(mouse) {
                 // Select item on left click
                 if (mouse.button === Qt.LeftButton) {
-                    selectItem(item);
+                    // Check if Ctrl is pressed for multi-select
+                    const multiSelect = (mouse.modifiers & Qt.ControlModifier) !== 0;
+                    selectItem(item, multiSelect);
                     dragAndDropHelper.startDrag(item, mouse.x, mouse.y);
                 } else if (mouse.button === Qt.RightButton) {
                     // Show context menu on right click
@@ -297,12 +299,16 @@ Item {
     }
 
     // Select an item
-    function selectItem(item) {
-        // Clear previous selection
-        clearSelection();
+    function selectItem(item, multiSelect) {
+        // Clear previous selection if not multi-selecting
+        if (!multiSelect) {
+            clearSelection();
+        }
         
-        // Add to selected items
-        selectedItems.push(item);
+        // Add to selected items if not already selected
+        if (selectedItems.indexOf(item) === -1) {
+            selectedItems.push(item);
+        }
         
         // Show selection border and resize handles
         showItemSelection(item);

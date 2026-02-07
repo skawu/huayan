@@ -3,12 +3,14 @@
 # Add executable
 qt_add_executable(SCADASystem
     main.cpp
-    communication/modbustcpdriver.cpp
+    communication/hymodbustcpdriver.cpp
     core/tagmanager.cpp
     core/dataprocessor.cpp
-    communication/modbustcpdriver.h
+    communication/hymodbustcpdriver.h
     core/tagmanager.h
     core/dataprocessor.h
+    core/timeseriesdatabase.cpp
+    core/timeseriesdatabase.h
 )
 
 # Add QML module for main application

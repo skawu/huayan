@@ -15,25 +15,289 @@ ApplicationWindow {
     // 主页面切换
     property int currentPage: 0
     
+    // 图层管理
+    property int currentLayer: 0
+    
+    // 组件-标签绑定关系
+    property var tagBindings: {}
+    
+    // 图层模型
+    ListModel {
+        id: layersModel
+        Component.onCompleted: {
+            // 添加默认图层
+            append({name: "Layer 1", visible: true});
+            append({name: "Layer 2", visible: true});
+            append({name: "Layer 3", visible: true});
+        }
+    }
+    
+    // 更新图层可见性
+    function updateLayerVisibility() {
+        // 遍历画布上的所有组件
+        for (let i = 0; i < canvas.children.length; i++) {
+            const item = canvas.children[i];
+            // 检查组件是否有图层属性
+            if (item.layer !== undefined) {
+                // 检查图层是否存在且可见
+                if (item.layer < layersModel.count) {
+                    const layer = layersModel.get(item.layer);
+                    item.visible = layer.visible;
+                }
+            }
+        }
+    }
+    
+    // 保存配置
+    function saveConfiguration() {
+        const configuration = {
+            layout: getCanvasLayout(),
+            layers: getLayersData(),
+            tags: getTagsData(),
+            version: "1.0",
+            timestamp: new Date().toISOString()
+        };
+        
+        const jsonString = JSON.stringify(configuration, null, 2);
+        const fileName = "configuration.json";
+        
+        // 使用 Qt 5.15+ 的 File API
+        const file = Qt.createQmlObject('import QtQuick 2.15; File { fileName: "./' + fileName + '"; }', mainWindow);
+        if (file) {
+            if (file.open(File.WriteOnly | File.Truncate)) {
+                file.write(jsonString);
+                file.close();
+                console.log("Configuration saved to", fileName);
+            } else {
+                console.error("Failed to open file for writing");
+            }
+        }
+    }
+    
+    // 导出项目
+    function exportProject() {
+        const project = {
+            configuration: {
+                layout: getCanvasLayout(),
+                layers: getLayersData(),
+                tags: getTagsData()
+            },
+            metadata: {
+                version: "1.0",
+                timestamp: new Date().toISOString(),
+                projectName: "Huayan SCADA Project"
+            }
+        };
+        
+        const jsonString = JSON.stringify(project, null, 2);
+        
+        // 创建文件对话框
+        const fileDialog = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Dialogs 1.3; FileDialog { title: "Export Project"; selectExisting: false; nameFilters: ["Huayan Project Files (*.hyproj)", "All Files (*)"]; }', mainWindow);
+        if (fileDialog) {
+            fileDialog.accepted.connect(function() {
+                const fileName = fileDialog.fileUrl.toString().replace("file://", "");
+                const file = Qt.createQmlObject('import QtQuick 2.15; File { fileName: "' + fileName + '"; }', mainWindow);
+                if (file) {
+                    if (file.open(File.WriteOnly | File.Truncate)) {
+                        file.write(jsonString);
+                        file.close();
+                        console.log("Project exported to", fileName);
+                    } else {
+                        console.error("Failed to open file for writing");
+                    }
+                }
+            });
+            fileDialog.rejected.connect(function() {
+                console.log("Export canceled");
+            });
+            fileDialog.open();
+        }
+    }
+    
+    // 导入项目
+    function importProject() {
+        // 创建文件对话框
+        const fileDialog = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Dialogs 1.3; FileDialog { title: "Import Project"; selectExisting: true; nameFilters: ["Huayan Project Files (*.hyproj)", "All Files (*)"]; }', mainWindow);
+        if (fileDialog) {
+            fileDialog.accepted.connect(function() {
+                const fileName = fileDialog.fileUrl.toString().replace("file://", "");
+                const file = Qt.createQmlObject('import QtQuick 2.15; File { fileName: "' + fileName + '"; }', mainWindow);
+                if (file) {
+                    if (file.open(File.ReadOnly)) {
+                        const jsonString = file.readAll();
+                        file.close();
+                        
+                        try {
+                            const project = JSON.parse(jsonString);
+                            loadProject(project);
+                            console.log("Project imported successfully");
+                        } catch (e) {
+                            console.error("Failed to parse project file:", e);
+                        }
+                    } else {
+                        console.error("Failed to open file for reading");
+                    }
+                }
+            });
+            fileDialog.rejected.connect(function() {
+                console.log("Import canceled");
+            });
+            fileDialog.open();
+        }
+    }
+    
+    // 获取画布布局
+    function getCanvasLayout() {
+        const layout = [];
+        if (canvas) {
+            for (let i = 0; i < canvas.children.length; i++) {
+                const item = canvas.children[i];
+                if (item.layer !== undefined) {
+                    layout.push({
+                        type: item.toString().split('QQuickItem_QML_')[1],
+                        x: item.x,
+                        y: item.y,
+                        width: item.width,
+                        height: item.height,
+                        layer: item.layer,
+                        label: item.label || "",
+                        tagName: item.tagName || ""
+                    });
+                }
+            }
+        }
+        return layout;
+    }
+    
+    // 获取图层数据
+    function getLayersData() {
+        const layers = [];
+        for (let i = 0; i < layersModel.count; i++) {
+            const layer = layersModel.get(i);
+            layers.push({
+                name: layer.name,
+                visible: layer.visible
+            });
+        }
+        return layers;
+    }
+    
+    // 获取标签数据
+    function getTagsData() {
+        const tags = [];
+        for (let i = 0; i < tagsModel.count; i++) {
+            const tag = tagsModel.get(i);
+            tags.push({
+                name: tag.name,
+                value: tag.value,
+                group: tag.group,
+                isConnected: tag.isConnected
+            });
+        }
+        return tags;
+    }
+    
+    // 加载项目
+    function loadProject(project) {
+        if (!project || !project.configuration) return;
+        
+        const config = project.configuration;
+        
+        // 加载标签
+        if (config.tags) {
+            tagsModel.clear();
+            for (const tag of config.tags) {
+                tagsModel.append(tag);
+            }
+        }
+        
+        // 加载图层
+        if (config.layers) {
+            layersModel.clear();
+            for (const layer of config.layers) {
+                layersModel.append(layer);
+            }
+        }
+        
+        // 加载布局
+        if (config.layout) {
+            // 清空画布
+            if (canvas) {
+                for (let i = canvas.children.length - 1; i >= 0; i--) {
+                    canvas.children[i].destroy();
+                }
+            }
+            
+            // 加载组件
+            for (const itemInfo of config.layout) {
+                // 这里需要根据组件类型创建相应的组件
+                // 简化实现，实际项目中需要更复杂的组件创建逻辑
+                console.log("Loading component:", itemInfo.type);
+            }
+        }
+    }
+    
     // 拖拽辅助
     DragAndDropHelper {
         id: dragHelper
-        onItemDropped: {
-            if (target === canvas) {
-                // 将组件添加到画布
-                var newItem = Qt.createComponent("qrc:/qml/plugins/" + item.componentType + "/" + item.componentName + ".qml").createObject(canvas);
-                newItem.x = item.x;
-                newItem.y = item.y;
-                newItem.label = item.componentName + " " + canvas.children.length;
+        property Item canvas: canvas
+        
+        Component.onCompleted: {
+            init(canvas);
+        }
+        
+        function startDrag(componentType, componentName, mouseX, mouseY) {
+            // 查找组件信息
+            const componentInfo = componentLibrary.find(item => item.type === componentType + "." + componentName);
+            if (!componentInfo) return;
+            
+            // 创建组件
+            const component = Qt.createQmlObject('import QtQuick 2.15; import ' + componentType + ' 1.0; ' + componentName + ' {}', canvas);
+            if (component) {
+                // 设置初始属性
+                component.width = componentInfo.width;
+                component.height = componentInfo.height;
+                component.x = snapToGrid(mouseX - canvas.x - component.width / 2);
+                component.y = snapToGrid(mouseY - canvas.y - component.height / 2);
+                component.label = componentName + " " + canvas.children.length;
+                component.layer = currentLayer;
+                
+                // 设置拖拽处理
+                setupDragHandlers(component);
+                
+                // 添加到画布
+                canvas.appendChild(component);
+                
+                // 添加到模型
                 canvasItemsModel.append({
                     "id": canvas.children.length,
-                    "name": newItem.label,
-                    "type": item.componentType,
-                    "x": newItem.x,
-                    "y": newItem.y
+                    "name": component.label,
+                    "type": componentType,
+                    "x": component.x,
+                    "y": component.y
                 });
+                
+                // 选择并开始拖拽
+                selectItem(component);
+                startDrag(component, mouseX, mouseY);
             }
         }
+        
+        // 组件库模型
+        property var componentLibrary: [
+            { name: "Indicator", type: "BasicComponents.Indicator", width: 50, height: 50 },
+            { name: "PushButton", type: "BasicComponents.PushButton", width: 120, height: 40 },
+            { name: "TextLabel", type: "BasicComponents.TextLabel", width: 200, height: 40 },
+            { name: "Valve", type: "IndustrialComponents.Valve", width: 100, height: 100 },
+            { name: "Tank", type: "IndustrialComponents.Tank", width: 120, height: 180 },
+            { name: "Motor", type: "IndustrialComponents.Motor", width: 120, height: 120 },
+            { name: "Pump", type: "IndustrialComponents.Pump", width: 120, height: 120 },
+            { name: "Gauge", type: "IndustrialComponents.Gauge", width: 200, height: 200 },
+            { name: "IndustrialButton", type: "IndustrialComponents.IndustrialButton", width: 120, height: 60 },
+            { name: "IndustrialIndicator", type: "IndustrialComponents.IndustrialIndicator", width: 60, height: 60 },
+            { name: "TrendChart", type: "ChartComponents.TrendChart", width: 400, height: 300 },
+            { name: "BarChart", type: "ChartComponents.BarChart", width: 400, height: 300 }
+        ]
     }
     
     // 画布项目模型
@@ -51,6 +315,144 @@ ApplicationWindow {
             append({"name": "Tank1", "value": 0.75, "group": " Tanks", "isConnected": true});
             append({"name": "Temperature", "value": 25.5, "group": " Sensors", "isConnected": true});
             append({"name": "Pressure", "value": 10.2, "group": " Sensors", "isConnected": true});
+            
+            // 启动数据更新器
+            startDataUpdater();
+        }
+    }
+    
+    // 数据更新器
+    Timer {
+        id: dataUpdater
+        interval: 500 // 500ms 更新一次，确保延迟小于1秒
+        running: false
+        repeat: true
+        onTriggered: {
+            updateTagValues();
+        }
+    }
+    
+    // 启动数据更新器
+    function startDataUpdater() {
+        dataUpdater.running = true;
+        console.log("Data updater started with interval:", dataUpdater.interval, "ms");
+    }
+    
+    // 更新标签值
+    function updateTagValues() {
+        // 模拟实时数据更新
+        for (let i = 0; i < tagsModel.count; i++) {
+            const tag = tagsModel.get(i);
+            if (tag.isConnected) {
+                switch (tag.name) {
+                    case "Temperature":
+                        // 温度在25-26之间波动
+                        const newTemp = 25 + Math.random() * 1;
+                        tagsModel.setProperty(i, "value", newTemp.toFixed(1));
+                        // 更新绑定的组件
+                        updateComponentsFromTag(tag.name);
+                        break;
+                    case "Pressure":
+                        // 压力在10-10.5之间波动
+                        const newPressure = 10 + Math.random() * 0.5;
+                        tagsModel.setProperty(i, "value", newPressure.toFixed(1));
+                        // 更新绑定的组件
+                        updateComponentsFromTag(tag.name);
+                        break;
+                    case "Tank1":
+                        // 液位在0.7-0.8之间波动
+                        const newLevel = 0.7 + Math.random() * 0.1;
+                        tagsModel.setProperty(i, "value", newLevel.toFixed(2));
+                        // 更新绑定的组件
+                        updateComponentsFromTag(tag.name);
+                        break;
+                    case "Motor1":
+                    case "Valve1":
+                        // 开关状态随机变化（但频率较低）
+                        if (Math.random() < 0.1) {
+                            tagsModel.setProperty(i, "value", !tag.value);
+                            // 更新绑定的组件
+                            updateComponentsFromTag(tag.name);
+                        }
+                        break;
+                }
+            }
+        }
+    }
+    
+    // 绑定组件到标签
+    function bindComponentToTag(component, tagName) {
+        if (!component || !tagName) return;
+        
+        // 查找标签
+        let tagIndex = -1;
+        for (let i = 0; i < tagsModel.count; i++) {
+            if (tagsModel.get(i).name === tagName) {
+                tagIndex = i;
+                break;
+            }
+        }
+        
+        if (tagIndex >= 0) {
+            // 存储标签信息
+            component.tagName = tagName;
+            component.tagIndex = tagIndex;
+            
+            // 初始值绑定
+            updateComponentFromTag(component, tagIndex);
+            
+            // 跟踪绑定关系
+            if (!tagBindings[tagName]) {
+                tagBindings[tagName] = [];
+            }
+            tagBindings[tagName].push(component);
+            
+            console.log("Component bound to tag:", tagName);
+        }
+    }
+    
+    // 更新绑定到标签的所有组件
+    function updateComponentsFromTag(tagName) {
+        if (!tagBindings[tagName]) return;
+        
+        // 查找标签
+        let tagIndex = -1;
+        for (let i = 0; i < tagsModel.count; i++) {
+            if (tagsModel.get(i).name === tagName) {
+                tagIndex = i;
+                break;
+            }
+        }
+        
+        if (tagIndex >= 0) {
+            // 更新所有绑定的组件
+            const components = tagBindings[tagName];
+            for (const component of components) {
+                updateComponentFromTag(component, tagIndex);
+            }
+        }
+    }
+    
+    // 从标签更新组件
+    function updateComponentFromTag(component, tagIndex) {
+        if (!component || tagIndex < 0 || tagIndex >= tagsModel.count) return;
+        
+        const tag = tagsModel.get(tagIndex);
+        const tagValue = tag.value;
+        
+        // 根据组件类型更新
+        if (component instanceof IndustrialComponents.Gauge) {
+            component.value = parseFloat(tagValue);
+        } else if (component instanceof IndustrialComponents.IndustrialIndicator) {
+            component.value = (tagValue === true || tagValue === "true" || parseFloat(tagValue) > 0);
+        } else if (component instanceof IndustrialComponents.Motor) {
+            component.value = (tagValue === true || tagValue === "true" || parseFloat(tagValue) > 0);
+        } else if (component instanceof IndustrialComponents.Valve) {
+            component.value = (tagValue === true || tagValue === "true" || parseFloat(tagValue) > 0);
+        } else if (component instanceof IndustrialComponents.Tank) {
+            component.value = parseFloat(tagValue);
+        } else if (component instanceof BasicComponents.TextLabel) {
+            component.text = tagValue.toString();
         }
     }
     
@@ -67,10 +469,19 @@ ApplicationWindow {
             append({"name": "Valve", "type": "IndustrialComponents", "icon": "🔐"});
             append({"name": "Tank", "type": "IndustrialComponents", "icon": "📦"});
             append({"name": "Motor", "type": "IndustrialComponents", "icon": "⚙️"});
+            append({"name": "Pump", "type": "IndustrialComponents", "icon": "🔄"});
+            append({"name": "Gauge", "type": "IndustrialComponents", "icon": "📊"});
+            append({"name": "IndustrialButton", "type": "IndustrialComponents", "icon": "🔘"});
+            append({"name": "IndustrialIndicator", "type": "IndustrialComponents", "icon": "🔴"});
             
             // 添加图表组件
             append({"name": "TrendChart", "type": "ChartComponents", "icon": "📈"});
             append({"name": "BarChart", "type": "ChartComponents", "icon": "📊"});
+            
+            // 添加3D组件
+            append({"name": "ThreeDScene", "type": "ThreeDComponents", "icon": "🎯"});
+            append({"name": "ModelLoader", "type": "ThreeDComponents", "icon": "📦"});
+            append({"name": "CameraController", "type": "ThreeDComponents", "icon": "🎮"});
         }
     }
     
@@ -562,21 +973,24 @@ ApplicationWindow {
                                         
                                         MouseArea {
                                             anchors.fill: parent
+                                            hoverEnabled: true
+                                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                            
+                                            property var startMouseX: 0
+                                            property var startMouseY: 0
+                                            property var isDragging: false
+                                            
                                             onPressed: {
-                                                dragHelper.startDrag({componentType: model.type, componentName: model.name}, mouseX, mouseY);
+                                                startMouseX = mouseX;
+                                                startMouseY = mouseY;
+                                                isDragging = true;
+                                                // 开始拖拽组件
+                                                dragHelper.startDrag(model.type, model.name, mouseX, mouseY);
                                             }
-                                            onMouseXChanged: {
-                                                if (dragHelper.isDragging) {
-                                                    dragHelper.drag(mouseX, mouseY);
-                                                }
-                                            }
-                                            onMouseYChanged: {
-                                                if (dragHelper.isDragging) {
-                                                    dragHelper.drag(mouseX, mouseY);
-                                                }
-                                            }
+                                            
                                             onReleased: {
-                                                dragHelper.endDrag(canvas);
+                                                isDragging = false;
+                                                dragHelper.endDrag();
                                             }
                                         }
                                     }
@@ -601,10 +1015,108 @@ ApplicationWindow {
                                 font.bold: true
                             }
                             
-                            Button {
-                                text: "Save Configuration"
-                                onClicked: {
-                                    console.log("Configuration saved");
+                            ComboBox {
+                                id: layerCombo
+                                placeholderText: "Select Layer"
+                                model: layersModel
+                                currentIndex: 0
+                                onCurrentIndexChanged: {
+                                    // 切换当前图层
+                                    currentLayer = layerCombo.currentIndex;
+                                    updateLayerVisibility();
+                                }
+                            }
+                            
+                            RowLayout {
+                                spacing: 5
+                                Button {
+                                    text: "Add Layer"
+                                    onClicked: {
+                                        const layerName = "Layer " + (layersModel.count + 1);
+                                        layersModel.append({name: layerName, visible: true});
+                                        layerCombo.currentIndex = layersModel.count - 1;
+                                    }
+                                }
+                                Button {
+                                    text: "Delete Layer"
+                                    onClicked: {
+                                        if (layersModel.count > 1) {
+                                            layersModel.remove(layerCombo.currentIndex);
+                                            layerCombo.currentIndex = Math.min(layerCombo.currentIndex, layersModel.count - 1);
+                                        }
+                                    }
+                                }
+                                Button {
+                                    text: "Toggle Visibility"
+                                    onClicked: {
+                                        if (layerCombo.currentIndex >= 0) {
+                                            const layer = layersModel.get(layerCombo.currentIndex);
+                                            layer.visible = !layer.visible;
+                                            updateLayerVisibility();
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            RowLayout {
+                                spacing: 5
+                                Button {
+                                    text: "Save Configuration"
+                                    onClicked: {
+                                        saveConfiguration();
+                                    }
+                                }
+                                Button {
+                                    text: "Export Project"
+                                    onClicked: {
+                                        exportProject();
+                                    }
+                                }
+                                Button {
+                                    text: "Import Project"
+                                    onClicked: {
+                                        importProject();
+                                    }
+                                }
+                            }
+                            
+                            RowLayout {
+                                spacing: 5
+                                
+                                Button {
+                                    text: "Align Left"
+                                    onClicked: {
+                                        if (typeof dragHelper !== 'undefined' && dragHelper.alignItems) {
+                                            dragHelper.alignItems("left");
+                                        }
+                                    }
+                                }
+                                
+                                Button {
+                                    text: "Align Top"
+                                    onClicked: {
+                                        if (typeof dragHelper !== 'undefined' && dragHelper.alignItems) {
+                                            dragHelper.alignItems("top");
+                                        }
+                                    }
+                                }
+                                
+                                Button {
+                                    text: "Align Center"
+                                    onClicked: {
+                                        if (typeof dragHelper !== 'undefined' && dragHelper.alignItems) {
+                                            dragHelper.alignItems("center");
+                                        }
+                                    }
+                                }
+                                
+                                Button {
+                                    text: "Distribute"
+                                    onClicked: {
+                                        if (typeof dragHelper !== 'undefined' && dragHelper.distributeItems) {
+                                            dragHelper.distributeItems("horizontal");
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -822,77 +1334,77 @@ ApplicationWindow {
             }
         }
     }
-}
 
-// 卡片组件
-Component {
-    id: cardComponent
-    
-    Rectangle {
-        id: card
-        property string title: "Card"
+    // 卡片组件
+    Component {
+        id: cardComponent
         
-        color: "#FFFFFF"
-        border.color: "#E0E0E0"
-        border.width: 1
-        radius: 4
-        
-        ColumnLayout {
-            anchors.fill: parent
-            spacing: 10
+        Rectangle {
+            id: card
+            property string title: "Card"
             
-            Text {
-                text: card.title
-                font.pixelSize: 16
-                font.bold: true
-                color: "#333333"
-                Layout.leftMargin: 15
-                Layout.topMargin: 15
-                Layout.fillWidth: true
-            }
+            color: "#FFFFFF"
+            border.color: "#E0E0E0"
+            border.width: 1
+            radius: 4
             
-            Item {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.margins: 15
+            ColumnLayout {
+                anchors.fill: parent
+                spacing: 10
                 
-                contentItem.parent = this
+                Text {
+                    text: card.title
+                    font.pixelSize: 16
+                    font.bold: true
+                    color: "#333333"
+                    Layout.leftMargin: 15
+                    Layout.topMargin: 15
+                    Layout.fillWidth: true
+                }
+                
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    Layout.margins: 15
+                    
+                    contentItem.parent = this
+                }
             }
         }
     }
-}
 
-// 卡片控件
-Card {
-    id: card
-    property alias contentItem: contentItem
-    
-    Rectangle {
+    // 卡片控件
+    Card {
         id: card
-        color: "#FFFFFF"
-        border.color: "#E0E0E0"
-        border.width: 1
-        radius: 4
+        property alias contentItem: contentItem
         
-        ColumnLayout {
-            anchors.fill: parent
-            spacing: 10
+        Rectangle {
+            id: card
+            color: "#FFFFFF"
+            border.color: "#E0E0E0"
+            border.width: 1
+            radius: 4
             
-            Text {
-                text: card.title
-                font.pixelSize: 16
-                font.bold: true
-                color: "#333333"
-                Layout.leftMargin: 15
-                Layout.topMargin: 15
-                Layout.fillWidth: true
-            }
-            
-            Item {
-                id: contentItem
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.margins: 15
+            ColumnLayout {
+                anchors.fill: parent
+                spacing: 10
+                
+                Text {
+                    text: card.title
+                    font.pixelSize: 16
+                    font.bold: true
+                    color: "#333333"
+                    Layout.leftMargin: 15
+                    Layout.topMargin: 15
+                    Layout.fillWidth: true
+                }
+                
+                Item {
+                    id: contentItem
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    Layout.margins: 15
+                }
             }
         }
     }

@@ -32,6 +32,7 @@ public:
     bool writeHoldingRegister(int address, quint16 value);
 
     // Batch operations
+    bool readCoils(int startAddress, int count, QVector<bool> &values);
     bool readMultipleCoils(int startAddress, int count, QVector<bool> &values);
     bool readMultipleHoldingRegisters(int startAddress, int count, QVector<quint16> &values);
     bool writeMultipleCoils(int startAddress, const QVector<bool> &values);
