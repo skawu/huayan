@@ -2,10 +2,15 @@
 #define MQTTDATASOURCE_H
 
 #include <QObject>
-#include <QMqttClient>
 #include <QTimer>
 #include <QMutex>
 #include "../core/tagmanager.h"
+
+// Conditionally include Mqtt headers if available
+#ifdef HAVE_MQTT
+#include <QMqttClient>
+#include <QMqttMessage>
+#endif
 
 /**
  * @file mqttdatasource.h
@@ -103,13 +108,13 @@ private slots:
      * @brief 连接状态变化槽函数
      * @param state 连接状态
      */
-    void onConnectionStateChanged(QMqttClient::ClientState state);
+    void onConnectionStateChanged(int state);
     
     /**
      * @brief 消息接收槽函数
      * @param message 接收到的消息
      */
-    void onMessageReceived(const QMqttMessage &message);
+    void onMessageReceived(const QByteArray &message, const QString &topic);
     
     /**
      * @brief 定期同步数据
@@ -118,7 +123,7 @@ private slots:
 
 private:
     HYTagManager *m_tagManager; ///< 点位管理器指针
-    QMqttClient *m_client; ///< MQTT客户端
+    void *m_client; ///< MQTT客户端
     QTimer *m_syncTimer; ///< 同步定时器
     QMutex m_mutex; ///< 互斥锁
     

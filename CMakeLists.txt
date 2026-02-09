@@ -47,9 +47,12 @@ endif()
 # Qt 6 standard project setup
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Quick Network SerialBus Sql Charts QuickControls2)
 
-# Try to find OpcUa component (optional)
+# Try to find optional Qt components
 find_package(Qt6 COMPONENTS OpcUa QUIET)
 set(HAVE_OPCUA ${Qt6OpcUa_FOUND})
+
+find_package(Qt6 COMPONENTS Mqtt QUIET)
+set(HAVE_MQTT ${Qt6Mqtt_FOUND})
 
 qt_standard_project_setup()
 

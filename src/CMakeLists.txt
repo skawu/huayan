@@ -9,6 +9,14 @@ qt_add_executable(SCADASystem
     communication/hymodbustcpdriver.cpp
     core/tagmanager.cpp
     core/dataprocessor.cpp
+    core/chartdatamodel.cpp
+    core/chartdatamodel.h
+    datasource/modbusdatasource.cpp
+    datasource/modbusdatasource.h
+    datasource/mqttdatasource.cpp
+    datasource/mqttdatasource.h
+    datasource/opcuadatasource.cpp
+    datasource/opcuadatasource.h
     communication/hymodbustcpdriver.h
     core/tagmanager.h
     core/dataprocessor.h
@@ -39,6 +47,12 @@ target_link_libraries(SCADASystem PRIVATE
 if(HAVE_OPCUA)
     target_link_libraries(SCADASystem PRIVATE Qt6::OpcUa)
     target_compile_definitions(SCADASystem PRIVATE HAVE_OPCUA=1)
+endif()
+
+# Link Mqtt if available
+if(HAVE_MQTT)
+    target_link_libraries(SCADASystem PRIVATE Qt6::Mqtt)
+    target_compile_definitions(SCADASystem PRIVATE HAVE_MQTT=1)
 endif()
 
 # Set properties

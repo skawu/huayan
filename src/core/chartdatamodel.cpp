@@ -15,9 +15,12 @@
 ChartDataModel::ChartDataModel(HYTagManager *tagManager, QObject *parent) 
     : QAbstractTableModel(parent),
       m_tagManager(tagManager),
-      m_dataPointLimit(10000), // 默认限制10000个数据点
+      m_dataPoints(),
+      m_seriesInfo(),
       m_startTime(QDateTime::currentDateTime().addDays(-1)),
-      m_endTime(QDateTime::currentDateTime())
+      m_endTime(QDateTime::currentDateTime()),
+      m_dataPointLimit(10000), // 默认限制10000个数据点
+      m_mutex()
 {
 }
 
@@ -200,7 +203,7 @@ bool ChartDataModel::setPresetTimeRange(const QString &preset)
     QDateTime startTime;
 
     if (preset == "1h") {
-        startTime = endTime.addHours(-1);
+        startTime = endTime.addSecs(-3600); // 1 hour = 3600 seconds
     } else if (preset == "1d") {
         startTime = endTime.addDays(-1);
     } else if (preset == "7d") {
