@@ -11,7 +11,7 @@ qt_add_qml_module(ThreeDComponents
         ThreeDScene.qml
         ModelLoader.qml
         CameraController.qml
-    OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/ThreeDComponents
+    OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml/plugins/ThreeDComponents
 )
 
 # Link libraries

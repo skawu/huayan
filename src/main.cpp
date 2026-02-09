@@ -91,6 +91,42 @@ int main(int argc, char *argv[])
         }
     }
     engine.addImportPath(qmlPath);
+    
+    // 添加QML插件路径
+    // 尝试多种可能的插件路径
+    QStringList pluginPaths;
+    pluginPaths << qmlPath + "/plugins";
+    pluginPaths << QCoreApplication::applicationDirPath() + "/qml/plugins";
+    pluginPaths << QCoreApplication::applicationDirPath() + "/../qml/plugins";
+    pluginPaths << QDir::currentPath() + "/qml/plugins";
+    pluginPaths << QDir::currentPath() + "/../qml/plugins";
+    
+    // 添加所有可能的插件路径
+    for (const QString &path : pluginPaths) {
+        if (QDir(path).exists()) {
+            engine.addImportPath(path);
+        }
+    }
+    
+    // 添加构建目录中的插件路径
+    QString buildPluginPath = QString::fromLocal8Bit("%1/qml/plugins").arg(QDir::tempPath());
+    QDir buildDir = QDir::current();
+    if (buildDir.dirName() == "build" || buildDir.dirName().contains("build")) {
+        buildPluginPath = buildDir.absolutePath() + "/qml/plugins";
+    } else {
+        // 尝试在常见的构建目录中查找
+        QDir parentDir = buildDir;
+        if (parentDir.cdUp()) {
+            QDir buildDirCandidate = parentDir.absolutePath() + "/build";
+            if (buildDirCandidate.exists()) {
+                buildPluginPath = buildDirCandidate.absolutePath() + "/qml/plugins";
+            }
+        }
+    }
+    
+    if (QDir(buildPluginPath).exists()) {
+        engine.addImportPath(buildPluginPath);
+    }
 
     // 加载QML主文件
     QString mainQmlPath = qmlPath + "/main.qml";
