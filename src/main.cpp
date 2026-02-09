@@ -4,13 +4,93 @@
 #include <QDir>
 #include <QFile>
 #include <QDebug>
+#include <QStandardPaths>
 
 #include "communication/hymodbustcpdriver.h"
 #include "core/tagmanager.h"
 #include "core/dataprocessor.h"
 
-int main(int argc, char *argv[])
-{
+// Helper function to find QML files and import paths
+class QmlPathFinder {
+public:
+    static QString findMainQmlFile() {
+        // Try to find main.qml using standard directory structures
+        QStringList searchPaths = getSearchPaths();
+        
+        for (const QString &basePath : searchPaths) {
+            QString qmlPath = basePath + "/main.qml";
+            if (QFile::exists(qmlPath)) {
+                qDebug() << "Found main.qml at:" << qmlPath;
+                return qmlPath;
+            }
+        }
+        
+        qDebug() << "Failed to find main.qml in any location";
+        logDirectoryInfo();
+        return QString();
+    }
+    
+    static QStringList getQmlImportPaths() {
+        QStringList importPaths;
+        QStringList searchPaths = getSearchPaths();
+        
+        for (const QString &basePath : searchPaths) {
+            // Add both the base path and its plugins subdirectory
+            if (QDir(basePath).exists()) {
+                importPaths << basePath;
+                qDebug() << "Added QML import path:" << basePath;
+            }
+            
+            QString pluginsPath = basePath + "/plugins";
+            if (QDir(pluginsPath).exists()) {
+                importPaths << pluginsPath;
+                qDebug() << "Added QML import path:" << pluginsPath;
+            }
+        }
+        
+        return importPaths;
+    }
+    
+private:
+    static QStringList getSearchPaths() {
+        QStringList paths;
+        
+        // 1. Paths relative to current working directory
+        paths << QDir::currentPath() + "/qml";
+        paths << QDir::currentPath() + "/../qml";
+        paths << QDir::currentPath() + "/../../qml";
+        
+        // 2. Paths relative to executable directory
+        QString exePath = QCoreApplication::applicationDirPath();
+        paths << exePath + "/qml";
+        paths << exePath + "/../qml";
+        paths << exePath + "/../../qml";
+        paths << exePath + "/../../../qml";
+        
+        // 3. Environment variable override
+        QString envPath = qgetenv("QML_IMPORT_PATH");
+        if (!envPath.isEmpty()) {
+            paths << envPath;
+        }
+        
+        return paths;
+    }
+    
+    static void logDirectoryInfo() {
+        qDebug() << "Current working directory:" << QDir::currentPath();
+        qDebug() << "Application directory:" << QCoreApplication::applicationDirPath();
+        
+        // List current directory contents
+        QDir currentDir(QDir::currentPath());
+        qDebug() << "Current directory contents:" << currentDir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
+        
+        // List application directory contents
+        QDir appDir(QCoreApplication::applicationDirPath());
+        qDebug() << "Application directory contents:" << appDir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
+    }
+};
+
+int main(int argc, char *argv[]) {
     // Set Qt application attributes
     // High DPI scaling is always enabled in Qt 6, no need to set these attributes
 
@@ -20,41 +100,10 @@ int main(int argc, char *argv[])
     // Create QML engine
     QQmlApplicationEngine engine;
 
-    // Add QML import paths
-    // Try multiple import paths to handle different build directory structures
-    QStringList importPaths = {
-        // From current working directory
-        QDir::currentPath() + "/qml",
-        QDir::currentPath() + "/qml/plugins",
-        QDir::currentPath() + "/../qml",
-        QDir::currentPath() + "/../qml/plugins",
-        QDir::currentPath() + "/../../qml",
-        QDir::currentPath() + "/../../qml/plugins",
-        
-        // From executable directory
-        QCoreApplication::applicationDirPath() + "/qml",
-        QCoreApplication::applicationDirPath() + "/qml/plugins",
-        QCoreApplication::applicationDirPath() + "/../qml",
-        QCoreApplication::applicationDirPath() + "/../qml/plugins",
-        QCoreApplication::applicationDirPath() + "/../../qml",
-        QCoreApplication::applicationDirPath() + "/../../qml/plugins",
-        QCoreApplication::applicationDirPath() + "/../../../qml",
-        QCoreApplication::applicationDirPath() + "/../../../qml/plugins",
-        
-        // For Qt Creator Desktop_Qt_6_8_3-Debug build
-        QCoreApplication::applicationDirPath() + "/../../qml",
-        QCoreApplication::applicationDirPath() + "/../../qml/plugins",
-        
-        // Source directory paths (fallback)
-        QCoreApplication::applicationDirPath() + "/../../../../qml",
-        QCoreApplication::applicationDirPath() + "/../../../../qml/plugins"
-    };
-    
+    // Add QML import paths using helper function
+    QStringList importPaths = QmlPathFinder::getQmlImportPaths();
     for (const QString &path : importPaths) {
-        if (QDir(path).exists()) {
-            engine.addImportPath(path);
-            qDebug() << "Added QML import path:" << path;
-        }
+        engine.addImportPath(path);
     }
 
     // Create core modules
@@ -87,73 +136,25 @@ int main(int argc, char *argv[])
     // Start data collection
     dataProcessor->startDataCollection(1000); // 1 second interval
 
-    // Load main QML file from file system path
-    // Start with file system path directly
-    QUrl url;
-    bool found = false;
-    
-    // Try relative paths from current working directory
-    QStringList relativePaths = {
-        "./qml/main.qml",
-        "qml/main.qml",
-        "./../qml/main.qml",
-        "../qml/main.qml",
-        "./../../qml/main.qml",
-        "../../qml/main.qml"
-    };
-    
-    for (const QString &relativePath : relativePaths) {
-        QString qmlPath = QDir::currentPath() + "/" + relativePath;
-        if (QFile::exists(qmlPath)) {
-            url = QUrl::fromLocalFile(qmlPath);
-            qDebug() << "Using relative path for QML:" << qmlPath;
-            found = true;
-            break;
-        }
+    // Find and load main QML file
+    QString mainQmlPath = QmlPathFinder::findMainQmlFile();
+    if (mainQmlPath.isEmpty()) {
+        qCritical() << "Failed to find main.qml. Exiting.";
+        return -1;
     }
     
-    // Try paths relative to executable location
-    if (!found) {
-        QString exePath = QCoreApplication::applicationDirPath();
-        QStringList exeRelativePaths = {
-            "./qml/main.qml",
-            "qml/main.qml",
-            "./../qml/main.qml",
-            "../qml/main.qml",
-            "./../../qml/main.qml",
-            "../../qml/main.qml"
-        };
-        
-        for (const QString &relativePath : exeRelativePaths) {
-            QString qmlPath = exePath + "/" + relativePath;
-            if (QFile::exists(qmlPath)) {
-                url = QUrl::fromLocalFile(qmlPath);
-                qDebug() << "Using executable relative path for QML:" << qmlPath;
-                found = true;
-                break;
-            }
-        }
-    }
+    QUrl url = QUrl::fromLocalFile(mainQmlPath);
     
-    if (!found) {
-        qDebug() << "Failed to find main.qml in any location";
-        qDebug() << "Current working directory:" << QDir::currentPath();
-        qDebug() << "Application directory:" << QCoreApplication::applicationDirPath();
-        
-        // Try to list directory contents to help debug
-        QDir currentDir(QDir::currentPath());
-        qDebug() << "Current directory contents:" << currentDir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
-    }
-    
+    // Connect error handling
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
         if (!obj && url == objUrl) {
-            qDebug() << "Failed to load QML file:" << url.toString();
+            qCritical() << "Failed to load QML file:" << url.toString();
             QCoreApplication::exit(-1);
         }
     }, Qt::QueuedConnection);
 
-    qDebug() << "Attempting to load QML from:" << url.toString();
+    qDebug() << "Loading QML from:" << url.toString();
     engine.load(url);
 
     // Run application
