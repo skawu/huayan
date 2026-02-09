@@ -17,9 +17,6 @@ qt_add_executable(SCADASystem
 qt_add_qml_module(SCADASystemQml
     URI SCADASystemQml
     VERSION 1.0
-    QML_FILES
-        ../qml/main.qml
-        ../qml/DragAndDropHelper.qml
     RESOURCES
         resources.qrc
 )
