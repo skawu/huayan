@@ -6,8 +6,6 @@ Item {
     id: threeDScene
     
     property string sceneName: "3D Scene"
-    property int width: 800
-    property int height: 600
     property real cameraDistance: 500
     property real cameraAzimuth: 45
     property real cameraElevation: 30
