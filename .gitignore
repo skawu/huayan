@@ -22,6 +22,24 @@ Makefile*
 .qtc_clangd/
 .cxx/
 
+# 编译产物
+*.so
+*.dll
+*.dylib
+*.lib
+*.a
+
+# CMake 生成的文件
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+
+# QML 插件产物
+qml/plugins/**/*.so
+qml/plugins/**/*.dll
+qml/plugins/**/*.dylib
+
 # IDE 相关
 .idea/
 .vscode/
