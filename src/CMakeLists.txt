@@ -103,6 +103,15 @@ add_custom_command(TARGET SCADASystem POST_BUILD
     COMMENT "Copying QML files to executable directory"
 )
 
+# Also copy built QML plugins to the bin directory
+# This ensures that the plugins are available in the same directory as the executable
+add_custom_command(TARGET SCADASystem POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_BINARY_DIR}/qml/plugins
+        ${CMAKE_BINARY_DIR}/bin/qml/plugins
+    COMMENT "Copying built QML plugins to bin directory"
+)
+
 # Ensure the plugins directory exists in build directory
 add_custom_command(TARGET SCADASystem PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory
