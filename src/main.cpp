@@ -2,6 +2,8 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QDir>
+#include <QFile>
+#include <QDebug>
 
 #include "communication/hymodbustcpdriver.h"
 #include "core/tagmanager.h"
@@ -53,15 +55,35 @@ int main(int argc, char *argv[])
     // Start data collection
     dataProcessor->startDataCollection(1000); // 1 second interval
 
-    // Load main QML file
-    const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
+    // Load main QML file with fallback
+    QUrl url = QUrl(QStringLiteral("qrc:/qml/main.qml"));
+    
+    // Fallback to file system path if resource path fails
+    if (!QFile::exists(":/qml/main.qml")) {
+        QString qmlPath = QDir::currentPath() + "/qml/main.qml";
+        if (QFile::exists(qmlPath)) {
+            url = QUrl::fromLocalFile(qmlPath);
+            qDebug() << "Using file system path for QML:" << qmlPath;
+        } else {
+            qmlPath = QDir::homePath() + "/workspace/project/qml/main.qml";
+            if (QFile::exists(qmlPath)) {
+                url = QUrl::fromLocalFile(qmlPath);
+                qDebug() << "Using home path for QML:" << qmlPath;
+            } else {
+                qDebug() << "Failed to find main.qml in any location";
+            }
+        }
+    }
+    
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
         if (!obj && url == objUrl) {
+            qDebug() << "Failed to load QML file:" << url.toString();
             QCoreApplication::exit(-1);
         }
     }, Qt::QueuedConnection);
 
+    qDebug() << "Attempting to load QML from:" << url.toString();
     engine.load(url);
 
     // Run application
