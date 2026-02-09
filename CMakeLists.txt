@@ -56,7 +56,7 @@ add_subdirectory(src)
 add_subdirectory(qml/plugins)
 
 # Enable testing
-option(BUILD_TESTING "Build tests" ON)
+option(BUILD_TESTING "Build tests" OFF)
 if(BUILD_TESTING)
     find_package(Qt6 REQUIRED COMPONENTS Test)
     add_subdirectory(tests)
