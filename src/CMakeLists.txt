@@ -32,9 +32,14 @@ target_link_libraries(SCADASystem PRIVATE
     Qt6::Sql
     Qt6::Charts
     Qt6::QuickControls2
-    Qt6::OpcUa
     SCADASystemQml
 )
+
+# Link OpcUa if available
+if(HAVE_OPCUA)
+    target_link_libraries(SCADASystem PRIVATE Qt6::OpcUa)
+    target_compile_definitions(SCADASystem PRIVATE HAVE_OPCUA=1)
+endif()
 
 # Set properties
 set_target_properties(SCADASystem PROPERTIES

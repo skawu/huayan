@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>qml/main.qml</file>
+    <file>qml/3d/Huayan3DView.qml</file>
+</qresource>
+</RCC>
