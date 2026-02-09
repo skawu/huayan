@@ -49,3 +49,18 @@ install(TARGETS SCADASystem
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/qml/plugins
     DESTINATION ${CMAKE_INSTALL_PREFIX}/qml
 )
+
+# Copy QML files and plugins to build directory for development
+add_custom_command(TARGET SCADASystem POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/qml
+        ${CMAKE_BINARY_DIR}/qml
+    COMMENT "Copying QML files to build directory"
+)
+
+# Ensure the plugins directory exists in build directory
+add_custom_command(TARGET SCADASystem PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        ${CMAKE_BINARY_DIR}/qml/plugins
+    COMMENT "Creating QML plugins directory in build directory"
+)
