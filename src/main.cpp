@@ -131,15 +131,27 @@ int main(int argc, char *argv[])
         engine.addImportPath(buildPluginPath);
     }
 
+    // 连接QML引擎的错误信号，获取详细错误信息
+    QObject::connect(&engine, &QQmlApplicationEngine::warnings, [](const QList<QQmlError> &warnings) {
+        for (const QQmlError &warning : warnings) {
+            qWarning() << "QML Warning:" << warning.toString();
+        }
+    });
+
     // 加载QML主文件
     QString mainQmlPath = qmlPath + "/main.qml";
     const QUrl url = QUrl::fromLocalFile(mainQmlPath);
+    
+    qDebug() << "Loading QML file from:" << mainQmlPath;
     engine.load(url);
 
     // 检查QML加载是否成功
     if (engine.rootObjects().isEmpty()) {
+        qCritical() << "Failed to load QML file. Check if main.qml exists at:" << mainQmlPath;
+        qCritical() << "Current QML import paths:" << engine.importPathList();
         return -1;
     }
+    qDebug() << "QML file loaded successfully!";
 
     // 获取主窗口
     QQuickWindow *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
