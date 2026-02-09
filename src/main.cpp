@@ -22,8 +22,28 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     // Add QML import paths
-    engine.addImportPath(QDir::currentPath() + "/qml");
-    engine.addImportPath(QDir::currentPath() + "/qml/plugins");
+    // Try multiple import paths to handle different build directory structures
+    QStringList importPaths = {
+        QDir::currentPath() + "/qml",
+        QDir::currentPath() + "/qml/plugins",
+        QDir::currentPath() + "/../qml",
+        QDir::currentPath() + "/../qml/plugins",
+        QDir::currentPath() + "/../../qml",
+        QDir::currentPath() + "/../../qml/plugins",
+        QCoreApplication::applicationDirPath() + "/qml",
+        QCoreApplication::applicationDirPath() + "/qml/plugins",
+        QCoreApplication::applicationDirPath() + "/../qml",
+        QCoreApplication::applicationDirPath() + "/../qml/plugins",
+        QCoreApplication::applicationDirPath() + "/../../qml",
+        QCoreApplication::applicationDirPath() + "/../../qml/plugins"
+    };
+    
+    for (const QString &path : importPaths) {
+        if (QDir(path).exists()) {
+            engine.addImportPath(path);
+            qDebug() << "Added QML import path:" << path;
+        }
+    }
 
     // Create core modules
     HYModbusTcpDriver *modbusDriver = new HYModbusTcpDriver(&app);
