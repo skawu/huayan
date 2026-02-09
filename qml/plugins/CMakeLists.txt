@@ -4,3 +4,4 @@
 add_subdirectory(BasicComponents)
 add_subdirectory(IndustrialComponents)
 add_subdirectory(ChartComponents)
+add_subdirectory(ControlComponents)

@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.15
 import BasicComponents 1.0
 import IndustrialComponents 1.0
 import ChartComponents 1.0
+import ControlComponents 1.0
 
 ApplicationWindow {
     id: mainWindow
@@ -221,6 +222,21 @@ ApplicationWindow {
                             width: parent.width
                             height: 2
                             color: mainTabView.currentIndex === 3 ? "#3498DB" : "transparent"
+                        }
+                    }
+                }
+
+                TabButton {
+                    text: "Alarm & Event Management"
+                    font.pointSize: 12
+                    font.bold: true
+                    color: mainTabView.currentIndex === 4 ? "#3498DB" : "#BDC3C7"
+                    background: Rectangle {
+                        color: mainTabView.currentIndex === 4 ? "#2C2C2C" : "transparent"
+                        border.bottom: Rectangle {
+                            width: parent.width
+                            height: 2
+                            color: mainTabView.currentIndex === 4 ? "#3498DB" : "transparent"
                         }
                     }
                 }
@@ -719,6 +735,43 @@ ApplicationWindow {
                                         }
                                     }
                                 }
+
+                                // Control components section
+                                ColumnLayout {
+                                    spacing: 8
+
+                                    Text {
+                                        text: "Control Components"
+                                        font.bold: true
+                                        color: "#BDC3C7"
+                                    }
+
+                                    ColumnLayout {
+                                        spacing: 5
+
+                                        Button {
+                                            text: "Slider"
+                                            width: parent.width
+                                            height: 35
+                                            color: "#34495E"
+                                            textColor: "white"
+                                            onClicked: {
+                                                dragDropHelper.startDragFromLibrary("ControlComponents.Slider", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
+                                            }
+                                        }
+
+                                        Button {
+                                            text: "Knob"
+                                            width: parent.width
+                                            height: 35
+                                            color: "#34495E"
+                                            textColor: "white"
+                                            onClicked: {
+                                                dragDropHelper.startDragFromLibrary("ControlComponents.Knob", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
 
@@ -1078,6 +1131,409 @@ ApplicationWindow {
                                         width: parent.width
                                         height: 180
                                         title: "Bar Chart"
+                                    }
+                                }
+                            }
+                        }
+
+                        // Control components card
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            color: "#2C2C2C"
+                            radius: 4
+                            border.color: "#34495E"
+                            border.width: 1
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: 15
+                                spacing: 15
+
+                                Text {
+                                    text: "Control Components"
+                                    font.bold: true
+                                    font.pointSize: 14
+                                    color: "#3498DB"
+                                }
+
+                                ColumnLayout {
+                                    spacing: 15
+                                    Layout.fillWidth: true
+
+                                    Slider {
+                                        width: parent.width
+                                        height: 60
+                                        label: "Temperature"
+                                        unit: "°C"
+                                        value: 75
+                                    }
+
+                                    Knob {
+                                        width: 120
+                                        height: 150
+                                        label: "Pressure"
+                                        unit: "bar"
+                                        value: 60
+                                        Layout.alignment: Qt.AlignCenter
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Alarm & Event Management tab
+            Tab {
+                Rectangle {
+                    anchors.fill: parent
+                    color: "#1E1E1E"
+
+                    SplitView {
+                        anchors.fill: parent
+                        orientation: Qt.Horizontal
+                        handleDelegate: Rectangle {
+                            width: 2
+                            color: "#34495E"
+                        }
+
+                        // Alarm configuration panel
+                        Rectangle {
+                            id: alarmConfigPanel
+                            width: 300
+                            color: "#2C2C2C"
+                            border.right: Rectangle {
+                                width: 1
+                                height: parent.height
+                                color: "#34495E"
+                            }
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: 15
+                                spacing: 15
+
+                                Text {
+                                    text: "Alarm Configuration"
+                                    font.bold: true
+                                    font.pointSize: 14
+                                    color: "#3498DB"
+                                }
+
+                                // Alarm list
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    color: "#34495E"
+                                    radius: 4
+
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 10
+                                        spacing: 10
+
+                                        RowLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 10
+
+                                            Text {
+                                                text: "Name"
+                                                font.bold: true
+                                                color: "#BDC3C7"
+                                                Layout.preferredWidth: 100
+                                            }
+
+                                            Text {
+                                                text: "Type"
+                                                font.bold: true
+                                                color: "#BDC3C7"
+                                                Layout.preferredWidth: 80
+                                            }
+
+                                            Text {
+                                                text: "Status"
+                                                font.bold: true
+                                                color: "#BDC3C7"
+                                                Layout.fillWidth: true
+                                            }
+                                        }
+
+                                        // Alarm items
+                                        Repeater {
+                                            model: [
+                                                { name: "High Temperature", type: "Warning", status: "Active" },
+                                                { name: "Low Pressure", type: "Critical", status: "Inactive" },
+                                                { name: "Tank Overflow", type: "Critical", status: "Inactive" },
+                                                { name: "Motor Fault", type: "Warning", status: "Inactive" },
+                                                { name: "Valve Stuck", type: "Warning", status: "Inactive" }
+                                            ]
+
+                                            RowLayout {
+                                                Layout.fillWidth: true
+                                                spacing: 10
+
+                                                Text {
+                                                    text: modelData.name
+                                                    color: "#BDC3C7"
+                                                    Layout.preferredWidth: 100
+                                                    elide: Text.ElideRight
+                                                }
+
+                                                Text {
+                                                    text: modelData.type
+                                                    color: modelData.type === "Critical" ? "#E74C3C" : "#F39C12"
+                                                    Layout.preferredWidth: 80
+                                                }
+
+                                                Text {
+                                                    text: modelData.status
+                                                    color: modelData.status === "Active" ? "#E74C3C" : "#27AE60"
+                                                    Layout.fillWidth: true
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Event logs panel
+                        Rectangle {
+                            id: eventLogsPanel
+                            color: "#1E1E1E"
+                            SplitView.fillWidth: true
+                            SplitView.fillHeight: true
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: 15
+                                spacing: 15
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 10
+
+                                    Text {
+                                        text: "Event Logs"
+                                        font.bold: true
+                                        font.pointSize: 14
+                                        color: "#3498DB"
+                                        Layout.fillWidth: true
+                                    }
+
+                                    Button {
+                                        text: "Clear Logs"
+                                        width: 100
+                                        height: 35
+                                        color: "#E74C3C"
+                                        textColor: "white"
+                                    }
+                                }
+
+                                // Event log table
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    color: "#34495E"
+                                    radius: 4
+
+                                    TableView {
+                                        anchors.fill: parent
+                                        anchors.margins: 5
+                                        model: [
+                                            { time: "2024-01-01 12:30:45", type: "Alarm", source: "Temperature Sensor", message: "High temperature detected" },
+                                            { time: "2024-01-01 12:25:30", type: "Event", source: "Motor 1", message: "Motor started" },
+                                            { time: "2024-01-01 12:20:15", type: "Event", source: "Valve 2", message: "Valve opened" },
+                                            { time: "2024-01-01 12:15:00", type: "Alarm", source: "Pressure Sensor", message: "Low pressure detected" },
+                                            { time: "2024-01-01 12:10:45", type: "Event", source: "System", message: "System started" }
+                                        ]
+
+                                        TableViewColumn {
+                                            role: "time"
+                                            title: "Time"
+                                            width: 150
+                                            delegate: Text {
+                                                text: modelData.time
+                                                color: "#BDC3C7"
+                                                padding: 5
+                                            }
+                                        }
+
+                                        TableViewColumn {
+                                            role: "type"
+                                            title: "Type"
+                                            width: 80
+                                            delegate: Text {
+                                                text: modelData.type
+                                                color: modelData.type === "Alarm" ? "#E74C3C" : "#3498DB"
+                                                font.bold: true
+                                                padding: 5
+                                            }
+                                        }
+
+                                        TableViewColumn {
+                                            role: "source"
+                                            title: "Source"
+                                            width: 150
+                                            delegate: Text {
+                                                text: modelData.source
+                                                color: "#BDC3C7"
+                                                padding: 5
+                                            }
+                                        }
+
+                                        TableViewColumn {
+                                            role: "message"
+                                            title: "Message"
+                                            width: 400
+                                            delegate: Text {
+                                                text: modelData.message
+                                                color: "#BDC3C7"
+                                                padding: 5
+                                                elide: Text.ElideRight
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Notification settings panel
+                        Rectangle {
+                            id: notificationPanel
+                            width: 250
+                            color: "#2C2C2C"
+                            border.left: Rectangle {
+                                width: 1
+                                height: parent.height
+                                color: "#34495E"
+                            }
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: 15
+                                spacing: 15
+
+                                Text {
+                                    text: "Notification Settings"
+                                    font.bold: true
+                                    font.pointSize: 14
+                                    color: "#3498DB"
+                                }
+
+                                // Notification options
+                                ColumnLayout {
+                                    spacing: 10
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 10
+
+                                        Text {
+                                            text: "Email Notifications"
+                                            color: "#BDC3C7"
+                                            Layout.fillWidth: true
+                                        }
+
+                                        Switch {
+                                            checked: true
+                                        }
+                                    }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 10
+
+                                        Text {
+                                            text: "SMS Notifications"
+                                            color: "#BDC3C7"
+                                            Layout.fillWidth: true
+                                        }
+
+                                        Switch {
+                                            checked: false
+                                        }
+                                    }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 10
+
+                                        Text {
+                                            text: "System Alerts"
+                                            color: "#BDC3C7"
+                                            Layout.fillWidth: true
+                                        }
+
+                                        Switch {
+                                            checked: true
+                                        }
+                                    }
+                                }
+
+                                // Criticality levels
+                                ColumnLayout {
+                                    spacing: 10
+
+                                    Text {
+                                        text: "Criticality Levels"
+                                        font.bold: true
+                                        color: "#BDC3C7"
+                                    }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 10
+
+                                        Rectangle {
+                                            width: 20
+                                            height: 20
+                                            color: "#E74C3C"
+                                            radius: 2
+                                        }
+
+                                        Text {
+                                            text: "Critical - Immediate action required"
+                                            color: "#BDC3C7"
+                                            Layout.fillWidth: true
+                                        }
+                                    }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 10
+
+                                        Rectangle {
+                                            width: 20
+                                            height: 20
+                                            color: "#F39C12"
+                                            radius: 2
+                                        }
+
+                                        Text {
+                                            text: "Warning - Action may be required"
+                                            color: "#BDC3C7"
+                                            Layout.fillWidth: true
+                                        }
+                                    }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 10
+
+                                        Rectangle {
+                                            width: 20
+                                            height: 20
+                                            color: "#3498DB"
+                                            radius: 2
+                                        }
+
+                                        Text {
+                                            text: "Information - For reference only"
+                                            color: "#BDC3C7"
+                                            Layout.fillWidth: true
+                                        }
                                     }
                                 }
                             }

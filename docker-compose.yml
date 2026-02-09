@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  huayan-scada:
+    build: .
+    container_name: huayan-scada
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - DISPLAY=${DISPLAY}
+    privileged: true
+    network_mode: "host"
+    restart: unless-stopped
+
+  # 可选：添加时序数据库服务
+  influxdb:
+    image: influxdb:latest
+    container_name: huayan-influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./influxdb/data:/var/lib/influxdb2
+      - ./influxdb/config:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password123
+      - DOCKER_INFLUXDB_INIT_ORG=huayan
+      - DOCKER_INFLUXDB_INIT_BUCKET=scada_data
+    restart: unless-stopped
+    depends_on:
+      - huayan-scada
