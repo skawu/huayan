@@ -1,19 +1,97 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 
+/**
+ * @brief 电机组件
+ * 
+ * 用于模拟和显示电机运行状态的工业组件，支持动画效果和数据标签关联。
+ * 可用于工业监控系统中的电机状态显示和控制。
+ * 
+ * @property running 是否运行，默认为false
+ * @property tagName 数据标签名称，默认为空字符串
+ * @property tagValue 数据标签值，默认为null
+ * @property runningColor 运行状态颜色，默认为"#4CAF50"（绿色）
+ * @property stoppedColor 停止状态颜色，默认为"#F44336"（红色）
+ * @property showStatusText 是否显示状态文本，默认为true
+ * 
+ * @signal motorClicked(var value) 电机状态变更信号，参数为新的运行状态
+ * 
+ * @example 基本用法
+ * ```qml
+ * Motor {
+ *     width: 120
+ *     height: 120
+ *     running: true
+ *     showStatusText: true
+ * }
+ * ```
+ * 
+ * @example 关联数据标签
+ * ```qml
+ * Motor {
+ *     width: 100
+ *     height: 100
+ *     tagName: "Main_Motor"
+ *     runningColor: "#4CAF50"
+ *     stoppedColor: "#F44336"
+ *     onMotorClicked: function(value) {
+ *         console.log("Motor state changed:", value);
+ *     }
+ * }
+ * ```
+ */
 Item {
     id: motor
     width: 120
     height: 120
 
+    /**
+     * @brief 是否运行
+     * 
+     * 控制电机的运行状态，true为运行，false为停止。
+     */
     property bool running: false
+    
+    /**
+     * @brief 数据标签名称
+     * 
+     * 关联的数据标签名称，用于从标签系统获取数据和发送命令。
+     */
     property string tagName: ""
+    
+    /**
+     * @brief 数据标签值
+     * 
+     * 关联的数据标签值，当值变化时会自动更新running状态。
+     */
     property var tagValue: null
+    
+    /**
+     * @brief 运行状态颜色
+     * 
+     * 电机运行时的状态指示器颜色。
+     */
     property color runningColor: "#4CAF50"
+    
+    /**
+     * @brief 停止状态颜色
+     * 
+     * 电机停止时的状态指示器颜色。
+     */
     property color stoppedColor: "#F44336"
+    
+    /**
+     * @brief 是否显示状态文本
+     * 
+     * 控制是否在电机下方显示"RUNNING"或"STOPPED"状态文本。
+     */
     property bool showStatusText: true
 
-    // Update motor state based on tag value
+    /**
+     * @brief 根据标签值更新电机状态
+     * 
+     * 当tagValue属性变化且tagName不为空时，自动更新running状态。
+     */
     onTagValueChanged: {
         if (tagName !== "") {
             running = Boolean(tagValue);
@@ -67,7 +145,11 @@ Item {
                 }
             }
 
-            // Rotate fan when motor is running
+            /**
+             * @brief 风扇旋转动画
+             * 
+             * 当电机运行时，风扇会以1000毫秒/圈的速度旋转。
+             */
             RotationAnimation {
                 target: motorFan
                 from: 0
@@ -126,7 +208,11 @@ Item {
         y: -5
     }
 
-    // Click handler
+    /**
+     * @brief 鼠标点击处理
+     * 
+     * 处理鼠标点击事件，切换电机运行状态并发送motorClicked信号。
+     */
     MouseArea {
         anchors.fill: parent
         onClicked: {
@@ -137,6 +223,10 @@ Item {
         }
     }
 
-    // Signal for motor state change
+    /**
+     * @brief 电机状态变更信号
+     * 
+     * 当电机状态变更时发出的信号，参数为新的运行状态。
+     */
     signal motorClicked(var value)
 }

@@ -3,6 +3,7 @@ import QtQuick.Controls 2.15
 import BasicComponents 1.0
 import IndustrialComponents 1.0
 import ThreeDComponents 1.0
+import ChartComponents 1.0
 
 Rectangle {
     width: 1000
@@ -68,52 +69,9 @@ Rectangle {
                 anchors.fill: parent
                 color: "#ffffff"
                 
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 20
-                    
-                    Text {
-                        text: "完整系统示例"
-                        font.pointSize: 24
-                        font.bold: true
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                    
-                    Text {
-                        text: "此示例展示了一个完整的工业控制系统，包括："
-                        font.pointSize: 16
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                    
-                    Text {
-                        text: "1. 设备连接与数据采集"
-                        font.pointSize: 14
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                    
-                    Text {
-                        text: "2. 实时数据可视化"
-                        font.pointSize: 14
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                    
-                    Text {
-                        text: "3. 报警和事件管理"
-                        font.pointSize: 14
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                    
-                    Text {
-                        text: "4. 历史数据查询与分析"
-                        font.pointSize: 14
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                    
-                    Text {
-                        text: "5. 3D数字孪生场景"
-                        font.pointSize: 14
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
+                WaterTreatmentSystemExample {
+                    anchors.fill: parent
+                    anchors.margins: 10
                 }
             }
         }
