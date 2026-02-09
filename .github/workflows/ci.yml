@@ -21,7 +21,7 @@ jobs:
     - name: Set up Qt
       uses: jurplel/install-qt-action@v4
       with:
-        version: '6.8.3'
+        version: '6.7.3'
         arch: ${{ matrix.os == 'ubuntu-latest' ? 'gcc_64' : 'win64_msvc2022_64' }}
         cache: true
 
@@ -29,18 +29,20 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential libgl1-mesa-dev
+        sudo apt-get install -y build-essential libgl1-mesa-dev libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
 
     - name: Configure CMake
-      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 
     - name: Build project
       run: cmake --build build --config Release --parallel
 
     - name: Run tests (if available)
       run: |
-        if [ -f build/test/run-tests ]; then
-          cd build/test && ./run-tests
+        if [ -f build/tests/unit/run-tests ]; then
+          cd build/tests/unit && ./run-tests
+        elif [ -f build/tests/run-tests ]; then
+          cd build/tests && ./run-tests
         else
           echo "No tests found"
         fi
@@ -49,8 +51,11 @@ jobs:
     - name: Run tests (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        if (Test-Path "build\test\Release\run-tests.exe") {
-          cd build\test\Release
+        if (Test-Path "build\tests\unit\Release\run-tests.exe") {
+          cd build\tests\unit\Release
+          .\run-tests.exe
+        } elseif (Test-Path "build\tests\Release\run-tests.exe") {
+          cd build\tests\Release
           .\run-tests.exe
         } else {
           Write-Host "No tests found"
