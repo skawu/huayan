@@ -1363,11 +1363,10 @@ ApplicationWindow {
                 }
                 
                 Item {
+                    id: contentContainer
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     Layout.margins: 15
-                    
-                    contentItem.parent = this
                 }
             }
         }
@@ -1379,7 +1378,7 @@ ApplicationWindow {
         property alias contentItem: contentItem
         
         Rectangle {
-            id: card
+            id: cardBackground
             color: "#FFFFFF"
             border.color: "#E0E0E0"
             border.width: 1
