@@ -21,9 +21,6 @@ Item {
     property var controls: null
     property var animationId: null
     
-    width: threeDScene.width
-    height: threeDScene.height
-    
     // Canvas for Three.js rendering
     Canvas {
         id: canvas

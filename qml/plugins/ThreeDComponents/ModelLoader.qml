@@ -5,9 +5,9 @@ Item {
     id: modelLoader
     
     property string modelPath: ""
-    property var position: { x: 0, y: 0, z: 0 }
-    property var rotation: { x: 0, y: 0, z: 0 }
-    property var scale: { x: 1, y: 1, z: 1 }
+    property var position: ({ x: 0, y: 0, z: 0 })
+    property var rotation: ({ x: 0, y: 0, z: 0 })
+    property var scale: ({ x: 1, y: 1, z: 1 })
     property var scene: null
     property var loadedModel: null
     property bool loading: false
