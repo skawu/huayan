@@ -23,18 +23,31 @@ int main(int argc, char *argv[])
     // Add QML import paths
     // Try multiple import paths to handle different build directory structures
     QStringList importPaths = {
+        // From current working directory
         QDir::currentPath() + "/qml",
         QDir::currentPath() + "/qml/plugins",
         QDir::currentPath() + "/../qml",
         QDir::currentPath() + "/../qml/plugins",
         QDir::currentPath() + "/../../qml",
         QDir::currentPath() + "/../../qml/plugins",
+        
+        // From executable directory
         QCoreApplication::applicationDirPath() + "/qml",
         QCoreApplication::applicationDirPath() + "/qml/plugins",
         QCoreApplication::applicationDirPath() + "/../qml",
         QCoreApplication::applicationDirPath() + "/../qml/plugins",
         QCoreApplication::applicationDirPath() + "/../../qml",
-        QCoreApplication::applicationDirPath() + "/../../qml/plugins"
+        QCoreApplication::applicationDirPath() + "/../../qml/plugins",
+        QCoreApplication::applicationDirPath() + "/../../../qml",
+        QCoreApplication::applicationDirPath() + "/../../../qml/plugins",
+        
+        // For Qt Creator Desktop_Qt_6_8_3-Debug build
+        QCoreApplication::applicationDirPath() + "/../../qml",
+        QCoreApplication::applicationDirPath() + "/../../qml/plugins",
+        
+        // Source directory paths (fallback)
+        QCoreApplication::applicationDirPath() + "/../../../../qml",
+        QCoreApplication::applicationDirPath() + "/../../../../qml/plugins"
     };
     
     for (const QString &path : importPaths) {
