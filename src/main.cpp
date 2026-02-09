@@ -81,16 +81,19 @@ int main(int argc, char *argv[])
     #endif
 
     // 设置QML导入路径
-    QString qmlPath = QDir::currentPath() + "/qml";
+    // 优先使用应用程序目录的qml文件夹
+    QString qmlPath = QCoreApplication::applicationDirPath() + "/qml";
     if (!QDir(qmlPath).exists()) {
-        // 尝试从构建目录的上一级查找
-        qmlPath = QDir::currentPath() + "/../qml";
+        // 尝试从当前目录查找
+        qmlPath = QDir::currentPath() + "/qml";
         if (!QDir(qmlPath).exists()) {
-            // 尝试从项目根目录查找
-            qmlPath = QCoreApplication::applicationDirPath() + "/../qml";
+            // 尝试从构建目录的上一级查找
+            qmlPath = QDir::currentPath() + "/../qml";
         }
     }
     engine.addImportPath(qmlPath);
+    // 添加标准的QML导入路径
+    engine.addImportPath("qrc:/");
     
     // 添加QML插件路径
     // 尝试多种可能的插件路径
