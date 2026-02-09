@@ -13,7 +13,7 @@ Window {
     ColumnLayout {
         anchors.fill: parent
         spacing: 10
-        padding: 10
+        Layout.margins: 10
         
         // 标题
         Label {
