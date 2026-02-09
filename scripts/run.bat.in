@@ -1,0 +1,26 @@
+@echo off
+
+REM Run script for SCADASystem
+
+REM Set working directory
+cd "@CMAKE_SOURCE_DIR@"
+
+REM Set environment variables
+if exist "@CMAKE_BINARY_DIR@\lib" (
+    set PATH="@CMAKE_BINARY_DIR@\lib";%PATH%
+)
+
+if exist "@CMAKE_BINARY_DIR@\qml" (
+    set QML2_IMPORT_PATH="@CMAKE_BINARY_DIR@\qml";%QML2_IMPORT_PATH%
+)
+
+REM Run the application
+if exist "@CMAKE_BINARY_DIR@\bin\SCADASystem.exe" (
+    echo Starting SCADASystem...
+    "@CMAKE_BINARY_DIR@\bin\SCADASystem.exe"
+) else (
+    echo Error: SCADASystem executable not found at @CMAKE_BINARY_DIR@\bin\SCADASystem.exe
+    echo Please build the project first using 'cmake --build @CMAKE_BINARY_DIR@'
+    pause
+    exit /b 1
+)

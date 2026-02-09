@@ -39,6 +39,8 @@ target_link_libraries(SCADASystem PRIVATE
 set_target_properties(SCADASystem PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
 )
 
 # Install configuration
@@ -48,9 +50,11 @@ install(TARGETS SCADASystem
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-# Install QML imports
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/qml/plugins
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/qml
+# Install QML module
+install(TARGETS SCADASystemQml
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_QMLDIR}/SCADASystemQml
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 # Copy QML files and plugins to build directory for development
@@ -67,3 +71,21 @@ add_custom_command(TARGET SCADASystem PRE_BUILD
         ${CMAKE_BINARY_DIR}/qml/plugins
     COMMENT "Creating QML plugins directory in build directory"
 )
+
+# Create run script for development
+if(UNIX)
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/scripts/run.sh.in
+        ${CMAKE_BINARY_DIR}/run.sh
+        @ONLY
+    )
+    execute_process(
+        COMMAND chmod +x ${CMAKE_BINARY_DIR}/run.sh
+    )
+elseif(WIN32)
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/scripts/run.bat.in
+        ${CMAKE_BINARY_DIR}/run.bat
+        @ONLY
+    )
+endif()
