@@ -1,5 +1,8 @@
 # ControlComponents CMakeLists.txt
 
+# Set Qt policy to suppress QTP0001 warning
+qt_policy(SET QTP0001 NEW)
+
 qt_add_qml_module(ControlComponents
     URI ControlComponents
     VERSION 1.0
