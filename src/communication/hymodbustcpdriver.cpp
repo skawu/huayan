@@ -390,6 +390,17 @@ bool HYModbusTcpDriver::readCoils(int startAddress, int count, QVector<bool> &va
     }
 }
 
+bool HYModbusTcpDriver::readMultipleCoils(int startAddress, int count, QList<bool> &values)
+{
+    // 转换QList<bool>为QVector<bool>，然后调用readCoils方法
+    QVector<bool> vectorValues;
+    bool result = readCoils(startAddress, count, vectorValues);
+    if (result) {
+        values = vectorValues.toList();
+    }
+    return result;
+}
+
 bool HYModbusTcpDriver::readMultipleHoldingRegisters(int startAddress, int count, QVector<quint16> &values)
 {
     if (!isConnected()) {

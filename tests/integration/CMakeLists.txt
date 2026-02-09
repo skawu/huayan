@@ -3,13 +3,22 @@ cmake_minimum_required(VERSION 3.22)
 # 添加集成测试
 
 # 系统集成测试
-add_executable(test_systemintegration test_systemintegration.cpp)
+add_executable(test_systemintegration test_systemintegration.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/dataprocessor.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/dataprocessor.h
+    ${CMAKE_SOURCE_DIR}/src/core/tagmanager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/tagmanager.h
+    ${CMAKE_SOURCE_DIR}/src/core/timeseriesdatabase.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/timeseriesdatabase.h
+    ${CMAKE_SOURCE_DIR}/src/communication/hymodbustcpdriver.cpp
+    ${CMAKE_SOURCE_DIR}/src/communication/hymodbustcpdriver.h
+)
 target_link_libraries(test_systemintegration PRIVATE
     Qt6::Test
     Qt6::Core
     Qt6::Network
-    SCADASystemCore
-    SCADASystemCommunication
+    Qt6::SerialBus
+    Qt6::Sql
 )
 target_include_directories(test_systemintegration PRIVATE
     ${CMAKE_SOURCE_DIR}/src/core

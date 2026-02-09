@@ -10,7 +10,7 @@ qt_add_qml_module(BasicComponents
         Indicator.qml
         PushButton.qml
         TextLabel.qml
-    OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml/plugins/BasicComponents
+    OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/qml/plugins/BasicComponents
 )
 
 # Set plugin properties

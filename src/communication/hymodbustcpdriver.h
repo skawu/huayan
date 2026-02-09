@@ -46,18 +46,18 @@ public:
      * @param slaveId 从站ID
      * @return 连接是否成功
      */
-    bool connectToDevice(const QString &ipAddress, int port, int slaveId);
+    virtual bool connectToDevice(const QString &ipAddress, int port, int slaveId);
     
     /**
      * @brief 断开与设备的连接
      */
-    void disconnectFromDevice();
+    virtual void disconnectFromDevice();
     
     /**
      * @brief 检查是否已连接
      * @return 是否已连接
      */
-    bool isConnected() const;
+    virtual bool isConnected() const;
 
     // 数据读写
     /**
@@ -66,7 +66,7 @@ public:
      * @param value 读取的值
      * @return 读取是否成功
      */
-    bool readCoil(int address, bool &value);
+    virtual bool readCoil(int address, bool &value);
     
     /**
      * @brief 读取离散输入
@@ -74,7 +74,7 @@ public:
      * @param value 读取的值
      * @return 读取是否成功
      */
-    bool readDiscreteInput(int address, bool &value);
+    virtual bool readDiscreteInput(int address, bool &value);
     
     /**
      * @brief 读取保持寄存器
@@ -82,7 +82,7 @@ public:
      * @param value 读取的值
      * @return 读取是否成功
      */
-    bool readHoldingRegister(int address, quint16 &value);
+    virtual bool readHoldingRegister(int address, quint16 &value);
     
     /**
      * @brief 读取输入寄存器
@@ -90,7 +90,7 @@ public:
      * @param value 读取的值
      * @return 读取是否成功
      */
-    bool readInputRegister(int address, quint16 &value);
+    virtual bool readInputRegister(int address, quint16 &value);
 
     /**
      * @brief 写入线圈状态
@@ -98,7 +98,7 @@ public:
      * @param value 要写入的值
      * @return 写入是否成功
      */
-    bool writeCoil(int address, bool value);
+    virtual bool writeCoil(int address, bool value);
     
     /**
      * @brief 写入保持寄存器
@@ -106,7 +106,7 @@ public:
      * @param value 要写入的值
      * @return 写入是否成功
      */
-    bool writeHoldingRegister(int address, quint16 value);
+    virtual bool writeHoldingRegister(int address, quint16 value);
 
     // 批量操作
     /**
@@ -116,7 +116,7 @@ public:
      * @param values 读取的值
      * @return 读取是否成功
      */
-    bool readCoils(int startAddress, int count, QVector<bool> &values);
+    virtual bool readCoils(int startAddress, int count, QVector<bool> &values);
     
     /**
      * @brief 批量读取线圈状态（别名）
@@ -125,7 +125,7 @@ public:
      * @param values 读取的值
      * @return 读取是否成功
      */
-    bool readMultipleCoils(int startAddress, int count, QVector<bool> &values);
+    virtual bool readMultipleCoils(int startAddress, int count, QList<bool> &values);
     
     /**
      * @brief 批量读取保持寄存器
@@ -134,7 +134,7 @@ public:
      * @param values 读取的值
      * @return 读取是否成功
      */
-    bool readMultipleHoldingRegisters(int startAddress, int count, QVector<quint16> &values);
+    virtual bool readMultipleHoldingRegisters(int startAddress, int count, QVector<quint16> &values);
     
     /**
      * @brief 批量写入线圈状态
@@ -142,7 +142,7 @@ public:
      * @param values 要写入的值
      * @return 写入是否成功
      */
-    bool writeMultipleCoils(int startAddress, const QVector<bool> &values);
+    virtual bool writeMultipleCoils(int startAddress, const QVector<bool> &values);
     
     /**
      * @brief 批量写入保持寄存器
@@ -150,20 +150,20 @@ public:
      * @param values 要写入的值
      * @return 写入是否成功
      */
-    bool writeMultipleHoldingRegisters(int startAddress, const QVector<quint16> &values);
+    virtual bool writeMultipleHoldingRegisters(int startAddress, const QVector<quint16> &values);
 
     // 配置
     /**
      * @brief 设置重连间隔
      * @param interval 重连间隔（毫秒）
      */
-    void setReconnectInterval(int interval);
+    virtual void setReconnectInterval(int interval);
     
     /**
      * @brief 设置响应超时
      * @param timeout 超时时间（毫秒）
      */
-    void setResponseTimeout(int timeout);
+    virtual void setResponseTimeout(int timeout);
 
 signals:
     /**

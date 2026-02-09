@@ -4,35 +4,39 @@
 #include "dataprocessor.h"
 #include "tagmanager.h"
 #include "timeseriesdatabase.h"
+#include "hymodbustcpdriver.h"
 
 // 模拟Modbus TCP驱动类
-class MockModbusTcpDriver : public QObject
+class MockModbusTcpDriver : public HYModbusTcpDriver
 {
     Q_OBJECT
 
 public:
-    MockModbusTcpDriver(QObject *parent = nullptr) : QObject(parent) {}
+    MockModbusTcpDriver(QObject *parent = nullptr) : HYModbusTcpDriver(parent), m_connected(false) {}
 
     // 模拟连接设备
-    bool connectToDevice(const QString &ipAddress, int port, int slaveId) {
-        connected = true;
+    bool connectToDevice(const QString &ipAddress, int port, int slaveId) override {
+        Q_UNUSED(ipAddress);
+        Q_UNUSED(port);
+        Q_UNUSED(slaveId);
+        m_connected = true;
         emit connected();
         return true;
     }
 
     // 模拟断开连接
-    void disconnectFromDevice() {
-        connected = false;
+    void disconnectFromDevice() override {
+        m_connected = false;
         emit disconnected();
     }
 
     // 模拟检查连接状态
-    bool isConnected() const {
-        return connected;
+    bool isConnected() const override {
+        return m_connected;
     }
 
     // 模拟读取保持寄存器
-    bool readHoldingRegister(int address, quint16 &value) {
+    bool readHoldingRegister(int address, quint16 &value) override {
         if (registers.contains(address)) {
             value = registers[address];
             return true;
@@ -42,13 +46,13 @@ public:
     }
 
     // 模拟写入保持寄存器
-    bool writeHoldingRegister(int address, quint16 value) {
+    bool writeHoldingRegister(int address, quint16 value) override {
         registers[address] = value;
         return true;
     }
 
     // 模拟读取输入寄存器
-    bool readInputRegister(int address, quint16 &value) {
+    bool readInputRegister(int address, quint16 &value) override {
         if (inputRegisters.contains(address)) {
             value = inputRegisters[address];
             return true;
@@ -60,11 +64,7 @@ public:
     // 存储寄存器值
     QMap<int, quint16> registers;
     QMap<int, quint16> inputRegisters;
-    bool connected = false;
-
-signals:
-    void connected();
-    void disconnected();
+    bool m_connected = false;
 };
 
 /**
