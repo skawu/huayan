@@ -15,7 +15,7 @@ Slider {
     // 范围属性
     property real minValue: 0
     property real maxValue: 100
-    property real stepSize: 1
+    property real customStepSize: 1
     
     // 设备点位绑定
     property string tagName: ""
@@ -28,7 +28,7 @@ Slider {
     // 样式
     from: minValue
     to: maxValue
-    stepSize: root.stepSize
+    stepSize: root.customStepSize
     
     // 轨道样式
     track: Rectangle {
