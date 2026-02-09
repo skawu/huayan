@@ -1,4 +1,4 @@
-# 华颜工业SCADA系统 (Huayan Industrial SCADA System)
+# Huayan Industrial SCADA System
 
 [![CI/CD Pipeline](https://github.com/skawu/huayan/actions/workflows/ci.yml/badge.svg)](https://github.com/skawu/huayan/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -6,12 +6,12 @@
 
 ## Project Overview
 
-**华颜** (Huayan) is a light-weight industrial SCADA (Supervisory Control and Data Acquisition) system built with Qt 6.8 LTS, C++20, and QML. The system provides real-time monitoring and control of industrial processes through a modular, extensible architecture.
+**Huayan** is a light-weight industrial SCADA (Supervisory Control and Data Acquisition) system built with Qt 6.8 LTS, C++20, and QML. The system provides real-time monitoring and control of industrial processes through a modular, extensible architecture.
 
 ### About the Name
 
-- **Project Name**: 华颜 (Huayan)
-- **Full Name**: 华颜工业SCADA系统 (Huayan Industrial SCADA System)
+- **Project Name**: Huayan
+- **Full Name**: Huayan Industrial SCADA System
 - **Code Naming Convention**: Key functions and variables in the codebase use the prefix "HY" (Huayan abbreviation) for consistency.
 
 ### Language Support
@@ -266,7 +266,7 @@ The application loads plugins at runtime through the following mechanism:
 
 ## Summary
 
-**华颜** (Huayan) Industrial SCADA System is a Qt 6-based comprehensive solution for monitoring and controlling industrial processes. Its modular architecture, dynamic QML plugins, and real-time data processing capabilities make it suitable for a wide range of industrial applications.
+**Huayan** Industrial SCADA System is a Qt 6-based comprehensive solution for monitoring and controlling industrial processes. Its modular architecture, dynamic QML plugins, and real-time data processing capabilities make it suitable for a wide range of industrial applications.
 
 ### Project Identity
 
@@ -281,4 +281,4 @@ The application loads plugins at runtime through the following mechanism:
 - **Robust Communication**: Modbus TCP driver with error handling and reconnection logic
 - **Cross-platform Support**: Works on both Windows and Linux
 
-With its focus on modularity, performance, and ease of use, **华颜** Industrial SCADA System provides a solid foundation for industrial automation projects, carrying the brand's commitment to quality and innovation.
+With its focus on modularity, performance, and ease of use, **Huayan** Industrial SCADA System provides a solid foundation for industrial automation projects, carrying the brand's commitment to quality and innovation.
