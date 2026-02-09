@@ -1,0 +1,4 @@
+module ControlComponents
+
+Slider 1.0 Slider.qml
+Knob 1.0 Knob.qml

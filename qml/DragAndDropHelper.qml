@@ -24,8 +24,16 @@ Item {
         { name: "Tank", type: "IndustrialComponents.Tank", width: 120, height: 180 },
         { name: "Motor", type: "IndustrialComponents.Motor", width: 120, height: 120 },
         { name: "Pump", type: "IndustrialComponents.Pump", width: 120, height: 120 },
+        { name: "Gauge", type: "IndustrialComponents.Gauge", width: 200, height: 200 },
+        { name: "IndustrialButton", type: "IndustrialComponents.IndustrialButton", width: 120, height: 60 },
+        { name: "IndustrialIndicator", type: "IndustrialComponents.IndustrialIndicator", width: 60, height: 60 },
         { name: "TrendChart", type: "ChartComponents.TrendChart", width: 400, height: 300 },
-        { name: "BarChart", type: "ChartComponents.BarChart", width: 400, height: 300 }
+        { name: "BarChart", type: "ChartComponents.BarChart", width: 400, height: 300 },
+        { name: "Slider", type: "ControlComponents.Slider", width: 200, height: 60 },
+        { name: "Knob", type: "ControlComponents.Knob", width: 120, height: 150 },
+        { name: "ThreeDScene", type: "ThreeDComponents.ThreeDScene", width: 400, height: 300 },
+        { name: "ModelLoader", type: "ThreeDComponents.ModelLoader", width: 400, height: 300 },
+        { name: "CameraController", type: "ThreeDComponents.CameraController", width: 400, height: 300 }
     ]
 
     // Canvas properties
@@ -118,9 +126,36 @@ Item {
             newX = snapToGrid(newX);
             newY = snapToGrid(newY);
 
+            // Smart snap to other items
+            newX = smartSnap(newX, "x");
+            newY = smartSnap(newY, "y");
+
             // Update item position with bounds checking
             draggedItem.x = Math.max(0, Math.min(newX, canvas.width - draggedItem.width));
             draggedItem.y = Math.max(0, Math.min(newY, canvas.height - draggedItem.height));
+
+            // If multiple items are selected, move them together
+            if (selectedItems.length > 1) {
+                const deltaX = draggedItem.x - (mouseX - canvas.x - dragOffsetX);
+                const deltaY = draggedItem.y - (mouseY - canvas.y - dragOffsetY);
+                
+                selectedItems.forEach(function(item) {
+                    if (item !== draggedItem) {
+                        let itemX = item.x - deltaX;
+                        let itemY = item.y - deltaY;
+                        
+                        // Snap to grid and other items
+                        itemX = snapToGrid(itemX);
+                        itemY = snapToGrid(itemY);
+                        itemX = smartSnap(itemX, "x");
+                        itemY = smartSnap(itemY, "y");
+                        
+                        // Bounds checking
+                        item.x = Math.max(0, Math.min(itemX, canvas.width - item.width));
+                        item.y = Math.max(0, Math.min(itemY, canvas.height - item.height));
+                    }
+                });
+            }
         } else if (isResizing) {
             // Handle resizing
             switch (resizeHandle) {
@@ -171,6 +206,127 @@ Item {
     // Snap value to grid
     function snapToGrid(value) {
         return Math.round(value / gridSize) * gridSize;
+    }
+
+    // Smart snap to other items
+    function smartSnap(value, axis) {
+        if (!canvas || selectedItems.length === 0) return value;
+        
+        const tolerance = 5; // Snap tolerance in pixels
+        const item = selectedItems[0];
+        
+        // Check all other items on canvas
+        for (let i = 0; i < canvas.children.length; i++) {
+            const otherItem = canvas.children[i];
+            if (otherItem !== item && otherItem !== draggedItem) {
+                if (axis === "x") {
+                    // Snap to left edge
+                    if (Math.abs(value - otherItem.x) < tolerance) {
+                        return otherItem.x;
+                    }
+                    // Snap to right edge
+                    if (Math.abs(value - (otherItem.x + otherItem.width)) < tolerance) {
+                        return otherItem.x + otherItem.width;
+                    }
+                    // Snap to center
+                    if (Math.abs(value + item.width/2 - (otherItem.x + otherItem.width/2)) < tolerance) {
+                        return otherItem.x + (otherItem.width - item.width)/2;
+                    }
+                } else if (axis === "y") {
+                    // Snap to top edge
+                    if (Math.abs(value - otherItem.y) < tolerance) {
+                        return otherItem.y;
+                    }
+                    // Snap to bottom edge
+                    if (Math.abs(value - (otherItem.y + otherItem.height)) < tolerance) {
+                        return otherItem.y + otherItem.height;
+                    }
+                    // Snap to center
+                    if (Math.abs(value + item.height/2 - (otherItem.y + otherItem.height/2)) < tolerance) {
+                        return otherItem.y + (otherItem.height - item.height)/2;
+                    }
+                }
+            }
+        }
+        
+        return value;
+    }
+
+    // Batch update properties for selected items
+    function batchUpdateProperties(properties) {
+        selectedItems.forEach(function(item) {
+            for (const [key, value] of Object.entries(properties)) {
+                if (item.hasOwnProperty(key)) {
+                    item[key] = value;
+                }
+            }
+        });
+    }
+
+    // Delete selected items
+    function deleteSelectedItems() {
+        const itemsToDelete = [...selectedItems];
+        itemsToDelete.forEach(function(item) {
+            deleteItem(item);
+        });
+    }
+
+    // Group selected items
+    function groupSelectedItems() {
+        if (selectedItems.length < 2) return;
+        
+        // Calculate bounding box
+        let minX = Infinity, minY = Infinity;
+        let maxX = -Infinity, maxY = -Infinity;
+        
+        selectedItems.forEach(function(item) {
+            minX = Math.min(minX, item.x);
+            minY = Math.min(minY, item.y);
+            maxX = Math.max(maxX, item.x + item.width);
+            maxY = Math.max(maxY, item.y + item.height);
+        });
+        
+        // Create group container
+        const group = Qt.createQmlObject('import QtQuick 2.15; Item { }', canvas);
+        if (group) {
+            group.x = minX;
+            group.y = minY;
+            group.width = maxX - minX;
+            group.height = maxY - minY;
+            
+            // Move selected items to group
+            selectedItems.forEach(function(item) {
+                item.x -= minX;
+                item.y -= minY;
+                group.appendChild(item);
+            });
+            
+            // Set up drag handlers for group
+            setupDragHandlers(group);
+            
+            // Clear selection and select group
+            clearSelection();
+            selectItem(group);
+        }
+    }
+
+    // Ungroup selected group
+    function ungroupSelectedItem() {
+        if (selectedItems.length !== 1) return;
+        
+        const group = selectedItems[0];
+        if (group.children.length < 2) return;
+        
+        // Move children back to canvas
+        const children = [...group.children];
+        children.forEach(function(child) {
+            child.x += group.x;
+            child.y += group.y;
+            canvas.appendChild(child);
+        });
+        
+        // Delete group
+        deleteItem(group);
     }
 
     // Setup drag handlers for an item
@@ -386,6 +542,105 @@ Item {
                 copyAction.triggered.connect(function() {
                     copyItem(item);
                 });
+            }
+
+            // Add separator
+            Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; MenuSeparator { }', menu);
+
+            // Add batch operations for multiple selection
+            if (selectedItems.length > 1) {
+                const deleteSelectedAction = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; MenuItem { text: "Delete Selected" }', menu);
+                if (deleteSelectedAction) {
+                    deleteSelectedAction.triggered.connect(function() {
+                        deleteSelectedItems();
+                    });
+                }
+
+                const groupAction = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; MenuItem { text: "Group" }', menu);
+                if (groupAction) {
+                    groupAction.triggered.connect(function() {
+                        groupSelectedItems();
+                    });
+                }
+            }
+
+            // Add ungroup action if item is a group
+            if (item.children && item.children.length > 0) {
+                const ungroupAction = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; MenuItem { text: "Ungroup" }', menu);
+                if (ungroupAction) {
+                    ungroupAction.triggered.connect(function() {
+                        ungroupSelectedItem();
+                    });
+                }
+            }
+
+            // Add separator
+            Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; MenuSeparator { }', menu);
+
+            // Add alignment options
+            const alignMenu = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; Menu { title: "Align" }', menu);
+            if (alignMenu) {
+                const alignLeftAction = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; MenuItem { text: "Left" }', alignMenu);
+                if (alignLeftAction) {
+                    alignLeftAction.triggered.connect(function() {
+                        alignItems("left");
+                    });
+                }
+
+                const alignRightAction = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; MenuItem { text: "Right" }', alignMenu);
+                if (alignRightAction) {
+                    alignRightAction.triggered.connect(function() {
+                        alignItems("right");
+                    });
+                }
+
+                const alignTopAction = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; MenuItem { text: "Top" }', alignMenu);
+                if (alignTopAction) {
+                    alignTopAction.triggered.connect(function() {
+                        alignItems("top");
+                    });
+                }
+
+                const alignBottomAction = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; MenuItem { text: "Bottom" }', alignMenu);
+                if (alignBottomAction) {
+                    alignBottomAction.triggered.connect(function() {
+                        alignItems("bottom");
+                    });
+                }
+
+                const alignCenterAction = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; MenuItem { text: "Center" }', alignMenu);
+                if (alignCenterAction) {
+                    alignCenterAction.triggered.connect(function() {
+                        alignItems("center");
+                    });
+                }
+
+                const alignMiddleAction = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; MenuItem { text: "Middle" }', alignMenu);
+                if (alignMiddleAction) {
+                    alignMiddleAction.triggered.connect(function() {
+                        alignItems("middle");
+                    });
+                }
+            }
+
+            // Add distribution options
+            if (selectedItems.length > 2) {
+                const distributeMenu = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; Menu { title: "Distribute" }', menu);
+                if (distributeMenu) {
+                    const distributeHorizontalAction = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; MenuItem { text: "Horizontal" }', distributeMenu);
+                    if (distributeHorizontalAction) {
+                        distributeHorizontalAction.triggered.connect(function() {
+                            distributeItems("horizontal");
+                        });
+                    }
+
+                    const distributeVerticalAction = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; MenuItem { text: "Vertical" }', distributeMenu);
+                    if (distributeVerticalAction) {
+                        distributeVerticalAction.triggered.connect(function() {
+                            distributeItems("vertical");
+                        });
+                    }
+                }
             }
 
             // Popup menu
