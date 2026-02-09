@@ -11,14 +11,13 @@ qt_add_executable(SCADASystem
     core/dataprocessor.h
     core/timeseriesdatabase.cpp
     core/timeseriesdatabase.h
+    resources.qrc
 )
 
 # Add QML module for main application
 qt_add_qml_module(SCADASystemQml
     URI SCADASystemQml
     VERSION 1.0
-    RESOURCES
-        resources.qrc
 )
 
 # Link libraries
