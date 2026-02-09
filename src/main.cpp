@@ -12,8 +12,7 @@
 int main(int argc, char *argv[])
 {
     // Set Qt application attributes
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+    // High DPI scaling is always enabled in Qt 6, no need to set these attributes
 
     // Create application
     QApplication app(argc, argv);
