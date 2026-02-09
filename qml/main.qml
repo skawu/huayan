@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import BasicComponents 1.0
 import IndustrialComponents 1.0
@@ -157,1058 +156,973 @@ ApplicationWindow {
         color: "#1E1E1E"
 
         // Tab view for main interface
-        TabView {
+        StackView {
             id: mainTabView
             anchors.fill: parent
-            tabPosition: TabView.TabPosition.Top
-            background: Rectangle { color: "#2C2C2C" }
-            tabBar: TabBar {
-                id: mainTabBar
-                background: Rectangle { color: "#2C2C2C" }
-                width: parent.width
+            initialItem: dashboardPage
+        }
+        
+        // Dashboard page
+        Component {
+            id: dashboardPage
+            Rectangle {
+                color: "#1E1E1E"
 
-                TabButton {
-                    text: "Dashboard"
-                    font.pointSize: 12
-                    font.bold: true
-                    color: mainTabView.currentIndex === 0 ? "#3498DB" : "#BDC3C7"
-                    background: Rectangle {
-                        color: mainTabView.currentIndex === 0 ? "#2C2C2C" : "transparent"
-                        border.bottom: Rectangle {
-                            width: parent.width
-                            height: 2
-                            color: mainTabView.currentIndex === 0 ? "#3498DB" : "transparent"
-                        }
-                    }
-                }
-
-                TabButton {
-                    text: "Configuration Editor"
-                    font.pointSize: 12
-                    font.bold: true
-                    color: mainTabView.currentIndex === 1 ? "#3498DB" : "#BDC3C7"
-                    background: Rectangle {
-                        color: mainTabView.currentIndex === 1 ? "#2C2C2C" : "transparent"
-                        border.bottom: Rectangle {
-                            width: parent.width
-                            height: 2
-                            color: mainTabView.currentIndex === 1 ? "#3498DB" : "transparent"
-                        }
-                    }
-                }
-
-                TabButton {
-                    text: "Tag Management"
-                    font.pointSize: 12
-                    font.bold: true
-                    color: mainTabView.currentIndex === 2 ? "#3498DB" : "#BDC3C7"
-                    background: Rectangle {
-                        color: mainTabView.currentIndex === 2 ? "#2C2C2C" : "transparent"
-                        border.bottom: Rectangle {
-                            width: parent.width
-                            height: 2
-                            color: mainTabView.currentIndex === 2 ? "#3498DB" : "transparent"
-                        }
-                    }
-                }
-
-                TabButton {
-                    text: "Component Management"
-                    font.pointSize: 12
-                    font.bold: true
-                    color: mainTabView.currentIndex === 3 ? "#3498DB" : "#BDC3C7"
-                    background: Rectangle {
-                        color: mainTabView.currentIndex === 3 ? "#2C2C2C" : "transparent"
-                        border.bottom: Rectangle {
-                            width: parent.width
-                            height: 2
-                            color: mainTabView.currentIndex === 3 ? "#3498DB" : "transparent"
-                        }
-                    }
-                }
-
-                TabButton {
-                    text: "Alarm & Event Management"
-                    font.pointSize: 12
-                    font.bold: true
-                    color: mainTabView.currentIndex === 4 ? "#3498DB" : "#BDC3C7"
-                    background: Rectangle {
-                        color: mainTabView.currentIndex === 4 ? "#2C2C2C" : "transparent"
-                        border.bottom: Rectangle {
-                            width: parent.width
-                            height: 2
-                            color: mainTabView.currentIndex === 4 ? "#3498DB" : "transparent"
-                        }
-                    }
-                }
-            }
-
-            // Dashboard tab
-            Page {
-                padding: 0
-                Rectangle {
+                GridLayout {
                     anchors.fill: parent
-                    color: "#1E1E1E"
+                    anchors.margins: 15
+                    columns: 3
+                    rowSpacing: 15
+                    columnSpacing: 15
 
-                    GridLayout {
-                        anchors.fill: parent
-                        anchors.margins: 15
-                        columns: 3
-                        rowSpacing: 15
-                        columnSpacing: 15
+                    // System status card
+                    Rectangle {
+                        id: statusCard
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: "#2C2C2C"
+                        radius: 4
+                        border.color: "#34495E"
+                        border.width: 1
 
-                        // System status card
-                        Rectangle {
-                            id: statusCard
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: "#2C2C2C"
-                            radius: 4
-                            border.color: "#34495E"
-                            border.width: 1
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 15
+                            spacing: 15
 
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                spacing: 15
-
-                                Text {
-                                    text: "System Status"
-                                    font.bold: true
-                                    font.pointSize: 14
-                                    color: "#3498DB"
-                                }
-
-                                ColumnLayout {
-                                    spacing: 10
-
-                                    RowLayout {
-                                        spacing: 10
-                                        Layout.fillWidth: true
-
-                                        Text {
-                                            text: "Modbus TCP:"
-                                            color: "#BDC3C7"
-                                            Layout.preferredWidth: 120
-                                        }
-
-                                        Text {
-                                            text: modbusDriver ? (modbusDriver.isConnected() ? "Connected" : "Disconnected") : "Not Initialized"
-                                            font.bold: true
-                                            color: modbusDriver && modbusDriver.isConnected() ? "#27AE60" : "#E74C3C"
-                                            Layout.fillWidth: true
-                                        }
-                                    }
-
-                                    RowLayout {
-                                        spacing: 10
-                                        Layout.fillWidth: true
-
-                                        Text {
-                                            text: "Data Collection:"
-                                            color: "#BDC3C7"
-                                            Layout.preferredWidth: 120
-                                        }
-
-                                        Text {
-                                            text: dataProcessor ? "Active" : "Inactive"
-                                            font.bold: true
-                                            color: dataProcessor ? "#27AE60" : "#E74C3C"
-                                            Layout.fillWidth: true
-                                        }
-                                    }
-
-                                    RowLayout {
-                                        spacing: 10
-                                        Layout.fillWidth: true
-
-                                        Text {
-                                            text: "Tags Count:"
-                                            color: "#BDC3C7"
-                                            Layout.preferredWidth: 120
-                                        }
-
-                                        Text {
-                                            text: tagManager ? tagManager.getAllTags().length : 0
-                                            font.bold: true
-                                            color: "#3498DB"
-                                            Layout.fillWidth: true
-                                        }
-                                    }
-
-                                    RowLayout {
-                                        spacing: 10
-                                        Layout.fillWidth: true
-
-                                        Text {
-                                            text: "System Time:"
-                                            color: "#BDC3C7"
-                                            Layout.preferredWidth: 120
-                                        }
-
-                                        Text {
-                                            text: mainWindow.currentTime
-                                            font.bold: true
-                                            color: "#3498DB"
-                                            Layout.fillWidth: true
-                                        }
-                                    }
-                                }
+                            Text {
+                                text: "System Status"
+                                font.bold: true
+                                font.pointSize: 14
+                                color: "#3498DB"
                             }
-                        }
-
-                        // Process overview card
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: "#2C2C2C"
-                            radius: 4
-                            border.color: "#34495E"
-                            border.width: 1
 
                             ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                spacing: 15
+                                spacing: 10
 
-                                Text {
-                                    text: "Process Overview"
-                                    font.bold: true
-                                    font.pointSize: 14
-                                    color: "#3498DB"
-                                }
-
-                                GridLayout {
-                                    columns: 2
-                                    rowSpacing: 10
-                                    columnSpacing: 10
+                                RowLayout {
+                                    spacing: 10
                                     Layout.fillWidth: true
 
-                                    // Tank level
-                                    Rectangle {
-                                        Layout.fillWidth: true
-                                        Layout.fillHeight: true
-                                        color: "#34495E"
-                                        radius: 4
-
-                                        ColumnLayout {
-                                            anchors.fill: parent
-                                            anchors.margins: 10
-                                            spacing: 5
-
-                                            Text {
-                                                text: "Tank Level"
-                                                font.bold: true
-                                                color: "#BDC3C7"
-                                            }
-
-                                            Tank {
-                                                width: 80
-                                                height: 120
-                                                level: 0.7
-                                                Layout.alignment: Qt.AlignCenter
-                                            }
-
-                                            Text {
-                                                text: "70%"
-                                                font.bold: true
-                                                color: "#27AE60"
-                                                Layout.alignment: Qt.AlignCenter
-                                            }
-                                        }
+                                    Text {
+                                        text: "Modbus TCP:"
+                                        color: "#BDC3C7"
+                                        Layout.preferredWidth: 120
                                     }
 
-                                    // Pump status
-                                    Rectangle {
+                                    Text {
+                                        text: modbusDriver ? (modbusDriver.isConnected() ? "Connected" : "Disconnected") : "Not Initialized"
+                                        font.bold: true
+                                        color: modbusDriver && modbusDriver.isConnected() ? "#27AE60" : "#E74C3C"
                                         Layout.fillWidth: true
-                                        Layout.fillHeight: true
-                                        color: "#34495E"
-                                        radius: 4
-
-                                        ColumnLayout {
-                                            anchors.fill: parent
-                                            anchors.margins: 10
-                                            spacing: 5
-
-                                            Text {
-                                                text: "Pump Status"
-                                                font.bold: true
-                                                color: "#BDC3C7"
-                                            }
-
-                                            Pump {
-                                                width: 80
-                                                height: 80
-                                                running: true
-                                                Layout.alignment: Qt.AlignCenter
-                                            }
-
-                                            Text {
-                                                text: "Running"
-                                                font.bold: true
-                                                color: "#27AE60"
-                                                Layout.alignment: Qt.AlignCenter
-                                            }
-                                        }
-                                    }
-
-                                    // Valve status
-                                    Rectangle {
-                                        Layout.fillWidth: true
-                                        Layout.fillHeight: true
-                                        color: "#34495E"
-                                        radius: 4
-
-                                        ColumnLayout {
-                                            anchors.fill: parent
-                                            anchors.margins: 10
-                                            spacing: 5
-
-                                            Text {
-                                                text: "Valve Status"
-                                                font.bold: true
-                                                color: "#BDC3C7"
-                                            }
-
-                                            Valve {
-                                                width: 80
-                                                height: 80
-                                                open: true
-                                                Layout.alignment: Qt.AlignCenter
-                                            }
-
-                                            Text {
-                                                text: "Open"
-                                                font.bold: true
-                                                color: "#27AE60"
-                                                Layout.alignment: Qt.AlignCenter
-                                            }
-                                        }
-                                    }
-
-                                    // Motor status
-                                    Rectangle {
-                                        Layout.fillWidth: true
-                                        Layout.fillHeight: true
-                                        color: "#34495E"
-                                        radius: 4
-
-                                        ColumnLayout {
-                                            anchors.fill: parent
-                                            anchors.margins: 10
-                                            spacing: 5
-
-                                            Text {
-                                                text: "Motor Status"
-                                                font.bold: true
-                                                color: "#BDC3C7"
-                                            }
-
-                                            Motor {
-                                                width: 80
-                                                height: 80
-                                                running: true
-                                                Layout.alignment: Qt.AlignCenter
-                                            }
-
-                                            Text {
-                                                text: "Running"
-                                                font.bold: true
-                                                color: "#27AE60"
-                                                Layout.alignment: Qt.AlignCenter
-                                            }
-                                        }
                                     }
                                 }
-                            }
-                        }
 
-                        // System trends card
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: "#2C2C2C"
-                            radius: 4
-                            border.color: "#34495E"
-                            border.width: 1
+                                RowLayout {
+                                    spacing: 10
+                                    Layout.fillWidth: true
 
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                spacing: 15
+                                    Text {
+                                        text: "Data Collection:"
+                                        color: "#BDC3C7"
+                                        Layout.preferredWidth: 120
+                                    }
 
-                                Text {
-                                    text: "System Trends"
-                                    font.bold: true
-                                    font.pointSize: 14
-                                    color: "#3498DB"
+                                    Text {
+                                        text: dataProcessor ? "Active" : "Inactive"
+                                        font.bold: true
+                                        color: dataProcessor ? "#27AE60" : "#E74C3C"
+                                        Layout.fillWidth: true
+                                    }
                                 }
 
-                                TrendChart {
-                                    width: parent.width
-                                    height: parent.height - 40
-                                    title: "Process Values"
-                                    // Bind to a tag if available
-                                    tagName: tagManager && tagManager.getAllTags().length > 0 ? tagManager.getAllTags()[0].name : ""
+                                RowLayout {
+                                    spacing: 10
+                                    Layout.fillWidth: true
+
+                                    Text {
+                                        text: "Tags Count:"
+                                        color: "#BDC3C7"
+                                        Layout.preferredWidth: 120
+                                    }
+
+                                    Text {
+                                        text: tagManager ? tagManager.getAllTags().length : 0
+                                        font.bold: true
+                                        color: "#3498DB"
+                                        Layout.fillWidth: true
+                                    }
+                                }
+
+                                RowLayout {
+                                    spacing: 10
+                                    Layout.fillWidth: true
+
+                                    Text {
+                                        text: "System Time:"
+                                        color: "#BDC3C7"
+                                        Layout.preferredWidth: 120
+                                    }
+
+                                    Text {
+                                        text: mainWindow.currentTime
+                                        font.bold: true
+                                        color: "#3498DB"
+                                        Layout.fillWidth: true
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            }
 
-            // Configuration Editor tab
-            Page {
-                padding: 0
-                Rectangle {
-                    anchors.fill: parent
-                    color: "#1E1E1E"
+                    // Process overview card
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: "#2C2C2C"
+                        radius: 4
+                        border.color: "#34495E"
+                        border.width: 1
 
-                    SplitView {
-                        anchors.fill: parent
-                        orientation: Qt.Horizontal
-                        handleDelegate: Rectangle {
-                            width: 2
-                            color: "#34495E"
-                        }
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 15
+                            spacing: 15
 
-                        // Component library
-                        Rectangle {
-                            id: componentLibrary
-                            width: 220
-                            color: "#2C2C2C"
-                            border.right: Rectangle {
-                                width: 1
-                                height: parent.height
-                                color: "#34495E"
+                            Text {
+                                text: "Process Overview"
+                                font.bold: true
+                                font.pointSize: 14
+                                color: "#3498DB"
                             }
 
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                spacing: 15
+                            GridLayout {
+                                columns: 2
+                                rowSpacing: 10
+                                columnSpacing: 10
+                                Layout.fillWidth: true
 
-                                Text {
-                                    text: "Component Library"
-                                    font.bold: true
-                                    font.pointSize: 14
-                                    color: "#3498DB"
-                                }
-
-                                // Basic components section
-                                ColumnLayout {
-                                    spacing: 8
-
-                                    Text {
-                                        text: "Basic Components"
-                                        font.bold: true
-                                        color: "#BDC3C7"
-                                    }
-
-                                    ColumnLayout {
-                                        spacing: 5
-
-                                        Button {
-                                            text: "Indicator"
-                                            width: parent.width
-                                            height: 35
-                                            color: "#34495E"
-                                            textColor: "white"
-                                            onClicked: {
-                                                dragDropHelper.startDragFromLibrary("BasicComponents.Indicator", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
-                                            }
-                                        }
-
-                                        Button {
-                                            text: "PushButton"
-                                            width: parent.width
-                                            height: 35
-                                            color: "#34495E"
-                                            textColor: "white"
-                                            onClicked: {
-                                                dragDropHelper.startDragFromLibrary("BasicComponents.PushButton", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
-                                            }
-                                        }
-
-                                        Button {
-                                            text: "TextLabel"
-                                            width: parent.width
-                                            height: 35
-                                            color: "#34495E"
-                                            textColor: "white"
-                                            onClicked: {
-                                                dragDropHelper.startDragFromLibrary("BasicComponents.TextLabel", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Industrial components section
-                                ColumnLayout {
-                                    spacing: 8
-
-                                    Text {
-                                        text: "Industrial Components"
-                                        font.bold: true
-                                        color: "#BDC3C7"
-                                    }
-
-                                    ColumnLayout {
-                                        spacing: 5
-
-                                        Button {
-                                            text: "Valve"
-                                            width: parent.width
-                                            height: 35
-                                            color: "#34495E"
-                                            textColor: "white"
-                                            onClicked: {
-                                                dragDropHelper.startDragFromLibrary("IndustrialComponents.Valve", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
-                                            }
-                                        }
-
-                                        Button {
-                                            text: "Tank"
-                                            width: parent.width
-                                            height: 35
-                                            color: "#34495E"
-                                            textColor: "white"
-                                            onClicked: {
-                                                dragDropHelper.startDragFromLibrary("IndustrialComponents.Tank", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
-                                            }
-                                        }
-
-                                        Button {
-                                            text: "Motor"
-                                            width: parent.width
-                                            height: 35
-                                            color: "#34495E"
-                                            textColor: "white"
-                                            onClicked: {
-                                                dragDropHelper.startDragFromLibrary("IndustrialComponents.Motor", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
-                                            }
-                                        }
-
-                                        Button {
-                                            text: "Pump"
-                                            width: parent.width
-                                            height: 35
-                                            color: "#34495E"
-                                            textColor: "white"
-                                            onClicked: {
-                                                dragDropHelper.startDragFromLibrary("IndustrialComponents.Pump", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Chart components section
-                                ColumnLayout {
-                                    spacing: 8
-
-                                    Text {
-                                        text: "Chart Components"
-                                        font.bold: true
-                                        color: "#BDC3C7"
-                                    }
-
-                                    ColumnLayout {
-                                        spacing: 5
-
-                                        Button {
-                                            text: "TrendChart"
-                                            width: parent.width
-                                            height: 35
-                                            color: "#34495E"
-                                            textColor: "white"
-                                            onClicked: {
-                                                dragDropHelper.startDragFromLibrary("ChartComponents.TrendChart", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
-                                            }
-                                        }
-
-                                        Button {
-                                            text: "BarChart"
-                                            width: parent.width
-                                            height: 35
-                                            color: "#34495E"
-                                            textColor: "white"
-                                            onClicked: {
-                                                dragDropHelper.startDragFromLibrary("ChartComponents.BarChart", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Control components section
-                                ColumnLayout {
-                                    spacing: 8
-
-                                    Text {
-                                        text: "Control Components"
-                                        font.bold: true
-                                        color: "#BDC3C7"
-                                    }
-
-                                    ColumnLayout {
-                                        spacing: 5
-
-                                        Button {
-                                            text: "Slider"
-                                            width: parent.width
-                                            height: 35
-                                            color: "#34495E"
-                                            textColor: "white"
-                                            onClicked: {
-                                                dragDropHelper.startDragFromLibrary("ControlComponents.Slider", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
-                                            }
-                                        }
-
-                                        Button {
-                                            text: "Knob"
-                                            width: parent.width
-                                            height: 35
-                                            color: "#34495E"
-                                            textColor: "white"
-                                            onClicked: {
-                                                dragDropHelper.startDragFromLibrary("ControlComponents.Knob", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // Canvas for component placement
-                        Rectangle {
-                            id: canvasContainer
-                            color: "#1E1E1E"
-                            SplitView.fillWidth: true
-                            SplitView.fillHeight: true
-
-                            Item {
-                                id: canvas
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                clip: true
-
-                                // Canvas background with grid
-                                Rectangle {
-                                    anchors.fill: parent
-                                    color: "#2C2C2C"
-                                    radius: 4
-                                    border.color: "#34495E"
-                                    border.width: 1
-
-                                    // Grid pattern
-                                    Repeater {
-                                        model: 20
-                                        Rectangle {
-                                            x: (parent.width / 20) * index
-                                            width: 1
-                                            height: parent.height
-                                            color: "#34495E"
-                                            opacity: 0.3
-                                        }
-                                    }
-
-                                    Repeater {
-                                        model: 15
-                                        Rectangle {
-                                            y: (parent.height / 15) * index
-                                            width: parent.width
-                                            height: 1
-                                            color: "#34495E"
-                                            opacity: 0.3
-                                        }
-                                    }
-                                }
-
-                                // Initialize drag and drop helper
-                                Component.onCompleted: {
-                                    dragDropHelper.init(canvas);
-                                }
-                            }
-                        }
-
-                        // Component properties
-                        Rectangle {
-                            width: 280
-                            color: "#2C2C2C"
-                            border.left: Rectangle {
-                                width: 1
-                                height: parent.height
-                                color: "#34495E"
-                            }
-
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                spacing: 15
-
-                                Text {
-                                    text: "Component Properties"
-                                    font.bold: true
-                                    font.pointSize: 14
-                                    color: "#3498DB"
-                                }
-
-                                Text {
-                                    id: selectedComponentText
-                                    text: "Selected Component: None"
-                                    color: "#BDC3C7"
-                                }
-
-                                // Property editors will be added here dynamically
+                                // Tank level
                                 Rectangle {
                                     Layout.fillWidth: true
                                     Layout.fillHeight: true
                                     color: "#34495E"
                                     radius: 4
-                                    visible: false
 
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "Select a component to edit properties"
-                                        color: "#7F8C8D"
-                                        wrapMode: Text.Wrap
-                                        horizontalAlignment: Text.AlignHCenter
-                                        verticalAlignment: Text.AlignVCenter
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 10
+                                        spacing: 5
+
+                                        Text {
+                                            text: "Tank Level"
+                                            font.bold: true
+                                            color: "#BDC3C7"
+                                        }
+
+                                        Tank {
+                                            width: 80
+                                            height: 120
+                                            level: 0.7
+                                            Layout.alignment: Qt.AlignCenter
+                                        }
+
+                                        Text {
+                                            text: "70%"
+                                            font.bold: true
+                                            color: "#27AE60"
+                                            Layout.alignment: Qt.AlignCenter
+                                        }
+                                    }
+                                }
+
+                                // Pump status
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    color: "#34495E"
+                                    radius: 4
+
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 10
+                                        spacing: 5
+
+                                        Text {
+                                            text: "Pump Status"
+                                            font.bold: true
+                                            color: "#BDC3C7"
+                                        }
+
+                                        Pump {
+                                            width: 80
+                                            height: 80
+                                            running: true
+                                            Layout.alignment: Qt.AlignCenter
+                                        }
+
+                                        Text {
+                                            text: "Running"
+                                            font.bold: true
+                                            color: "#27AE60"
+                                            Layout.alignment: Qt.AlignCenter
+                                        }
+                                    }
+                                }
+
+                                // Valve status
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    color: "#34495E"
+                                    radius: 4
+
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 10
+                                        spacing: 5
+
+                                        Text {
+                                            text: "Valve Status"
+                                            font.bold: true
+                                            color: "#BDC3C7"
+                                        }
+
+                                        Valve {
+                                            width: 80
+                                            height: 80
+                                            open: true
+                                            Layout.alignment: Qt.AlignCenter
+                                        }
+
+                                        Text {
+                                            text: "Open"
+                                            font.bold: true
+                                            color: "#27AE60"
+                                            Layout.alignment: Qt.AlignCenter
+                                        }
+                                    }
+                                }
+
+                                // Motor status
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    color: "#34495E"
+                                    radius: 4
+
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 10
+                                        spacing: 5
+
+                                        Text {
+                                            text: "Motor Status"
+                                            font.bold: true
+                                            color: "#BDC3C7"
+                                        }
+
+                                        Motor {
+                                            width: 80
+                                            height: 80
+                                            running: true
+                                            Layout.alignment: Qt.AlignCenter
+                                        }
+
+                                        Text {
+                                            text: "Running"
+                                            font.bold: true
+                                            color: "#27AE60"
+                                            Layout.alignment: Qt.AlignCenter
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-            }
 
-            // Tag Management tab
-            Page {
-                padding: 0
-                Rectangle {
-                    anchors.fill: parent
-                    color: "#1E1E1E"
+                    // System trends card
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: "#2C2C2C"
+                        radius: 4
+                        border.color: "#34495E"
+                        border.width: 1
 
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 15
-                        spacing: 15
-
-                        // Tag management header
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 10
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 15
+                            spacing: 15
 
                             Text {
-                                text: "Tag Management"
+                                text: "System Trends"
                                 font.bold: true
                                 font.pointSize: 14
                                 color: "#3498DB"
-                                Layout.fillWidth: true
                             }
 
-                            Button {
-                                text: "Add Tag"
-                                width: 100
-                                height: 35
-                                color: "#27AE60"
-                                textColor: "white"
-                                onClicked: {
-                                    tagDialog.visible = true;
-                                }
-                            }
-                        }
-
-                        // Tag list
-                        Rectangle {
-                            id: tagListContainer
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: "#2C2C2C"
-                            radius: 4
-                            border.color: "#34495E"
-                            border.width: 1
-
-                            TableView {
-                                anchors.fill: parent
-                                anchors.margins: 5
-                                model: tagManager ? tagManager.getAllTags() : []
-                                sortIndicatorVisible: true
-
-                                TableViewColumn {
-                                    role: "name"
-                                    title: "Name"
-                                    width: 180
-                                    delegate: Text {
-                                        text: modelData.name
-                                        color: "#BDC3C7"
-                                        padding: 5
-                                    }
-                                }
-
-                                TableViewColumn {
-                                    role: "group"
-                                    title: "Group"
-                                    width: 120
-                                    delegate: Text {
-                                        text: modelData.group
-                                        color: "#BDC3C7"
-                                        padding: 5
-                                    }
-                                }
-
-                                TableViewColumn {
-                                    role: "value"
-                                    title: "Value"
-                                    width: 100
-                                    delegate: Text {
-                                        text: modelData.value
-                                        font.bold: true
-                                        color: "#3498DB"
-                                        padding: 5
-                                    }
-                                }
-
-                                TableViewColumn {
-                                    role: "description"
-                                    title: "Description"
-                                    width: 300
-                                    delegate: Text {
-                                        text: modelData.description
-                                        color: "#BDC3C7"
-                                        padding: 5
-                                        elide: Text.ElideRight
-                                    }
-                                }
+                            TrendChart {
+                                width: parent.width
+                                height: parent.height - 40
+                                title: "Process Values"
+                                // Bind to a tag if available
+                                tagName: tagManager && tagManager.getAllTags().length > 0 ? tagManager.getAllTags()[0].name : ""
                             }
                         }
                     }
                 }
             }
+        }
+        
+        // Configuration Editor page
+        Component {
+            id: configEditorPage
+            Rectangle {
+                color: "#1E1E1E"
 
-            // Component Management tab
-            Page {
-                padding: 0
-                Rectangle {
+                SplitView {
                     anchors.fill: parent
-                    color: "#1E1E1E"
+                    orientation: Qt.Horizontal
+                    handleDelegate: Rectangle {
+                        width: 2
+                        color: "#34495E"
+                    }
 
-                    GridLayout {
-                        anchors.fill: parent
-                        anchors.margins: 15
-                        columns: 3
-                        rowSpacing: 15
-                        columnSpacing: 15
+                    // Component library
+                    Rectangle {
+                        id: componentLibrary
+                        width: 220
+                        color: "#2C2C2C"
+                        border.right: Rectangle {
+                            width: 1
+                            height: parent.height
+                            color: "#34495E"
+                        }
 
-                        // Basic components card
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: "#2C2C2C"
-                            radius: 4
-                            border.color: "#34495E"
-                            border.width: 1
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 15
+                            spacing: 15
 
+                            Text {
+                                text: "Component Library"
+                                font.bold: true
+                                font.pointSize: 14
+                                color: "#3498DB"
+                            }
+
+                            // Basic components section
                             ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                spacing: 15
+                                spacing: 8
 
                                 Text {
                                     text: "Basic Components"
                                     font.bold: true
-                                    font.pointSize: 14
-                                    color: "#3498DB"
+                                    color: "#BDC3C7"
                                 }
 
                                 ColumnLayout {
-                                    spacing: 15
+                                    spacing: 5
 
-                                    Indicator {
-                                        width: 80
-                                        height: 80
-                                        active: true
-                                        Layout.alignment: Qt.AlignCenter
+                                    Button {
+                                        text: "Indicator"
+                                        width: parent.width
+                                        height: 35
+                                        color: "#34495E"
+                                        textColor: "white"
+                                        onClicked: {
+                                            dragDropHelper.startDragFromLibrary("BasicComponents.Indicator", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
+                                        }
                                     }
 
-                                    PushButton {
-                                        text: "Button"
-                                        width: 120
-                                        height: 40
-                                        Layout.alignment: Qt.AlignCenter
+                                    Button {
+                                        text: "PushButton"
+                                        width: parent.width
+                                        height: 35
+                                        color: "#34495E"
+                                        textColor: "white"
+                                        onClicked: {
+                                            dragDropHelper.startDragFromLibrary("BasicComponents.PushButton", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
+                                        }
                                     }
 
-                                    TextLabel {
-                                        labelText: "Label:"
-                                        valueText: "Value"
-                                        Layout.fillWidth: true
+                                    Button {
+                                        text: "TextLabel"
+                                        width: parent.width
+                                        height: 35
+                                        color: "#34495E"
+                                        textColor: "white"
+                                        onClicked: {
+                                            dragDropHelper.startDragFromLibrary("BasicComponents.TextLabel", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        // Industrial components card
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: "#2C2C2C"
-                            radius: 4
-                            border.color: "#34495E"
-                            border.width: 1
-
+                            // Industrial components section
                             ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                spacing: 15
+                                spacing: 8
 
                                 Text {
                                     text: "Industrial Components"
                                     font.bold: true
-                                    font.pointSize: 14
-                                    color: "#3498DB"
+                                    color: "#BDC3C7"
                                 }
 
                                 ColumnLayout {
-                                    spacing: 15
+                                    spacing: 5
 
-                                    Valve {
-                                        width: 100
-                                        height: 100
-                                        open: true
-                                        Layout.alignment: Qt.AlignCenter
+                                    Button {
+                                        text: "Valve"
+                                        width: parent.width
+                                        height: 35
+                                        color: "#34495E"
+                                        textColor: "white"
+                                        onClicked: {
+                                            dragDropHelper.startDragFromLibrary("IndustrialComponents.Valve", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
+                                        }
                                     }
 
-                                    Tank {
-                                        width: 100
-                                        height: 140
-                                        level: 0.7
-                                        Layout.alignment: Qt.AlignCenter
+                                    Button {
+                                        text: "Tank"
+                                        width: parent.width
+                                        height: 35
+                                        color: "#34495E"
+                                        textColor: "white"
+                                        onClicked: {
+                                            dragDropHelper.startDragFromLibrary("IndustrialComponents.Tank", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
+                                        }
                                     }
 
-                                    Motor {
-                                        width: 100
-                                        height: 100
-                                        running: true
-                                        Layout.alignment: Qt.AlignCenter
+                                    Button {
+                                        text: "Motor"
+                                        width: parent.width
+                                        height: 35
+                                        color: "#34495E"
+                                        textColor: "white"
+                                        onClicked: {
+                                            dragDropHelper.startDragFromLibrary("IndustrialComponents.Motor", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
+                                        }
                                     }
 
-                                    Pump {
-                                        width: 100
-                                        height: 100
-                                        running: true
-                                        Layout.alignment: Qt.AlignCenter
+                                    Button {
+                                        text: "Pump"
+                                        width: parent.width
+                                        height: 35
+                                        color: "#34495E"
+                                        textColor: "white"
+                                        onClicked: {
+                                            dragDropHelper.startDragFromLibrary("IndustrialComponents.Pump", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        // Chart components card
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: "#2C2C2C"
-                            radius: 4
-                            border.color: "#34495E"
-                            border.width: 1
-
+                            // Chart components section
                             ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                spacing: 15
+                                spacing: 8
 
                                 Text {
                                     text: "Chart Components"
                                     font.bold: true
-                                    font.pointSize: 14
-                                    color: "#3498DB"
+                                    color: "#BDC3C7"
                                 }
 
                                 ColumnLayout {
-                                    spacing: 15
-                                    Layout.fillWidth: true
+                                    spacing: 5
 
-                                    TrendChart {
+                                    Button {
+                                        text: "TrendChart"
                                         width: parent.width
-                                        height: 180
-                                        title: "Trend Chart"
+                                        height: 35
+                                        color: "#34495E"
+                                        textColor: "white"
+                                        onClicked: {
+                                            dragDropHelper.startDragFromLibrary("ChartComponents.TrendChart", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
+                                        }
                                     }
 
-                                    BarChart {
+                                    Button {
+                                        text: "BarChart"
                                         width: parent.width
-                                        height: 180
-                                        title: "Bar Chart"
+                                        height: 35
+                                        color: "#34495E"
+                                        textColor: "white"
+                                        onClicked: {
+                                            dragDropHelper.startDragFromLibrary("ChartComponents.BarChart", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        // Control components card
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: "#2C2C2C"
-                            radius: 4
-                            border.color: "#34495E"
-                            border.width: 1
-
+                            // Control components section
                             ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                spacing: 15
+                                spacing: 8
 
                                 Text {
                                     text: "Control Components"
                                     font.bold: true
-                                    font.pointSize: 14
-                                    color: "#3498DB"
+                                    color: "#BDC3C7"
                                 }
 
                                 ColumnLayout {
-                                    spacing: 15
-                                    Layout.fillWidth: true
+                                    spacing: 5
 
-                                    Slider {
+                                    Button {
+                                        text: "Slider"
                                         width: parent.width
-                                        height: 60
-                                        label: "Temperature"
-                                        unit: "°C"
-                                        value: 75
+                                        height: 35
+                                        color: "#34495E"
+                                        textColor: "white"
+                                        onClicked: {
+                                            dragDropHelper.startDragFromLibrary("ControlComponents.Slider", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
+                                        }
                                     }
 
-                                    Knob {
-                                        width: 120
-                                        height: 150
-                                        label: "Pressure"
-                                        unit: "bar"
-                                        value: 60
-                                        Layout.alignment: Qt.AlignCenter
+                                    Button {
+                                        text: "Knob"
+                                        width: parent.width
+                                        height: 35
+                                        color: "#34495E"
+                                        textColor: "white"
+                                        onClicked: {
+                                            dragDropHelper.startDragFromLibrary("ControlComponents.Knob", mouse.x + componentLibrary.x, mouse.y + componentLibrary.y);
+                                        }
                                     }
+                                }
+                            }
+                        }
+                    }
+
+                    // Canvas for component placement
+                    Rectangle {
+                        id: canvasContainer
+                        color: "#1E1E1E"
+                        SplitView.fillWidth: true
+                        SplitView.fillHeight: true
+
+                        Item {
+                            id: canvas
+                            anchors.fill: parent
+                            anchors.margins: 15
+                            clip: true
+
+                            // Canvas background with grid
+                            Rectangle {
+                                anchors.fill: parent
+                                color: "#2C2C2C"
+                                radius: 4
+                                border.color: "#34495E"
+                                border.width: 1
+
+                                // Grid pattern
+                                Repeater {
+                                    model: 20
+                                    Rectangle {
+                                        x: (parent.width / 20) * index
+                                        width: 1
+                                        height: parent.height
+                                        color: "#34495E"
+                                        opacity: 0.3
+                                    }
+                                }
+
+                                Repeater {
+                                    model: 15
+                                    Rectangle {
+                                        y: (parent.height / 15) * index
+                                        width: parent.width
+                                        height: 1
+                                        color: "#34495E"
+                                        opacity: 0.3
+                                    }
+                                }
+                            }
+
+                            // Initialize drag and drop helper
+                            Component.onCompleted: {
+                                dragDropHelper.init(canvas);
+                            }
+                        }
+                    }
+
+                    // Component properties
+                    Rectangle {
+                        width: 280
+                        color: "#2C2C2C"
+                        border.left: Rectangle {
+                            width: 1
+                            height: parent.height
+                            color: "#34495E"
+                        }
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 15
+                            spacing: 15
+
+                            Text {
+                                text: "Component Properties"
+                                font.bold: true
+                                font.pointSize: 14
+                                color: "#3498DB"
+                            }
+
+                            Text {
+                                id: selectedComponentText
+                                text: "Selected Component: None"
+                                color: "#BDC3C7"
+                            }
+
+                            // Property editors will be added here dynamically
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                color: "#34495E"
+                                radius: 4
+                                visible: false
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "Select a component to edit properties"
+                                    color: "#7F8C8D"
+                                    wrapMode: Text.Wrap
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
                                 }
                             }
                         }
                     }
                 }
             }
+        }
+        
+        // Tag Management page
+        Component {
+            id: tagManagementPage
+            Rectangle {
+                color: "#1E1E1E"
 
-            // Alarm & Event Management tab
-            Page {
-                padding: 0
-                Rectangle {
+                ColumnLayout {
                     anchors.fill: parent
-                    color: "#1E1E1E"
+                    anchors.margins: 15
+                    spacing: 15
 
-                    SplitView {
-                        anchors.fill: parent
-                        orientation: Qt.Horizontal
-                        handleDelegate: Rectangle {
-                            width: 2
-                            color: "#34495E"
+                    // Tag management header
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+
+                        Text {
+                            text: "Tag Management"
+                            font.bold: true
+                            font.pointSize: 14
+                            color: "#3498DB"
+                            Layout.fillWidth: true
                         }
 
-                        // Alarm configuration panel
-                        Rectangle {
-                            id: alarmConfigPanel
-                            width: 300
-                            color: "#2C2C2C"
+                        Button {
+                            text: "Add Tag"
+                            width: 100
+                            height: 35
+                            color: "#27AE60"
+                            textColor: "white"
+                            onClicked: {
+                                tagDialog.visible = true;
+                            }
+                        }
+                    }
+
+                    // Tag list
+                    Rectangle {
+                        id: tagListContainer
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: "#2C2C2C"
+                        radius: 4
+                        border.color: "#34495E"
+                        border.width: 1
+
+                        TableView {
+                            anchors.fill: parent
+                            anchors.margins: 5
+                            model: tagManager ? tagManager.getAllTags() : []
+                            sortIndicatorVisible: true
+
+                            TableViewColumn {
+                                role: "name"
+                                title: "Name"
+                                width: 180
+                                delegate: Text {
+                                    text: modelData.name
+                                    color: "#BDC3C7"
+                                    padding: 5
+                                }
+                            }
+
+                            TableViewColumn {
+                                role: "group"
+                                title: "Group"
+                                width: 120
+                                delegate: Text {
+                                    text: modelData.group
+                                    color: "#BDC3C7"
+                                    padding: 5
+                                }
+                            }
+
+                            TableViewColumn {
+                                role: "value"
+                                title: "Value"
+                                width: 100
+                                delegate: Text {
+                                    text: modelData.value
+                                    font.bold: true
+                                    color: "#3498DB"
+                                    padding: 5
+                                }
+                            }
+
+                            TableViewColumn {
+                                role: "description"
+                                title: "Description"
+                                width: 300
+                                delegate: Text {
+                                    text: modelData.description
+                                    color: "#BDC3C7"
+                                    padding: 5
+                                    elide: Text.ElideRight
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Component Management page
+        Component {
+            id: componentManagementPage
+            Rectangle {
+                color: "#1E1E1E"
+
+                GridLayout {
+                    anchors.fill: parent
+                    anchors.margins: 15
+                    columns: 3
+                    rowSpacing: 15
+                    columnSpacing: 15
+
+                    // Basic components card
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: "#2C2C2C"
+                        radius: 4
+                        border.color: "#34495E"
+                        border.width: 1
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 15
+                            spacing: 15
+
+                            Text {
+                                text: "Basic Components"
+                                font.bold: true
+                                font.pointSize: 14
+                                color: "#3498DB"
+                            }
+
+                            ColumnLayout {
+                                spacing: 15
+
+                                Indicator {
+                                    width: 80
+                                    height: 80
+                                    active: true
+                                    Layout.alignment: Qt.AlignCenter
+                                }
+
+                                PushButton {
+                                    text: "Button"
+                                    width: 120
+                                    height: 40
+                                    Layout.alignment: Qt.AlignCenter
+                                }
+
+                                TextLabel {
+                                    labelText: "Label:"
+                                    valueText: "Value"
+                                    Layout.fillWidth: true
+                                }
+                            }
+                        }
+                    }
+
+                    // Industrial components card
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: "#2C2C2C"
+                        radius: 4
+                        border.color: "#34495E"
+                        border.width: 1
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 15
+                            spacing: 15
+
+                            Text {
+                                text: "Industrial Components"
+                                font.bold: true
+                                font.pointSize: 14
+                                color: "#3498DB"
+                            }
+
+                            ColumnLayout {
+                                spacing: 15
+
+                                Valve {
+                                    width: 100
+                                    height: 100
+                                    open: true
+                                    Layout.alignment: Qt.AlignCenter
+                                }
+
+                                Tank {
+                                    width: 100
+                                    height: 140
+                                    level: 0.7
+                                    Layout.alignment: Qt.AlignCenter
+                                }
+
+                                Motor {
+                                    width: 100
+                                    height: 100
+                                    running: true
+                                    Layout.alignment: Qt.AlignCenter
+                                }
+
+                                Pump {
+                                    width: 100
+                                    height: 100
+                                    running: true
+                                    Layout.alignment: Qt.AlignCenter
+                                }
+                            }
+                        }
+                    }
+
+                    // Chart components card
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: "#2C2C2C"
+                        radius: 4
+                        border.color: "#34495E"
+                        border.width: 1
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 15
+                            spacing: 15
+
+                            Text {
+                                text: "Chart Components"
+                                font.bold: true
+                                font.pointSize: 14
+                                color: "#3498DB"
+                            }
+
+                            ColumnLayout {
+                                spacing: 15
+                                Layout.fillWidth: true
+
+                                TrendChart {
+                                    width: parent.width
+                                    height: 180
+                                    title: "Trend Chart"
+                                }
+
+                                BarChart {
+                                    width: parent.width
+                                    height: 180
+                                    title: "Bar Chart"
+                                }
+                            }
+                        }
+                    }
+
+                    // Control components card
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: "#2C2C2C"
+                        radius: 4
+                        border.color: "#34495E"
+                        border.width: 1
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 15
+                            spacing: 15
+
+                            Text {
+                                text: "Control Components"
+                                font.bold: true
+                                font.pointSize: 14
+                                color: "#3498DB"
+                            }
+
+                            ColumnLayout {
+                                spacing: 15
+                                Layout.fillWidth: true
+
+                                Slider {
+                                    width: parent.width
+                                    height: 60
+                                    label: "Temperature"
+                                    unit: "°C"
+                                    value: 75
+                                }
+
+                                Knob {
+                                    width: 120
+                                    height: 150
+                                    label: "Pressure"
+                                    unit: "bar"
+                                    value: 60
+                                    Layout.alignment: Qt.AlignCenter
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Alarm & Event Management page
+        Component {
+            id: alarmManagementPage
+            Rectangle {
+                color: "#1E1E1E"
+
+                SplitView {
+                    anchors.fill: parent
+                    orientation: Qt.Horizontal
+                    handleDelegate: Rectangle {
+                        width: 2
+                        color: "#34495E"
+                    }
+
+                    // Alarm configuration panel
+                    Rectangle {
+                        id: alarmConfigPanel
+                        width: 300
+                        color: "#2C2C2C"
                             border.right: Rectangle {
                                 width: 1
                                 height: parent.height
