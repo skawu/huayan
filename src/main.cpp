@@ -81,10 +81,20 @@ int main(int argc, char *argv[])
     #endif
 
     // 设置QML导入路径
-    engine.addImportPath(QDir::currentPath() + "/qml");
+    QString qmlPath = QDir::currentPath() + "/qml";
+    if (!QDir(qmlPath).exists()) {
+        // 尝试从构建目录的上一级查找
+        qmlPath = QDir::currentPath() + "/../qml";
+        if (!QDir(qmlPath).exists()) {
+            // 尝试从项目根目录查找
+            qmlPath = QCoreApplication::applicationDirPath() + "/../qml";
+        }
+    }
+    engine.addImportPath(qmlPath);
 
     // 加载QML主文件
-    const QUrl url(QStringLiteral("qml/main.qml"));
+    QString mainQmlPath = qmlPath + "/main.qml";
+    const QUrl url = QUrl::fromLocalFile(mainQmlPath);
     engine.load(url);
 
     // 检查QML加载是否成功

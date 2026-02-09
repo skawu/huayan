@@ -85,6 +85,24 @@ add_custom_command(TARGET SCADASystem POST_BUILD
     COMMENT "Copying QML files to build directory"
 )
 
+# Also copy QML files to the bin directory where the executable is located
+add_custom_command(TARGET SCADASystem POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/qml
+        ${CMAKE_BINARY_DIR}/bin/qml
+    COMMENT "Copying QML files to bin directory"
+)
+
+# Also copy QML files to the directory where the executable is built
+# This handles the case where the executable is built directly in the bin directory
+# (as in Qt Creator's build setup)
+add_custom_command(TARGET SCADASystem POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/qml
+        $<TARGET_FILE_DIR:SCADASystem>/qml
+    COMMENT "Copying QML files to executable directory"
+)
+
 # Ensure the plugins directory exists in build directory
 add_custom_command(TARGET SCADASystem PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory
