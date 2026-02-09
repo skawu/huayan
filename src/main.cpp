@@ -65,12 +65,34 @@ int main(int argc, char *argv[])
             url = QUrl::fromLocalFile(qmlPath);
             qDebug() << "Using file system path for QML:" << qmlPath;
         } else {
-            qmlPath = QDir::homePath() + "/workspace/project/qml/main.qml";
+            qmlPath = QDir::homePath() + "/workspace/huayan/qml/main.qml";
             if (QFile::exists(qmlPath)) {
                 url = QUrl::fromLocalFile(qmlPath);
                 qDebug() << "Using home path for QML:" << qmlPath;
             } else {
-                qDebug() << "Failed to find main.qml in any location";
+                // Try common project paths
+                QStringList possiblePaths = {
+                    QDir::homePath() + "/workspace/huayan/qml/main.qml",
+                    QDir::homePath() + "/huayan/qml/main.qml",
+                    "/home/hdzk/workspace/huayan/qml/main.qml",
+                    "/home/hdzk/huayan/qml/main.qml"
+                };
+                
+                bool found = false;
+                for (const QString &path : possiblePaths) {
+                    if (QFile::exists(path)) {
+                        url = QUrl::fromLocalFile(path);
+                        qDebug() << "Using common path for QML:" << path;
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found) {
+                    qDebug() << "Failed to find main.qml in any location";
+                    qDebug() << "Current working directory:" << QDir::currentPath();
+                    qDebug() << "Home directory:" << QDir::homePath();
+                }
             }
         }
     }
