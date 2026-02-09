@@ -3,6 +3,8 @@
 # Set Qt policy to suppress QTP0001 warning
 qt_policy(SET QTP0001 NEW)
 
+find_package(Qt6 REQUIRED COMPONENTS Core Qml Quick)
+
 # Add QML module
 qt_add_qml_module(ThreeDComponents
     URI ThreeDComponents
