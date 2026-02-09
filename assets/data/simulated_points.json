@@ -1,0 +1,49 @@
+{
+  "points": [
+    {
+      "tagName": "pump1",
+      "description": "泵1",
+      "value": 0.75,
+      "unit": "MPa",
+      "min": 0,
+      "max": 1,
+      "alarmThreshold": 0.9
+    },
+    {
+      "tagName": "valve1",
+      "description": "阀门1",
+      "value": 0.45,
+      "unit": "%",
+      "min": 0,
+      "max": 1,
+      "alarmThreshold": 0.95
+    },
+    {
+      "tagName": "motor1",
+      "description": "电机1",
+      "value": 0.85,
+      "unit": "A",
+      "min": 0,
+      "max": 1,
+      "alarmThreshold": 0.9
+    },
+    {
+      "tagName": "temp1",
+      "description": "温度1",
+      "value": 0.65,
+      "unit": "°C",
+      "min": 0,
+      "max": 1,
+      "alarmThreshold": 0.85
+    },
+    {
+      "tagName": "pressure1",
+      "description": "压力1",
+      "value": 0.35,
+      "unit": "MPa",
+      "min": 0,
+      "max": 1,
+      "alarmThreshold": 0.9
+    }
+  ]
+}
