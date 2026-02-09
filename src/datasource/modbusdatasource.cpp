@@ -1,4 +1,6 @@
 #include "modbusdatasource.h"
+#include <QThread>
+#include <QCoreApplication>
 
 /**
  * @file modbusdatasource.cpp
@@ -91,7 +93,6 @@ void ModbusDataSource::disconnectFromServer()
 
 bool ModbusDataSource::isConnected() const
 {
-    QMutexLocker locker(&m_mutex);
     return m_client && m_client->state() == QModbusDevice::State::ConnectedState;
 }
 
@@ -154,13 +155,19 @@ QVector<quint16> ModbusDataSource::readRegisters(QModbusDataUnit::RegisterType r
         return QVector<quint16>();
     }
 
-    // 等待回复
-    if (!reply->waitForFinished(1000)) {
-        delete reply;
-        return QVector<quint16>();
-    }
-
-    // 处理回复
+    // Use a local event loop to wait for the reply
+    QEventLoop loop;
+    connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
+    
+    // Wait for the reply with a timeout
+    QTimer timer;
+    timer.setSingleShot(true);
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(1000);
+    
+    loop.exec();
+    
+    // Check if the reply is finished
     QVector<quint16> values;
     if (reply->error() == QModbusDevice::NoError) {
         const QModbusDataUnit unit = reply->result();
@@ -193,13 +200,19 @@ bool ModbusDataSource::writeRegisters(QModbusDataUnit::RegisterType registerType
         return false;
     }
 
-    // 等待回复
-    if (!reply->waitForFinished(1000)) {
-        delete reply;
-        return false;
-    }
-
-    // 处理回复
+    // Use a local event loop to wait for the reply
+    QEventLoop loop;
+    connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
+    
+    // Wait for the reply with a timeout
+    QTimer timer;
+    timer.setSingleShot(true);
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(1000);
+    
+    loop.exec();
+    
+    // Check if the reply is finished
     bool success = (reply->error() == QModbusDevice::NoError);
     delete reply;
     return success;
@@ -213,7 +226,7 @@ bool ModbusDataSource::readCoil(quint16 address)
 
 bool ModbusDataSource::writeCoil(quint16 address, bool value)
 {
-    QVector<quint16> values = {value ? 0xFF00 : 0x0000};
+    QVector<quint16> values = {static_cast<quint16>(value ? 0xFF00 : 0x0000)};
     return writeRegisters(QModbusDataUnit::Coils, address, values);
 }
 
@@ -288,7 +301,6 @@ void ModbusDataSource::syncData()
     for (const auto &key : m_registerBindings.keys()) {
         QModbusDataUnit::RegisterType registerType = key.first;
         quint16 address = key.second;
-        const RegisterBinding &binding = m_registerBindings[key];
         
         // 创建数据单元
         QModbusDataUnit dataUnit(registerType, address, 1);
@@ -296,7 +308,9 @@ void ModbusDataSource::syncData()
         // 发送读取请求
         QModbusReply *reply = m_client->sendReadRequest(dataUnit, m_slaveId);
         if (reply) {
-            connect(reply, &QModbusReply::finished, this, &ModbusDataSource::onReadFinished);
+            connect(reply, &QModbusReply::finished, this, [this, reply]() {
+                onReadFinished(reply);
+            });
         }
     }
 }

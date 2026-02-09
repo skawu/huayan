@@ -8,6 +8,14 @@
  * 支持与Huayan点位管理系统的绑定，确保数据的实时更新
  */
 
+#ifdef HAVE_OPCUA
+#include <QOpcUaClient>
+#include <QOpcUaNode>
+#include <QOpcUaValue>
+#include <QOpcUaMonitoringParameters>
+#include <QThread>
+#endif
+
 OpcUaDataSource::OpcUaDataSource(HYTagManager *tagManager, QObject *parent) 
     : QObject(parent),
       m_tagManager(tagManager),
@@ -27,51 +35,63 @@ OpcUaDataSource::~OpcUaDataSource()
 
 bool OpcUaDataSource::connectToServer(const QString &url, const QString &username, const QString &password)
 {
+#ifdef HAVE_OPCUA
     QMutexLocker locker(&m_mutex);
 
     // 断开现有连接
     if (m_client) {
-        delete m_client;
+        delete static_cast<QOpcUaClient*>(m_client);
         m_client = nullptr;
     }
 
     // 创建OPC UA客户端
-    m_client = new QOpcUaClient(QOpcUaClient::Backends::open62541, this);
+    QOpcUaClient *client = new QOpcUaClient(QOpcUaClient::Backends::open62541, this);
     
     // 连接信号槽
-    connect(m_client, &QOpcUaClient::stateChanged, this, &OpcUaDataSource::onConnectionStateChanged);
-    connect(m_client, &QOpcUaClient::attributeChanged, this, &OpcUaDataSource::onAttributeChanged);
+    connect(client, &QOpcUaClient::stateChanged, this, [this](QOpcUaClient::ClientState state) {
+        onConnectionStateChanged(static_cast<int>(state));
+    });
+    connect(client, &QOpcUaClient::attributeChanged, this, [this](const QString &nodeId, QOpcUa::NodeAttribute attribute, const QVariant &value) {
+        onAttributeChanged(nodeId, static_cast<int>(attribute), value);
+    });
 
     // 设置认证信息
     if (!username.isEmpty()) {
-        m_client->setUserName(username);
-        m_client->setPassword(password);
+        client->setUserName(username);
+        client->setPassword(password);
     }
 
+    m_client = client;
+
     // 连接到服务器
-    m_client->connectToEndpoint(url);
+    client->connectToEndpoint(url);
 
     // 等待连接完成（最多5秒）
     int timeout = 5000;
     int interval = 100;
     int elapsed = 0;
-    while (m_client->state() != QOpcUaClient::ClientState::Connected && elapsed < timeout) {
+    while (client->state() != QOpcUaClient::ClientState::Connected && elapsed < timeout) {
         QThread::msleep(interval);
         QCoreApplication::processEvents();
         elapsed += interval;
     }
 
-    if (m_client->state() == QOpcUaClient::ClientState::Connected) {
+    if (client->state() == QOpcUaClient::ClientState::Connected) {
         // 启动同步定时器
         m_syncTimer->start();
         return true;
     }
-
+#else
+    Q_UNUSED(url)
+    Q_UNUSED(username)
+    Q_UNUSED(password)
+#endif
     return false;
 }
 
 void OpcUaDataSource::disconnectFromServer()
 {
+#ifdef HAVE_OPCUA
     QMutexLocker locker(&m_mutex);
 
     // 停止同步定时器
@@ -79,8 +99,8 @@ void OpcUaDataSource::disconnectFromServer()
 
     // 断开连接
     if (m_client) {
-        m_client->disconnectFromEndpoint();
-        delete m_client;
+        static_cast<QOpcUaClient*>(m_client)->disconnectFromEndpoint();
+        delete static_cast<QOpcUaClient*>(m_client);
         m_client = nullptr;
     }
 
@@ -88,19 +108,25 @@ void OpcUaDataSource::disconnectFromServer()
     m_nodeBindings.clear();
 
     emit connectionStatusChanged(false);
+#endif
 }
 
 bool OpcUaDataSource::isConnected() const
 {
+#ifdef HAVE_OPCUA
     QMutexLocker locker(&m_mutex);
-    return m_client && m_client->state() == QOpcUaClient::ClientState::Connected;
+    return m_client && static_cast<QOpcUaClient*>(m_client)->state() == QOpcUaClient::ClientState::Connected;
+#else
+    return false;
+#endif
 }
 
 bool OpcUaDataSource::bindNodeToTag(const QString &nodeId, const QString &tagName, int samplingInterval)
 {
+#ifdef HAVE_OPCUA
     QMutexLocker locker(&m_mutex);
 
-    if (!m_client || m_client->state() != QOpcUaClient::ClientState::Connected) {
+    if (!m_client || static_cast<QOpcUaClient*>(m_client)->state() != QOpcUaClient::ClientState::Connected) {
         return false;
     }
 
@@ -113,7 +139,7 @@ bool OpcUaDataSource::bindNodeToTag(const QString &nodeId, const QString &tagNam
     }
 
     // 创建节点
-    QOpcUaNode *node = m_client->node(nodeId);
+    QOpcUaNode *node = static_cast<QOpcUaClient*>(m_client)->node(nodeId);
     if (!node) {
         return false;
     }
@@ -132,10 +158,17 @@ bool OpcUaDataSource::bindNodeToTag(const QString &nodeId, const QString &tagNam
     m_nodeBindings[nodeId] = binding;
 
     return true;
+#else
+    Q_UNUSED(nodeId)
+    Q_UNUSED(tagName)
+    Q_UNUSED(samplingInterval)
+    return false;
+#endif
 }
 
 bool OpcUaDataSource::unbindNodeFromTag(const QString &nodeId)
 {
+#ifdef HAVE_OPCUA
     QMutexLocker locker(&m_mutex);
 
     if (!m_nodeBindings.contains(nodeId)) {
@@ -145,25 +178,30 @@ bool OpcUaDataSource::unbindNodeFromTag(const QString &nodeId)
     // 禁用监控
     NodeBinding binding = m_nodeBindings[nodeId];
     if (binding.node) {
-        binding.node->disableMonitoring(QOpcUa::NodeAttribute::Value);
-        delete binding.node;
+        static_cast<QOpcUaNode*>(binding.node)->disableMonitoring(QOpcUa::NodeAttribute::Value);
+        delete static_cast<QOpcUaNode*>(binding.node);
     }
 
     // 从映射中移除
     m_nodeBindings.remove(nodeId);
 
     return true;
+#else
+    Q_UNUSED(nodeId)
+    return false;
+#endif
 }
 
 QVariant OpcUaDataSource::readNodeValue(const QString &nodeId)
 {
+#ifdef HAVE_OPCUA
     QMutexLocker locker(&m_mutex);
 
-    if (!m_client || m_client->state() != QOpcUaClient::ClientState::Connected) {
+    if (!m_client || static_cast<QOpcUaClient*>(m_client)->state() != QOpcUaClient::ClientState::Connected) {
         return QVariant();
     }
 
-    QOpcUaNode *node = m_client->node(nodeId);
+    QOpcUaNode *node = static_cast<QOpcUaClient*>(m_client)->node(nodeId);
     if (!node) {
         return QVariant();
     }
@@ -173,17 +211,22 @@ QVariant OpcUaDataSource::readNodeValue(const QString &nodeId)
     delete node;
 
     return value.value();
+#else
+    Q_UNUSED(nodeId)
+    return QVariant();
+#endif
 }
 
 bool OpcUaDataSource::writeNodeValue(const QString &nodeId, const QVariant &value)
 {
+#ifdef HAVE_OPCUA
     QMutexLocker locker(&m_mutex);
 
-    if (!m_client || m_client->state() != QOpcUaClient::ClientState::Connected) {
+    if (!m_client || static_cast<QOpcUaClient*>(m_client)->state() != QOpcUaClient::ClientState::Connected) {
         return false;
     }
 
-    QOpcUaNode *node = m_client->node(nodeId);
+    QOpcUaNode *node = static_cast<QOpcUaClient*>(m_client)->node(nodeId);
     if (!node) {
         return false;
     }
@@ -193,11 +236,19 @@ bool OpcUaDataSource::writeNodeValue(const QString &nodeId, const QVariant &valu
     delete node;
 
     return result;
+#else
+    Q_UNUSED(nodeId)
+    Q_UNUSED(value)
+    return false;
+#endif
 }
 
-void OpcUaDataSource::onConnectionStateChanged(QOpcUaClient::ClientState state)
+void OpcUaDataSource::onConnectionStateChanged(int state)
 {
-    bool connected = (state == QOpcUaClient::ClientState::Connected);
+#ifdef HAVE_OPCUA
+    QMutexLocker locker(&m_mutex);
+    
+    bool connected = (state == static_cast<int>(QOpcUaClient::ClientState::Connected));
     emit connectionStatusChanged(connected);
 
     if (connected) {
@@ -205,11 +256,15 @@ void OpcUaDataSource::onConnectionStateChanged(QOpcUaClient::ClientState state)
     } else {
         m_syncTimer->stop();
     }
+#else
+    Q_UNUSED(state)
+#endif
 }
 
-void OpcUaDataSource::onAttributeChanged(const QString &nodeId, QOpcUa::NodeAttribute attribute, const QVariant &value)
+void OpcUaDataSource::onAttributeChanged(const QString &nodeId, int attribute, const QVariant &value)
 {
-    if (attribute != QOpcUa::NodeAttribute::Value) {
+#ifdef HAVE_OPCUA
+    if (attribute != static_cast<int>(QOpcUa::NodeAttribute::Value)) {
         return;
     }
 
@@ -225,13 +280,19 @@ void OpcUaDataSource::onAttributeChanged(const QString &nodeId, QOpcUa::NodeAttr
         // 发出数据更新信号
         emit dataUpdated(binding.tagName, value);
     }
+#else
+    Q_UNUSED(nodeId)
+    Q_UNUSED(attribute)
+    Q_UNUSED(value)
+#endif
 }
 
 void OpcUaDataSource::syncData()
 {
+#ifdef HAVE_OPCUA
     QMutexLocker locker(&m_mutex);
 
-    if (!m_client || m_client->state() != QOpcUaClient::ClientState::Connected) {
+    if (!m_client || static_cast<QOpcUaClient*>(m_client)->state() != QOpcUaClient::ClientState::Connected) {
         return;
     }
 
@@ -241,7 +302,7 @@ void OpcUaDataSource::syncData()
         
         if (binding.node) {
             // 读取节点值
-            QOpcUaValue value = binding.node->attribute(QOpcUa::NodeAttribute::Value);
+            QOpcUaValue value = static_cast<QOpcUaNode*>(binding.node)->attribute(QOpcUa::NodeAttribute::Value);
             if (value.isValid()) {
                 // 更新Huayan点位值
                 m_tagManager->setTagValue(binding.tagName, value.value());
@@ -251,4 +312,5 @@ void OpcUaDataSource::syncData()
             }
         }
     }
+#endif
 }

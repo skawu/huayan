@@ -8,9 +8,18 @@
 
 #include "core/tagmanager.h"
 #include "core/chartdatamodel.h"
-#include "datasource/opcuadatasource.h"
+
+// Conditionally include Mqtt headers if available
+#ifdef HAVE_MQTT
 #include "datasource/mqttdatasource.h"
+#endif
+
 #include "datasource/modbusdatasource.h"
+
+// Conditionally include OpcUa headers if available
+#ifdef HAVE_OPCUA
+#include "datasource/opcuadatasource.h"
+#endif
 
 /**
  * @file main.cpp
@@ -23,7 +32,6 @@
 int main(int argc, char *argv[])
 {
     // 设置Qt应用程序属性
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QCoreApplication::setApplicationName("Huayan工业软件");
     QCoreApplication::setApplicationVersion("1.0.0");
     QCoreApplication::setOrganizationName("Huayan Software");
@@ -41,28 +49,36 @@ int main(int argc, char *argv[])
     // 初始化图表数据模型
     ChartDataModel *chartDataModel = new ChartDataModel(tagManager, &app);
 
-    // 初始化数据源
-    OpcUaDataSource *opcUaDataSource = new OpcUaDataSource(tagManager, &app);
-    MqttDataSource *mqttDataSource = new MqttDataSource(tagManager, &app);
-    ModbusDataSource *modbusDataSource = new ModbusDataSource(tagManager, &app);
-
     // 创建QML应用程序引擎
     QQmlApplicationEngine engine;
 
     // 注册QML类型
     qmlRegisterType<HYTagManager>("Huayan.Core", 1, 0, "HYTagManager");
     qmlRegisterType<ChartDataModel>("Huayan.Core", 1, 0, "ChartDataModel");
-    qmlRegisterType<OpcUaDataSource>("Huayan.DataSource", 1, 0, "OpcUaDataSource");
-    qmlRegisterType<MqttDataSource>("Huayan.DataSource", 1, 0, "MqttDataSource");
     qmlRegisterType<ModbusDataSource>("Huayan.DataSource", 1, 0, "ModbusDataSource");
+
+    // 初始化数据源
+    ModbusDataSource *modbusDataSource = new ModbusDataSource(tagManager, &app);
 
     // 设置QML上下文属性
     QQmlContext *context = engine.rootContext();
     context->setContextProperty("tagManager", tagManager);
     context->setContextProperty("chartDataModel", chartDataModel);
-    context->setContextProperty("opcUaDataSource", opcUaDataSource);
-    context->setContextProperty("mqttDataSource", mqttDataSource);
     context->setContextProperty("modbusDataSource", modbusDataSource);
+
+    // Conditionally initialize and set up OpcUaDataSource if available
+    #ifdef HAVE_OPCUA
+    qmlRegisterType<OpcUaDataSource>("Huayan.DataSource", 1, 0, "OpcUaDataSource");
+    OpcUaDataSource *opcUaDataSource = new OpcUaDataSource(tagManager, &app);
+    context->setContextProperty("opcUaDataSource", opcUaDataSource);
+    #endif
+
+    // Conditionally initialize and set up MqttDataSource if available
+    #ifdef HAVE_MQTT
+    qmlRegisterType<MqttDataSource>("Huayan.DataSource", 1, 0, "MqttDataSource");
+    MqttDataSource *mqttDataSource = new MqttDataSource(tagManager, &app);
+    context->setContextProperty("mqttDataSource", mqttDataSource);
+    #endif
 
     // 设置QML导入路径
     engine.addImportPath(QDir::currentPath() + "/qml");
@@ -90,8 +106,12 @@ int main(int argc, char *argv[])
     int result = app.exec();
 
     // 清理资源
+    #ifdef HAVE_OPCUA
     delete opcUaDataSource;
+    #endif
+    #ifdef HAVE_MQTT
     delete mqttDataSource;
+    #endif
     delete modbusDataSource;
     delete chartDataModel;
     delete tagManager;

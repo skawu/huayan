@@ -2,12 +2,16 @@
 #define OPCUADATASOURCE_H
 
 #include <QObject>
-#include <QOpcUaClient>
-#include <QOpcUaNode>
-#include <QOpcUaValue>
 #include <QTimer>
 #include <QMutex>
 #include "../core/tagmanager.h"
+
+// Conditionally include OpcUa headers if available
+#ifdef HAVE_OPCUA
+#include <QOpcUaClient>
+#include <QOpcUaNode>
+#include <QOpcUaValue>
+#endif
 
 /**
  * @file opcuadatasource.h
@@ -107,7 +111,7 @@ private slots:
      * @brief 连接状态变化槽函数
      * @param state 连接状态
      */
-    void onConnectionStateChanged(QOpcUaClient::ClientState state);
+    void onConnectionStateChanged(int state);
     
     /**
      * @brief 属性变化槽函数
@@ -115,7 +119,7 @@ private slots:
      * @param attribute 属性ID
      * @param value 新值
      */
-    void onAttributeChanged(const QString &nodeId, QOpcUa::NodeAttribute attribute, const QVariant &value);
+    void onAttributeChanged(const QString &nodeId, int attribute, const QVariant &value);
     
     /**
      * @brief 定期同步数据
@@ -124,7 +128,7 @@ private slots:
 
 private:
     HYTagManager *m_tagManager; ///< 点位管理器指针
-    QOpcUaClient *m_client; ///< OPC UA客户端
+    void *m_client; ///< OPC UA客户端
     QTimer *m_syncTimer; ///< 同步定时器
     QMutex m_mutex; ///< 互斥锁
     
@@ -132,7 +136,7 @@ private:
     struct NodeBinding {
         QString tagName; ///< 点位名称
         int samplingInterval; ///< 采样间隔
-        QOpcUaNode *node; ///< OPC UA节点
+        void *node; ///< OPC UA节点
     };
     QMap<QString, NodeBinding> m_nodeBindings; ///< 节点绑定映射表
 };
