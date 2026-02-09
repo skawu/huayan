@@ -75,13 +75,35 @@ int main(int argc, char *argv[])
     // Start data collection
     dataProcessor->startDataCollection(1000); // 1 second interval
 
-    // Load main QML file with fallback
-    QUrl url = QUrl(QStringLiteral("qrc:/qml/main.qml"));
+    // Load main QML file from file system path
+    // Start with file system path directly
+    QUrl url;
+    bool found = false;
     
-    // Fallback to file system path if resource path fails
-    if (!QFile::exists(":/qml/main.qml")) {
-        // Try relative paths from current working directory
-        QStringList relativePaths = {
+    // Try relative paths from current working directory
+    QStringList relativePaths = {
+        "./qml/main.qml",
+        "qml/main.qml",
+        "./../qml/main.qml",
+        "../qml/main.qml",
+        "./../../qml/main.qml",
+        "../../qml/main.qml"
+    };
+    
+    for (const QString &relativePath : relativePaths) {
+        QString qmlPath = QDir::currentPath() + "/" + relativePath;
+        if (QFile::exists(qmlPath)) {
+            url = QUrl::fromLocalFile(qmlPath);
+            qDebug() << "Using relative path for QML:" << qmlPath;
+            found = true;
+            break;
+        }
+    }
+    
+    // Try paths relative to executable location
+    if (!found) {
+        QString exePath = QCoreApplication::applicationDirPath();
+        QStringList exeRelativePaths = {
             "./qml/main.qml",
             "qml/main.qml",
             "./../qml/main.qml",
@@ -90,49 +112,25 @@ int main(int argc, char *argv[])
             "../../qml/main.qml"
         };
         
-        bool found = false;
-        for (const QString &relativePath : relativePaths) {
-            QString qmlPath = QDir::currentPath() + "/" + relativePath;
+        for (const QString &relativePath : exeRelativePaths) {
+            QString qmlPath = exePath + "/" + relativePath;
             if (QFile::exists(qmlPath)) {
                 url = QUrl::fromLocalFile(qmlPath);
-                qDebug() << "Using relative path for QML:" << qmlPath;
+                qDebug() << "Using executable relative path for QML:" << qmlPath;
                 found = true;
                 break;
             }
         }
+    }
+    
+    if (!found) {
+        qDebug() << "Failed to find main.qml in any location";
+        qDebug() << "Current working directory:" << QDir::currentPath();
+        qDebug() << "Application directory:" << QCoreApplication::applicationDirPath();
         
-        // Try paths relative to executable location
-        if (!found) {
-            QString exePath = QCoreApplication::applicationDirPath();
-            QStringList exeRelativePaths = {
-                "./qml/main.qml",
-                "qml/main.qml",
-                "./../qml/main.qml",
-                "../qml/main.qml",
-                "./../../qml/main.qml",
-                "../../qml/main.qml"
-            };
-            
-            for (const QString &relativePath : exeRelativePaths) {
-                QString qmlPath = exePath + "/" + relativePath;
-                if (QFile::exists(qmlPath)) {
-                    url = QUrl::fromLocalFile(qmlPath);
-                    qDebug() << "Using executable relative path for QML:" << qmlPath;
-                    found = true;
-                    break;
-                }
-            }
-        }
-        
-        if (!found) {
-            qDebug() << "Failed to find main.qml in any location";
-            qDebug() << "Current working directory:" << QDir::currentPath();
-            qDebug() << "Application directory:" << QCoreApplication::applicationDirPath();
-            
-            // Try to list directory contents to help debug
-            QDir currentDir(QDir::currentPath());
-            qDebug() << "Current directory contents:" << currentDir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
-        }
+        // Try to list directory contents to help debug
+        QDir currentDir(QDir::currentPath());
+        qDebug() << "Current directory contents:" << currentDir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
     }
     
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
