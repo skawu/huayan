@@ -145,14 +145,18 @@ QVector<QString> HYTagManager::getGroups() const
 
 bool HYTagManager::setTagValue(const QString &name, const QVariant &value)
 {
-    QMutexLocker locker(&m_hyMutex);
-
-    if (!m_hyTags.contains(name)) {
-        return false;
+    HYTag *tag = nullptr;
+    {
+        QMutexLocker locker(&m_hyMutex);
+        if (!m_hyTags.contains(name)) {
+            return false;
+        }
+        tag = m_hyTags[name];
     }
-
-    HYTag *tag = m_hyTags[name];
-    tag->setValue(value);
+    
+    if (tag) {
+        tag->setValue(value);
+    }
     return true;
 }
 

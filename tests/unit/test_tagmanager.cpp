@@ -192,13 +192,12 @@ private slots:
         tagManager->addTag("Signal_Test", "Test_Group", 100);
 
         // 创建信号间谍
-        QSignalSpy spy(tagManager, SIGNAL(tagValueChanged(QString, QVariant)));
+        QSignalSpy spy(tagManager, &HYTagManager::tagValueChanged);
 
         // 更改标签值
         tagManager->setTagValue("Signal_Test", 200);
 
         // 检查信号是否发出
-        QVERIFY(spy.wait());
         QCOMPARE(spy.count(), 1);
 
         // 检查信号参数
@@ -214,13 +213,12 @@ private slots:
      */
     void testTagAddedSignal() {
         // 创建信号间谍
-        QSignalSpy spy(tagManager, SIGNAL(tagAdded(QString)));
+        QSignalSpy spy(tagManager, &HYTagManager::tagAdded);
 
         // 添加标签
         tagManager->addTag("Added_Signal_Test", "Test_Group", 100);
 
         // 检查信号是否发出
-        QVERIFY(spy.wait());
         QCOMPARE(spy.count(), 1);
 
         // 检查信号参数
@@ -238,13 +236,12 @@ private slots:
         tagManager->addTag("Removed_Signal_Test", "Test_Group", 100);
 
         // 创建信号间谍
-        QSignalSpy spy(tagManager, SIGNAL(tagRemoved(QString)));
+        QSignalSpy spy(tagManager, &HYTagManager::tagRemoved);
 
         // 移除标签
         tagManager->removeTag("Removed_Signal_Test");
 
         // 检查信号是否发出
-        QVERIFY(spy.wait());
         QCOMPARE(spy.count(), 1);
 
         // 检查信号参数

@@ -10,10 +10,10 @@ qt_add_qml_module(IndustrialComponents
         Valve.qml
         Tank.qml
         Motor.qml
-        Pump.qml
         Gauge.qml
         IndustrialButton.qml
         IndustrialIndicator.qml
+        Pump.qml
     OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/qml/plugins/IndustrialComponents
 )
 
