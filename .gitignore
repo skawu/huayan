@@ -1,6 +1,7 @@
 # Qt 项目忽略规则
 build/
 bin/
+SCADASystemQml/
 *.pro.user
 *.pro.user.*
 *.qmake.stash
@@ -19,8 +20,11 @@ Makefile*
 .qmake.stash
 .moc/
 .rcc/
+.qt/
 .qtc_clangd/
 .cxx/
+qmltypes/
+meta_types/
 
 # 编译产物
 *.so
@@ -39,6 +43,16 @@ install_manifest.txt
 qml/plugins/**/*.so
 qml/plugins/**/*.dll
 qml/plugins/**/*.dylib
+qml/plugins/**/.rcc/
+qml/plugins/**/.qt/
+qml/plugins/**/meta_types/
+qml/plugins/**/qmltypes/
+qml/plugins/**/*plugin_*Plugin.cpp
+qml/plugins/**/*plugin_*Plugin_in.cpp
+qml/plugins/**/*.qmltypes
+qml/plugins/**/*_qml_module_dir_map.qrc
+*plugin_*Plugin.cpp
+*plugin_*Plugin_in.cpp
 
 # IDE 相关
 .idea/
