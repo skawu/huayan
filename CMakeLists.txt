@@ -45,7 +45,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 # Qt 6 standard project setup
-find_package(Qt6 6.8 REQUIRED COMPONENTS Core Quick Network SerialBus Sql Charts QuickControls2)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Core Quick Network SerialBus Sql Charts QuickControls2 OpcUa)
 qt_standard_project_setup()
 
 # Set QML import path

@@ -32,6 +32,7 @@ target_link_libraries(SCADASystem PRIVATE
     Qt6::Sql
     Qt6::Charts
     Qt6::QuickControls2
+    Qt6::OpcUa
     SCADASystemQml
 )
 
