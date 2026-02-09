@@ -2,7 +2,8 @@ module IndustrialComponents
 linktarget IndustrialComponentsplugin
 optional plugin IndustrialComponentsplugin
 classname IndustrialComponentsPlugin
-prefer :/IndustrialComponents/
+typeinfo IndustrialComponents.qmltypes
+prefer :/qt/qml/IndustrialComponents/
 Valve 1.0 Valve.qml
 Tank 1.0 Tank.qml
 Motor 1.0 Motor.qml
