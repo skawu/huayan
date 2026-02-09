@@ -60,40 +60,58 @@ int main(int argc, char *argv[])
     
     // Fallback to file system path if resource path fails
     if (!QFile::exists(":/qml/main.qml")) {
-        QString qmlPath = QDir::currentPath() + "/qml/main.qml";
-        if (QFile::exists(qmlPath)) {
-            url = QUrl::fromLocalFile(qmlPath);
-            qDebug() << "Using file system path for QML:" << qmlPath;
-        } else {
-            qmlPath = QDir::homePath() + "/workspace/huayan/qml/main.qml";
+        // Try relative paths from current working directory
+        QStringList relativePaths = {
+            "./qml/main.qml",
+            "qml/main.qml",
+            "./../qml/main.qml",
+            "../qml/main.qml",
+            "./../../qml/main.qml",
+            "../../qml/main.qml"
+        };
+        
+        bool found = false;
+        for (const QString &relativePath : relativePaths) {
+            QString qmlPath = QDir::currentPath() + "/" + relativePath;
             if (QFile::exists(qmlPath)) {
                 url = QUrl::fromLocalFile(qmlPath);
-                qDebug() << "Using home path for QML:" << qmlPath;
-            } else {
-                // Try common project paths
-                QStringList possiblePaths = {
-                    QDir::homePath() + "/workspace/huayan/qml/main.qml",
-                    QDir::homePath() + "/huayan/qml/main.qml",
-                    "/home/hdzk/workspace/huayan/qml/main.qml",
-                    "/home/hdzk/huayan/qml/main.qml"
-                };
-                
-                bool found = false;
-                for (const QString &path : possiblePaths) {
-                    if (QFile::exists(path)) {
-                        url = QUrl::fromLocalFile(path);
-                        qDebug() << "Using common path for QML:" << path;
-                        found = true;
-                        break;
-                    }
-                }
-                
-                if (!found) {
-                    qDebug() << "Failed to find main.qml in any location";
-                    qDebug() << "Current working directory:" << QDir::currentPath();
-                    qDebug() << "Home directory:" << QDir::homePath();
+                qDebug() << "Using relative path for QML:" << qmlPath;
+                found = true;
+                break;
+            }
+        }
+        
+        // Try paths relative to executable location
+        if (!found) {
+            QString exePath = QCoreApplication::applicationDirPath();
+            QStringList exeRelativePaths = {
+                "./qml/main.qml",
+                "qml/main.qml",
+                "./../qml/main.qml",
+                "../qml/main.qml",
+                "./../../qml/main.qml",
+                "../../qml/main.qml"
+            };
+            
+            for (const QString &relativePath : exeRelativePaths) {
+                QString qmlPath = exePath + "/" + relativePath;
+                if (QFile::exists(qmlPath)) {
+                    url = QUrl::fromLocalFile(qmlPath);
+                    qDebug() << "Using executable relative path for QML:" << qmlPath;
+                    found = true;
+                    break;
                 }
             }
+        }
+        
+        if (!found) {
+            qDebug() << "Failed to find main.qml in any location";
+            qDebug() << "Current working directory:" << QDir::currentPath();
+            qDebug() << "Application directory:" << QCoreApplication::applicationDirPath();
+            
+            // Try to list directory contents to help debug
+            QDir currentDir(QDir::currentPath());
+            qDebug() << "Current directory contents:" << currentDir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
         }
     }
     
