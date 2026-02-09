@@ -382,7 +382,7 @@ bool HYTimeSeriesDatabase::storeInInfluxDB(const QString &tagName, const QVarian
 
     // Format data in InfluxDB line protocol
     QString lineProtocol;
-    if (value.type() == QVariant::Double || value.type() == QVariant::Int) {
+    if (value.typeId() == QMetaType::Double || value.typeId() == QMetaType::Int) {
         lineProtocol = QString("%1,tag=%2 value=%3 %4")
                        .arg(m_config.tableName)
                        .arg(tagName)
@@ -430,11 +430,11 @@ bool HYTimeSeriesDatabase::storeInTimescaleDB(const QString &tagName, const QVar
     query.bindValue(":timestamp", timestamp);
     query.bindValue(":tag_name", tagName);
 
-    if (value.type() == QVariant::Double || value.type() == QVariant::Int) {
+    if (value.typeId() == QMetaType::Double || value.typeId() == QMetaType::Int) {
         query.bindValue(":value", value.toDouble());
-        query.bindValue(":value_text", QVariant(QVariant::String));
+        query.bindValue(":value_text", QVariant(QString()));
     } else {
-        query.bindValue(":value", QVariant(QVariant::Double));
+        query.bindValue(":value", QVariant(0.0));
         query.bindValue(":value_text", value.toString());
     }
 
@@ -461,11 +461,11 @@ bool HYTimeSeriesDatabase::storeInSQLite(const QString &tagName, const QVariant 
     query.bindValue(":timestamp", timestamp.toMSecsSinceEpoch() / 1000); // Unix timestamp in seconds
     query.bindValue(":tag_name", tagName);
 
-    if (value.type() == QVariant::Double || value.type() == QVariant::Int) {
+    if (value.typeId() == QMetaType::Double || value.typeId() == QMetaType::Int) {
         query.bindValue(":value", value.toDouble());
-        query.bindValue(":value_text", QVariant(QVariant::String));
+        query.bindValue(":value_text", QVariant(QString()));
     } else {
-        query.bindValue(":value", QVariant(QVariant::Double));
+        query.bindValue(":value", QVariant(0.0));
         query.bindValue(":value_text", value.toString());
     }
 
