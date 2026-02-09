@@ -77,7 +77,7 @@ Item {
     Text {
         id: valueText
         visible: showText
-        text: (value - minValue) / (maxValue - minValue) * 100.toFixed(decimalPlaces) + unit
+        text: ((value - minValue) / (maxValue - minValue) * 100).toFixed(decimalPlaces) + unit
         color: textColor
         font.pixelSize: height * 0.6
         font.bold: true
