@@ -1,4 +1,9 @@
 module ControlComponents
-
+linktarget ControlComponentsplugin
+optional plugin ControlComponentsplugin
+classname ControlComponentsPlugin
+typeinfo ControlComponents.qmltypes
+prefer :/qt/qml/ControlComponents/
 Slider 1.0 Slider.qml
 Knob 1.0 Knob.qml
+

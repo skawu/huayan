@@ -9,31 +9,20 @@ qt_add_qml_module(ControlComponents
     QML_FILES
         Slider.qml
         Knob.qml
-    RESOURCES
-        qmldir
-    DEPENDENCIES
-        QtQuick
-        QtQuick.Controls
+    OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/qml/plugins/ControlComponents
 )
 
-# Set target properties
+# Set plugin properties
 set_target_properties(ControlComponents PROPERTIES
-    QT_QML_MODULE_INSTALL TRUE
     QT_QML_MODULE_VERSION 1.0
     QT_QML_MODULE_URI ControlComponents
 )
 
-# Install the plugin
+# Install configuration
 install(TARGETS ControlComponents
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/qml/ControlComponents
 )
 
-# Install QML files
-install(FILES
-    Slider.qml
-    Knob.qml
-    qmldir
+install(FILES qmldir
     DESTINATION ${CMAKE_INSTALL_PREFIX}/qml/ControlComponents
 )
