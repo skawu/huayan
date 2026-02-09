@@ -244,7 +244,8 @@ ApplicationWindow {
             }
 
             // Dashboard tab
-            Tab {
+            Page {
+                padding: 0
                 Rectangle {
                     anchors.fill: parent
                     color: "#1E1E1E"
@@ -557,7 +558,8 @@ ApplicationWindow {
             }
 
             // Configuration Editor tab
-            Tab {
+            Page {
+                padding: 0
                 Rectangle {
                     anchors.fill: parent
                     color: "#1E1E1E"
@@ -880,7 +882,8 @@ ApplicationWindow {
             }
 
             // Tag Management tab
-            Tab {
+            Page {
+                padding: 0
                 Rectangle {
                     anchors.fill: parent
                     color: "#1E1E1E"
@@ -983,7 +986,8 @@ ApplicationWindow {
             }
 
             // Component Management tab
-            Tab {
+            Page {
+                padding: 0
                 Rectangle {
                     anchors.fill: parent
                     color: "#1E1E1E"
@@ -1186,7 +1190,8 @@ ApplicationWindow {
             }
 
             // Alarm & Event Management tab
-            Tab {
+            Page {
+                padding: 0
                 Rectangle {
                     anchors.fill: parent
                     color: "#1E1E1E"
