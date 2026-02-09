@@ -2,7 +2,8 @@ module ChartComponents
 linktarget ChartComponentsplugin
 optional plugin ChartComponentsplugin
 classname ChartComponentsPlugin
-prefer :/ChartComponents/
+typeinfo ChartComponents.qmltypes
+prefer :/qt/qml/ChartComponents/
 TrendChart 1.0 TrendChart.qml
 BarChart 1.0 BarChart.qml
 

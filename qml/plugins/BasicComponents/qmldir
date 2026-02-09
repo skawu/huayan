@@ -2,7 +2,8 @@ module BasicComponents
 linktarget BasicComponentsplugin
 optional plugin BasicComponentsplugin
 classname BasicComponentsPlugin
-prefer :/BasicComponents/
+typeinfo BasicComponents.qmltypes
+prefer :/qt/qml/BasicComponents/
 Indicator 1.0 Indicator.qml
 PushButton 1.0 PushButton.qml
 TextLabel 1.0 TextLabel.qml
