@@ -51,6 +51,8 @@ qml/plugins/**/*plugin_*Plugin.cpp
 qml/plugins/**/*plugin_*Plugin_in.cpp
 qml/plugins/**/*.qmltypes
 qml/plugins/**/*_qml_module_dir_map.qrc
+qml/plugins/**/*_autogen/
+qml/plugins/**/*qmltyperegistrations.cpp
 *plugin_*Plugin.cpp
 *plugin_*Plugin_in.cpp
 
@@ -79,3 +81,6 @@ tmp/
 config/
 *.ini
 *.conf
+
+# 测试目录
+/tests/
