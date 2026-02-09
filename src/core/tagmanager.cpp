@@ -1,17 +1,27 @@
 #include "tagmanager.h"
 
+/**
+ * @file tagmanager.cpp
+ * @brief Huayan点位管理系统核心实现
+ * 
+ * 实现了HYTag和HYTagManager类的核心功能，包括点位的添加、删除、查询和值的更新等
+ * 支持多线程并发访问，确保数据安全性
+ */
+
 // HYTag class implementation
 
 HYTag::HYTag(QObject *parent) : QObject(parent)
 {
 }
 
-HYTag::HYTag(const QString &name, const QString &group, const QVariant &value, const QString &description, QObject *parent) 
+HYTag::HYTag(const QString &name, const QString &group, const QVariant &value, 
+             const QString &description, const QString &source, QObject *parent) 
     : QObject(parent),
       m_hyName(name),
       m_hyGroup(group),
       m_hyValue(value),
-      m_hyDescription(description)
+      m_hyDescription(description),
+      m_hySource(source)
 {
 }
 
@@ -33,6 +43,11 @@ QVariant HYTag::value() const
 QString HYTag::description() const
 {
     return m_hyDescription;
+}
+
+QString HYTag::source() const
+{
+    return m_hySource;
 }
 
 void HYTag::setValue(const QVariant &value)
@@ -64,7 +79,8 @@ HYTagManager::~HYTagManager()
     m_hyTagsByGroup.clear();
 }
 
-bool HYTagManager::addTag(const QString &name, const QString &group, const QVariant &value, const QString &description)
+bool HYTagManager::addTag(const QString &name, const QString &group, const QVariant &value, 
+                         const QString &description, const QString &source)
 {
     QMutexLocker locker(&m_hyMutex);
 
@@ -74,7 +90,7 @@ bool HYTagManager::addTag(const QString &name, const QString &group, const QVari
     }
 
     // Create new tag
-    HYTag *tag = new HYTag(name, group, value, description, this);
+    HYTag *tag = new HYTag(name, group, value, description, source, this);
     m_hyTags[name] = tag;
     m_hyTagsByGroup[group].append(tag);
 
