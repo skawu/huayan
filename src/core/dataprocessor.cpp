@@ -9,10 +9,12 @@ HYDataProcessor::HYDataProcessor(QObject *parent) : QObject(parent),
     m_hyTagManager(nullptr),
     m_hyTimeSeriesDatabase(nullptr),
     m_hyCollectionTimer(nullptr),
-    m_hyCollectionInterval(1000)
+    m_hyCollectionInterval(1000),
+    m_hyVisibleUpdateInterval(100), // 可见标签更新间隔（毫秒）
+    m_hyHiddenUpdateInterval(1000) // 不可见标签更新间隔（毫秒）
 {
     m_hyCollectionTimer = new QTimer(this);
-    connect(m_hyCollectionTimer, &QTimer::timeout, this, &HYDataProcessor::collectData);
+    connect(m_hyCollectionTimer, &QTimer::timeout, this, &HYDataProcessor::collectDataIntelligently);
 }
 
 HYDataProcessor::~HYDataProcessor()
@@ -97,6 +99,7 @@ bool HYDataProcessor::mapTagToDeviceRegister(const QString &tagName, int registe
     RegisterMapping mapping;
     mapping.address = registerAddress;
     mapping.isHoldingRegister = isHoldingRegister;
+    mapping.lastUpdateTime = QDateTime::currentDateTime().addDays(-1); // 初始化为一天前，确保首次采集
 
     m_hyTagRegisterMappings[tagName] = mapping;
     return true;
@@ -111,6 +114,7 @@ bool HYDataProcessor::unmapTagFromDeviceRegister(const QString &tagName)
     }
 
     m_hyTagRegisterMappings.remove(tagName);
+    m_hyVisibleTags.remove(tagName);
     return true;
 }
 
@@ -139,6 +143,12 @@ QMap<QDateTime, QVariant> HYDataProcessor::queryHistoricalData(const QString &ta
 
 void HYDataProcessor::collectData()
 {
+    // 保持向后兼容，调用智能采集方法
+    collectDataIntelligently();
+}
+
+void HYDataProcessor::collectDataIntelligently()
+{
     QMutexLocker locker(&m_hyMutex);
 
     if (!m_hyModbusDriver || !m_hyTagManager || m_hyTagRegisterMappings.isEmpty()) {
@@ -147,27 +157,74 @@ void HYDataProcessor::collectData()
 
     const QDateTime timestamp = QDateTime::currentDateTime();
 
-    // Read data from all mapped registers
-    for (auto it = m_hyTagRegisterMappings.constBegin(); it != m_hyTagRegisterMappings.constEnd(); ++it) {
+    // Read data from mapped registers based on visibility and update interval
+    for (auto it = m_hyTagRegisterMappings.begin(); it != m_hyTagRegisterMappings.end(); ++it) {
         const QString &tagName = it.key();
-        const RegisterMapping &mapping = it.value();
+        RegisterMapping &mapping = it.value();
 
-        if (mapping.isHoldingRegister) {
-            // Read holding register
-            quint16 value;
-            if (m_hyModbusDriver->readHoldingRegister(mapping.address, value)) {
-                m_hyTagManager->setTagValue(tagName, value);
-                // Store historical data
-                storeHistoricalData(tagName, value, timestamp);
-            }
-        } else {
-            // Read coil
-            bool value;
-            if (m_hyModbusDriver->readCoil(mapping.address, value)) {
-                m_hyTagManager->setTagValue(tagName, value);
-                // Store historical data
-                storeHistoricalData(tagName, value, timestamp);
+        // Check if tag needs update based on visibility
+        if (shouldUpdateTag(tagName, mapping)) {
+            if (mapping.isHoldingRegister) {
+                // Read holding register
+                quint16 value;
+                if (m_hyModbusDriver->readHoldingRegister(mapping.address, value)) {
+                    m_hyTagManager->setTagValue(tagName, value);
+                    // Store historical data
+                    storeHistoricalData(tagName, value, timestamp);
+                    // Update last update time
+                    mapping.lastUpdateTime = timestamp;
+                }
+            } else {
+                // Read coil
+                bool value;
+                if (m_hyModbusDriver->readCoil(mapping.address, value)) {
+                    m_hyTagManager->setTagValue(tagName, value);
+                    // Store historical data
+                    storeHistoricalData(tagName, value, timestamp);
+                    // Update last update time
+                    mapping.lastUpdateTime = timestamp;
+                }
             }
         }
     }
+}
+
+bool HYDataProcessor::shouldUpdateTag(const QString &tagName, const RegisterMapping &mapping)
+{
+    // Calculate time since last update
+    qint64 msSinceLastUpdate = mapping.lastUpdateTime.msecsTo(QDateTime::currentDateTime());
+    
+    // Determine update interval based on visibility
+    int updateInterval = m_hyVisibleTags.contains(tagName) ? m_hyVisibleUpdateInterval : m_hyHiddenUpdateInterval;
+    
+    // Check if it's time to update
+    return msSinceLastUpdate >= updateInterval;
+}
+
+void HYDataProcessor::addVisibleTag(const QString &tagName)
+{
+    QMutexLocker locker(&m_hyMutex);
+    m_hyVisibleTags.insert(tagName);
+}
+
+void HYDataProcessor::removeVisibleTag(const QString &tagName)
+{
+    QMutexLocker locker(&m_hyMutex);
+    m_hyVisibleTags.remove(tagName);
+}
+
+void HYDataProcessor::setVisibleTags(const QSet<QString> &tagNames)
+{
+    QMutexLocker locker(&m_hyMutex);
+    m_hyVisibleTags = tagNames;
+}
+
+void HYDataProcessor::setVisibleUpdateInterval(int interval)
+{
+    m_hyVisibleUpdateInterval = interval;
+}
+
+void HYDataProcessor::setHiddenUpdateInterval(int interval)
+{
+    m_hyHiddenUpdateInterval = interval;
 }

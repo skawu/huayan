@@ -7,6 +7,8 @@
 #include <QVariant>
 #include <QVector>
 #include <QMutex>
+#include <QTimer>
+#include <QSet>
 
 /**
  * @file tagmanager.h
@@ -14,6 +16,7 @@
  * 
  * 此类实现了Huayan点位管理系统的核心功能，包括点位的添加、删除、查询和值的更新等
  * 支持OPC UA/MQTT/Modbus等数据源的点位绑定
+ * 优化了事件通知机制，减少不必要的信号发射
  */
 
 /**
@@ -93,6 +96,12 @@ public:
      * @param description 新的点位描述
      */
     void setDescription(const QString &description);
+    
+    /**
+     * @brief 设置是否启用信号发射
+     * @param enabled 是否启用
+     */
+    void setSignalEnabled(bool enabled);
 
 signals:
     /**
@@ -107,6 +116,7 @@ private:
     QVariant m_hyValue; ///< 点位值
     QString m_hyDescription; ///< 点位描述
     QString m_hySource; ///< 数据来源
+    bool m_hySignalEnabled; ///< 是否启用信号发射
 };
 
 /**
@@ -115,6 +125,7 @@ private:
  * 
  * 负责管理所有点位，包括点位的添加、删除、查询和值的更新等功能
  * 是Huayan点位管理系统的核心类
+ * 优化了事件通知机制，减少不必要的信号发射
  */
 class HYTagManager : public QObject
 {
@@ -188,6 +199,13 @@ public:
     bool setTagValue(const QString &name, const QVariant &value);
     
     /**
+     * @brief 批量设置点位值
+     * @param values 点位名称和值的映射
+     * @return 设置是否成功
+     */
+    bool setTagValues(const QMap<QString, QVariant> &values);
+    
+    /**
      * @brief 获取点位值
      * @param name 点位名称
      * @return 点位值
@@ -210,6 +228,20 @@ public:
      * @param propertyName 属性名称
      */
     void unbindTagFromProperty(const QString &tagName, QObject *object, const char *propertyName);
+    
+    /**
+     * @brief 设置延迟通知
+     * @param enabled 是否启用
+     * @param interval 延迟间隔（毫秒）
+     */
+    void setDelayedNotification(bool enabled, int interval = 50);
+    
+    /**
+     * @brief 设置标签的重要性
+     * @param tagName 标签名称
+     * @param important 是否重要
+     */
+    void setTagImportant(const QString &tagName, bool important);
 
 signals:
     /**
@@ -230,6 +262,12 @@ signals:
      * @param newValue 新的点位值
      */
     void tagValueChanged(const QString &name, const QVariant &newValue);
+    
+    /**
+     * @brief 批量点位值变化信号
+     * @param values 点位名称和值的映射
+     */
+    void tagValuesChanged(const QMap<QString, QVariant> &values);
 
 private slots:
     /**
@@ -237,6 +275,11 @@ private slots:
      * @param newValue 新的点位值
      */
     void onTagValueChanged(const QVariant &newValue);
+    
+    /**
+     * @brief 延迟通知槽函数
+     */
+    void onDelayedNotification();
 
 private:
     QMap<QString, HYTag *> m_hyTags; ///< 点位映射表
@@ -249,6 +292,13 @@ private:
         const char *propertyName; ///< 属性名称
     };
     QMap<QString, QVector<Binding>> m_hyBindings; ///< 点位绑定映射表
+    
+    // 延迟通知管理
+    bool m_hyDelayedNotification; ///< 是否启用延迟通知
+    int m_hyNotificationInterval; ///< 延迟通知间隔
+    QTimer *m_hyNotificationTimer; ///< 延迟通知定时器
+    QMap<QString, QVariant> m_hyPendingValues; ///< 待通知的点位值
+    QSet<QString> m_hyImportantTags; ///< 重要点位集合
 };
 
 #endif // HYTAGMANAGER_H

@@ -9,6 +9,7 @@
 #include <QString>
 #include <QVariant>
 #include <QDateTime>
+#include <QSet>
 
 class HYModbusTcpDriver;
 class HYTagManager;
@@ -19,6 +20,7 @@ class HYTimeSeriesDatabase;
  * @brief 数据处理器类头文件
  * 
  * 此类实现了数据处理功能，包括数据采集、命令发送、标签与设备寄存器的映射等
+ * 支持基于组件可见性的智能数据更新调度
  */
 
 /**
@@ -26,6 +28,7 @@ class HYTimeSeriesDatabase;
  * @brief 数据处理器类
  * 
  * 负责数据的采集、处理和发送，是系统的核心组件之一
+ * 支持基于组件可见性的智能数据更新调度
  */
 class HYDataProcessor : public QObject
 {
@@ -95,6 +98,37 @@ public:
      */
     bool unmapTagFromDeviceRegister(const QString &tagName);
 
+    // 智能数据更新调度
+    /**
+     * @brief 添加可见标签
+     * @param tagName 标签名称
+     */
+    void addVisibleTag(const QString &tagName);
+    
+    /**
+     * @brief 移除可见标签
+     * @param tagName 标签名称
+     */
+    void removeVisibleTag(const QString &tagName);
+    
+    /**
+     * @brief 设置可见标签集合
+     * @param tagNames 标签名称集合
+     */
+    void setVisibleTags(const QSet<QString> &tagNames);
+    
+    /**
+     * @brief 设置可见标签的更新间隔
+     * @param interval 更新间隔（毫秒）
+     */
+    void setVisibleUpdateInterval(int interval);
+    
+    /**
+     * @brief 设置不可见标签的更新间隔
+     * @param interval 更新间隔（毫秒）
+     */
+    void setHiddenUpdateInterval(int interval);
+
 signals:
     /**
      * @brief 数据采集开始信号
@@ -119,12 +153,18 @@ private slots:
      * @brief 采集数据槽函数
      */
     void collectData();
+    
+    /**
+     * @brief 智能采集数据槽函数
+     */
+    void collectDataIntelligently();
 
 private:
     // 标签-设备寄存器映射
     struct RegisterMapping {
         int address; ///< 寄存器地址
         bool isHoldingRegister; ///< 是否为保持寄存器
+        QDateTime lastUpdateTime; ///< 最后更新时间
     };
 
     // 时间序列数据库方法
@@ -152,14 +192,25 @@ private:
      * @return 历史数据
      */
     QMap<QDateTime, QVariant> queryHistoricalData(const QString &tagName, const QDateTime &startTime, const QDateTime &endTime, int limit = 1000);
+    
+    /**
+     * @brief 检查标签是否需要更新
+     * @param tagName 标签名称
+     * @param mapping 寄存器映射
+     * @return 是否需要更新
+     */
+    bool shouldUpdateTag(const QString &tagName, const RegisterMapping &mapping);
 
     HYModbusTcpDriver *m_hyModbusDriver; ///< Modbus TCP驱动
     HYTagManager *m_hyTagManager; ///< 标签管理器
     HYTimeSeriesDatabase *m_hyTimeSeriesDatabase; ///< 时间序列数据库
     QTimer *m_hyCollectionTimer; ///< 采集定时器
     int m_hyCollectionInterval; ///< 采集间隔
+    int m_hyVisibleUpdateInterval; ///< 可见标签更新间隔
+    int m_hyHiddenUpdateInterval; ///< 不可见标签更新间隔
     QMutex m_hyMutex; ///< 互斥锁
     QMap<QString, RegisterMapping> m_hyTagRegisterMappings; ///< 标签-寄存器映射表
+    QSet<QString> m_hyVisibleTags; ///< 可见标签集合
 };
 
 #endif // HYDATAPROCESSOR_H
