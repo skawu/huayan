@@ -70,6 +70,314 @@ Item {
     visible: false
 }
 
+// CanvasComponent定义
+Item {
+    id: CanvasComponent
+    visible: false
+}
+
+// 画布组件
+Component {
+    id: canvasComponent
+    
+    Item {
+        id: root
+        property string name: ""
+        property string color: "#FFFFFF"
+        property string borderColor: "#CCCCCC"
+        property int borderWidth: 1
+        property real rotation: 0
+        property bool selected: false
+        
+        width: 100
+        height: 100
+        
+        // 组件内容
+        Rectangle {
+            id: content
+            anchors.fill: parent
+            color: root.color
+            border.color: root.borderColor
+            border.width: root.borderWidth
+            rotation: root.rotation
+        }
+        
+        // 选择边框
+        Rectangle {
+            id: selectionBorder
+            anchors.fill: parent
+            border.color: "#2196F3"
+            border.width: 2
+            color: "transparent"
+            visible: root.selected
+        }
+        
+        // 调整大小句柄
+        Item {
+            id: resizeHandles
+            anchors.fill: parent
+            visible: root.selected
+            
+            // 右下角
+            Loader {
+                sourceComponent: resizeHandle
+                anchors.bottom: parent.bottom
+                anchors.right: parent.right
+                onLoaded: {
+                    item.target = root
+                    item.position = "bottomRight"
+                }
+            }
+            // 左下角
+            Loader {
+                sourceComponent: resizeHandle
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                onLoaded: {
+                    item.target = root
+                    item.position = "bottomLeft"
+                }
+            }
+            // 右上角
+            Loader {
+                sourceComponent: resizeHandle
+                anchors.top: parent.top
+                anchors.right: parent.right
+                onLoaded: {
+                    item.target = root
+                    item.position = "topRight"
+                }
+            }
+            // 左上角
+            Loader {
+                sourceComponent: resizeHandle
+                anchors.top: parent.top
+                anchors.left: parent.left
+                onLoaded: {
+                    item.target = root
+                    item.position = "topLeft"
+                }
+            }
+            // 左侧
+            Loader {
+                sourceComponent: resizeHandle
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                onLoaded: {
+                    item.target = root
+                    item.position = "left"
+                }
+            }
+            // 右侧
+            Loader {
+                sourceComponent: resizeHandle
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                onLoaded: {
+                    item.target = root
+                    item.position = "right"
+                }
+            }
+            // 顶部
+            Loader {
+                sourceComponent: resizeHandle
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                onLoaded: {
+                    item.target = root
+                    item.position = "top"
+                }
+            }
+            // 底部
+            Loader {
+                sourceComponent: resizeHandle
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                onLoaded: {
+                    item.target = root
+                    item.position = "bottom"
+                }
+            }
+        }
+        
+        // 旋转句柄
+        Rectangle {
+            id: rotationHandle
+            width: 12
+            height: 12
+            color: "#FF9800"
+            border.color: "#F57C00"
+            border.width: 1
+            visible: root.selected
+            anchors.top: parent.top
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.topMargin: -20
+            
+            MouseArea {
+                anchors.fill: parent
+                drag.target: root
+                drag.axis: Drag.XAndY
+                
+                onPressed: {
+                    // 开始旋转
+                }
+                
+                onMouseXChanged: {
+                    if (pressed) {
+                        // 计算旋转角度
+                        const dx = mouseX - root.width/2
+                        const dy = mouseY - root.height/2
+                        root.rotation = Math.atan2(dy, dx) * 180 / Math.PI
+                    }
+                }
+            }
+        }
+        
+        // 拖放功能
+        MouseArea {
+            anchors.fill: parent
+            drag.target: root
+            drag.axis: Drag.XAndY
+            
+            onPressed: {
+                // 选择组件
+                root.selected = true
+                // 显示属性面板
+                updatePropertyPanel(root)
+            }
+            
+            onReleased: {
+                // 结束拖动
+            }
+        }
+    }
+}
+
+// 调整大小句柄
+Component {
+    id: resizeHandle
+    
+    Item {
+        property var target: null
+        property string position: ""
+        
+        width: 8
+        height: 8
+        
+        Rectangle {
+            anchors.fill: parent
+            color: "#2196F3"
+            border.color: "#1976D2"
+            border.width: 1
+        }
+        
+        MouseArea {
+            anchors.fill: parent
+            drag.target: target
+            drag.axis: Drag.XAndY
+            
+            onPressed: {
+                // 开始调整大小
+            }
+            
+            onMouseXChanged: {
+                if (pressed && target) {
+                    // 根据位置调整大小
+                    switch (position) {
+                        case "bottomRight":
+                            target.width = Math.max(20, mouseX)
+                            target.height = Math.max(20, mouseY)
+                            break
+                        case "bottomLeft":
+                            target.width = Math.max(20, target.width + (target.x - mouseX))
+                            target.x = Math.max(0, mouseX)
+                            target.height = Math.max(20, mouseY)
+                            break
+                        case "topRight":
+                            target.width = Math.max(20, mouseX)
+                            target.height = Math.max(20, target.height + (target.y - mouseY))
+                            target.y = Math.max(0, mouseY)
+                            break
+                        case "topLeft":
+                            target.width = Math.max(20, target.width + (target.x - mouseX))
+                            target.x = Math.max(0, mouseX)
+                            target.height = Math.max(20, target.height + (target.y - mouseY))
+                            target.y = Math.max(0, mouseY)
+                            break
+                        case "left":
+                            target.width = Math.max(20, target.width + (target.x - mouseX))
+                            target.x = Math.max(0, mouseX)
+                            break
+                        case "right":
+                            target.width = Math.max(20, mouseX)
+                            break
+                        case "top":
+                            target.height = Math.max(20, target.height + (target.y - mouseY))
+                            target.y = Math.max(0, mouseY)
+                            break
+                        case "bottom":
+                            target.height = Math.max(20, mouseY)
+                            break
+                    }
+                }
+            }
+        }
+    }
+}
+
+// 更新画布变换
+function updateCanvasTransform() {
+    if (canvas) {
+        canvas.transformOrigin = Item.TopLeft
+        canvas.scale = canvasContainer.scale
+        canvas.x = canvasContainer.offsetX
+        canvas.y = canvasContainer.offsetY
+    }
+}
+
+// 更新状态栏
+function updateStatusBar() {
+    // 更新缩放信息
+    const scaleLabel = statusBar.findChild(Label, "scaleLabel")
+    if (scaleLabel) {
+        scaleLabel.text = "缩放: " + Math.round(canvasContainer.scale * 100) + "%"
+    }
+}
+
+// 更新属性面板
+function updatePropertyPanel(component) {
+    if (!component) return
+    
+    // 更新位置与大小属性
+    const xSpinBox = propertyPanel.findChild(SpinBox, "xSpinBox")
+    const ySpinBox = propertyPanel.findChild(SpinBox, "ySpinBox")
+    const widthSpinBox = propertyPanel.findChild(SpinBox, "widthSpinBox")
+    const heightSpinBox = propertyPanel.findChild(SpinBox, "heightSpinBox")
+    
+    if (xSpinBox) xSpinBox.value = component.x
+    if (ySpinBox) ySpinBox.value = component.y
+    if (widthSpinBox) widthSpinBox.value = component.width
+    if (heightSpinBox) heightSpinBox.value = component.height
+    
+    // 更新外观属性
+    // ...
+}
+
+// CanvasComponent 工厂函数
+function createCanvasComponent(name, x, y, width, height, color) {
+    const component = canvasComponent.createObject(canvas)
+    if (component) {
+        component.name = name
+        component.x = x
+        component.y = y
+        component.width = width
+        component.height = height
+        component.color = color
+        return component
+    }
+    return null
+}
+
 Window {
     width: 1440
     height: 900
@@ -312,28 +620,77 @@ Window {
                     id: canvasContainer
                     anchors.fill: parent
                     
-                    // 网格背景
-                    Rectangle {
+                    // 画布变换属性
+                    property real scale: 1.0
+                    property real minScale: 0.1
+                    property real maxScale: 5.0
+                    property real offsetX: 0
+                    property real offsetY: 0
+                    property bool isPanning: false
+                    property real panStartX: 0
+                    property real panStartY: 0
+                    property real panOffsetX: 0
+                    property real panOffsetY: 0
+                    
+                    // 鼠标区域
+                    MouseArea {
                         anchors.fill: parent
-                        color: "#F9F9F9"
+                        hoverEnabled: true
+                        acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
                         
-                        // 网格线
-                        Repeater {
-                            model: canvasContainer.width / 20
-                            Rectangle {
-                                width: 1
-                                height: canvasContainer.height
-                                x: index * 20
-                                color: "#E0E0E0"
+                        // 开始平移
+                        onPressed: {
+                            if (mouse.button === Qt.MiddleButton || mouse.button === Qt.RightButton) {
+                                canvasContainer.isPanning = true
+                                canvasContainer.panStartX = mouse.x
+                                canvasContainer.panStartY = mouse.y
+                                canvasContainer.panOffsetX = canvasContainer.offsetX
+                                canvasContainer.panOffsetY = canvasContainer.offsetY
                             }
                         }
-                        Repeater {
-                            model: canvasContainer.height / 20
-                            Rectangle {
-                                width: canvasContainer.width
-                                height: 1
-                                y: index * 20
-                                color: "#E0E0E0"
+                        
+                        // 结束平移
+                        onReleased: {
+                            if (mouse.button === Qt.MiddleButton || mouse.button === Qt.RightButton) {
+                                canvasContainer.isPanning = false
+                            }
+                        }
+                        
+                        // 处理平移
+                        onMouseXChanged: {
+                            if (canvasContainer.isPanning) {
+                                canvasContainer.offsetX = canvasContainer.panOffsetX + (mouseX - canvasContainer.panStartX)
+                                canvasContainer.offsetY = canvasContainer.panOffsetY + (mouseY - canvasContainer.panStartY)
+                                updateCanvasTransform()
+                            }
+                        }
+                        
+                        onMouseYChanged: {
+                            if (canvasContainer.isPanning) {
+                                canvasContainer.offsetX = canvasContainer.panOffsetX + (mouseX - canvasContainer.panStartX)
+                                canvasContainer.offsetY = canvasContainer.panOffsetY + (mouseY - canvasContainer.panStartY)
+                                updateCanvasTransform()
+                            }
+                        }
+                        
+                        // 处理缩放
+                        onWheel: {
+                            const zoomFactor = wheel.angleDelta.y > 0 ? 1.1 : 0.9
+                            const newScale = Math.max(canvasContainer.minScale, Math.min(canvasContainer.maxScale, canvasContainer.scale * zoomFactor))
+                            
+                            if (newScale !== canvasContainer.scale) {
+                                // 计算缩放中心点
+                                const mouseXRelative = wheel.x - canvasContainer.offsetX
+                                const mouseYRelative = wheel.y - canvasContainer.offsetY
+                                
+                                // 调整偏移量以保持鼠标位置不变
+                                const scaleRatio = newScale / canvasContainer.scale
+                                canvasContainer.offsetX = wheel.x - mouseXRelative * scaleRatio
+                                canvasContainer.offsetY = wheel.y - mouseYRelative * scaleRatio
+                                canvasContainer.scale = newScale
+                                
+                                updateCanvasTransform()
+                                updateStatusBar()
                             }
                         }
                     }
@@ -343,34 +700,60 @@ Window {
                         id: canvas
                         anchors.fill: parent
                         
-                        // 示例组件
+                        // 网格背景
                         Rectangle {
+                            anchors.fill: parent
+                            color: "#F9F9F9"
+                            
+                            // 网格线
+                            Repeater {
+                                model: canvas.width / 20
+                                Rectangle {
+                                    width: 1
+                                    height: canvas.height
+                                    x: index * 20
+                                    color: "#E0E0E0"
+                                }
+                            }
+                            Repeater {
+                                model: canvas.height / 20
+                                Rectangle {
+                                    width: canvas.width
+                                    height: 1
+                                    y: index * 20
+                                    color: "#E0E0E0"
+                                }
+                            }
+                        }
+                        
+                        // 示例组件
+                        Loader {
+                            id: component1
+                            sourceComponent: canvasComponent
                             x: 100
                             y: 100
                             width: 100
                             height: 100
-                            color: "#2196F3"
-                            border.color: "#1976D2"
-                            border.width: 2
-                            
-                            MouseArea {
-                                anchors.fill: parent
-                                drag.target: parent
+                            onLoaded: {
+                                item.name = "矩形 1"
+                                item.color = "#2196F3"
+                                item.borderColor = "#1976D2"
+                                item.borderWidth = 2
                             }
                         }
                         
-                        Rectangle {
+                        Loader {
+                            id: component2
+                            sourceComponent: canvasComponent
                             x: 300
                             y: 200
                             width: 150
                             height: 80
-                            color: "#4CAF50"
-                            border.color: "#388E3C"
-                            border.width: 2
-                            
-                            MouseArea {
-                                anchors.fill: parent
-                                drag.target: parent
+                            onLoaded: {
+                                item.name = "矩形 2"
+                                item.color = "#4CAF50"
+                                item.borderColor = "#388E3C"
+                                item.borderWidth = 2
                             }
                         }
                     }
