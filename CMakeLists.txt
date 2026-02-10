@@ -44,6 +44,15 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     endif()
 endif()
 
+# Set RPATH for dynamic library linking
+set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+# Ensure RPATH is set for both debug and release builds
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+# Add additional RPATH entries for Qt Creator compatibility
+set(CMAKE_BUILD_RPATH "$ORIGIN;$ORIGIN/lib;$ORIGIN/../lib")
+
 # Qt 6 standard project setup
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Quick Network SerialBus Sql Charts QuickControls2)
 
@@ -91,9 +100,13 @@ endif()
 
 # Install configuration
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/bin CACHE PATH "Installation prefix" FORCE)
-set(CMAKE_INSTALL_BINDIR bin CACHE PATH "Executables directory" FORCE)
+set(CMAKE_INSTALL_BINDIR . CACHE PATH "Executables directory" FORCE)
 set(CMAKE_INSTALL_LIBDIR lib CACHE PATH "Libraries directory" FORCE)
 set(CMAKE_INSTALL_QMLDIR qml CACHE PATH "QML modules directory" FORCE)
+set(CMAKE_INSTALL_PLUGINDIR plugins CACHE PATH "Plugins directory" FORCE)
+
+# Ensure bin directory exists
+file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 install(TARGETS SCADASystem
     BUNDLE DESTINATION .
@@ -102,13 +115,46 @@ install(TARGETS SCADASystem
 )
 
 # Install QML modules
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/qml/plugins
-    DESTINATION ${CMAKE_INSTALL_QMLDIR}
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/qml
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+    PATTERN "*.so" EXCLUDE
+    PATTERN "*.dll" EXCLUDE
+    PATTERN "*.dylib" EXCLUDE
+    PATTERN "*.a" EXCLUDE
+    PATTERN ".rcc" EXCLUDE
+    PATTERN ".qt" EXCLUDE
+    PATTERN "meta_types" EXCLUDE
+    PATTERN "qmltypes" EXCLUDE
+    PATTERN "*plugin_*Plugin.cpp" EXCLUDE
+    PATTERN "*plugin_*Plugin_in.cpp" EXCLUDE
+    PATTERN "*.qmltypes" EXCLUDE
+    PATTERN "*_qml_module_dir_map.qrc" EXCLUDE
+    PATTERN "*_autogen" EXCLUDE
+    PATTERN "*qmltyperegistrations.cpp" EXCLUDE
 )
+
+# Install built QML plugins
+if(EXISTS ${CMAKE_BINARY_DIR}/qml/plugins)
+    install(DIRECTORY ${CMAKE_BINARY_DIR}/qml/plugins
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/qml
+        FILES_MATCHING
+        PATTERN "*.so"
+        PATTERN "*.dll"
+        PATTERN "*.dylib"
+    )
+endif()
+
+# Install Qt platform plugins (if needed)
+if(EXISTS "${QT_PLUGINS_DIR}/platforms")
+    install(DIRECTORY "${QT_PLUGINS_DIR}/platforms"
+        DESTINATION ${CMAKE_INSTALL_PLUGINDIR}
+    )
+endif()
 
 # Install examples
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/examples
     DESTINATION ${CMAKE_INSTALL_PREFIX}
+    OPTIONAL
 )
 
 # Install documentation
@@ -116,6 +162,32 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/docs
     DESTINATION ${CMAKE_INSTALL_PREFIX}
     OPTIONAL
 )
+
+# Create run script for installation
+if(UNIX)
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/scripts/run.sh.in
+        ${CMAKE_BINARY_DIR}/run.sh
+        @ONLY
+    )
+    execute_process(
+        COMMAND chmod +x ${CMAKE_BINARY_DIR}/run.sh
+    )
+    install(PROGRAMS ${CMAKE_BINARY_DIR}/run.sh
+        DESTINATION ${CMAKE_INSTALL_PREFIX}
+        RENAME run.sh
+    )
+elseif(WIN32)
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/scripts/run.bat.in
+        ${CMAKE_BINARY_DIR}/run.bat
+        @ONLY
+    )
+    install(PROGRAMS ${CMAKE_BINARY_DIR}/run.bat
+        DESTINATION ${CMAKE_INSTALL_PREFIX}
+        RENAME run.bat
+    )
+endif()
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.0
 if(NOT DEFINED MACOSX_BUNDLE_GUI_IDENTIFIER)
