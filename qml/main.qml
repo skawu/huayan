@@ -882,6 +882,131 @@ function importProject() {
     }
 }
 
+// 报警管理
+var alarms = [
+    { id: 1, tagName: "tag1", message: "温度过高", level: "high", status: "active", time: new Date().toISOString() },
+    { id: 2, tagName: "tag2", message: "压力异常", level: "medium", status: "active", time: new Date().toISOString() },
+    { id: 3, tagName: "tag3", message: "流量过低", level: "low", status: "confirmed", time: new Date().toISOString() }
+]
+
+// 显示报警管理器
+function showAlarmManager() {
+    // 模拟报警管理界面
+    const alarmHtml = `
+        <h2>报警管理</h2>
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>ID</th>
+                <th>点位</th>
+                <th>消息</th>
+                <th>级别</th>
+                <th>状态</th>
+                <th>时间</th>
+                <th>操作</th>
+            </tr>
+            ${alarms.map(alarm => `
+                <tr>
+                    <td>${alarm.id}</td>
+                    <td>${alarm.tagName}</td>
+                    <td>${alarm.message}</td>
+                    <td>${alarm.level}</td>
+                    <td>${alarm.status}</td>
+                    <td>${new Date(alarm.time).toLocaleString()}</td>
+                    <td>${alarm.status === "active" ? '<button onclick="confirmAlarm(' + alarm.id + ')">确认</button>' : '已确认'}</td>
+                </tr>
+            `).join('')}
+        </table>
+    `
+    
+    console.log("报警管理界面:", alarmHtml)
+    showNotification("报警管理器已打开", "info")
+}
+
+// 确认报警
+function confirmAlarm(alarmId) {
+    const alarm = alarms.find(a => a.id === alarmId)
+    if (alarm) {
+        alarm.status = "confirmed"
+        showNotification("报警已确认", "success")
+    }
+}
+
+// 添加报警
+function addAlarm(tagName, message, level) {
+    const newAlarm = {
+        id: alarms.length + 1,
+        tagName: tagName,
+        message: message,
+        level: level,
+        status: "active",
+        time: new Date().toISOString()
+    }
+    alarms.push(newAlarm)
+    showNotification("新报警: " + message, "error")
+}
+
+// 趋势图表管理
+var trendCharts = [
+    { id: 1, name: "温度趋势", tags: ["tag1"], type: "real-time" },
+    { id: 2, name: "压力趋势", tags: ["tag2"], type: "historical" },
+    { id: 3, name: "多参数趋势", tags: ["tag1", "tag2", "tag3"], type: "real-time" }
+]
+
+// 显示趋势图表管理器
+function showTrendCharts() {
+    // 模拟趋势图表管理界面
+    const trendHtml = `
+        <h2>趋势图表管理</h2>
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>ID</th>
+                <th>名称</th>
+                <th>点位</th>
+                <th>类型</th>
+                <th>操作</th>
+            </tr>
+            ${trendCharts.map(trend => `
+                <tr>
+                    <td>${trend.id}</td>
+                    <td>${trend.name}</td>
+                    <td>${trend.tags.join(', ')}</td>
+                    <td>${trend.type === "real-time" ? '实时' : '历史'}</td>
+                    <td><button onclick="viewTrend(${trend.id})")>查看</button></td>
+                </tr>
+            `).join('')}
+        </table>
+        <button onclick="createTrend()">创建新趋势</button>
+    `
+    
+    console.log("趋势图表管理界面:", trendHtml)
+    showNotification("趋势图表管理器已打开", "info")
+}
+
+// 查看趋势图表
+function viewTrend(trendId) {
+    const trend = trendCharts.find(t => t.id === trendId)
+    if (trend) {
+        // 模拟趋势图表界面
+        console.log("查看趋势图表:", trend.name)
+        showNotification("趋势图表: " + trend.name, "info")
+    }
+}
+
+// 创建新趋势图表
+function createTrend() {
+    const trendName = prompt("请输入趋势图表名称:", "新趋势")
+    if (trendName) {
+        const newTrend = {
+            id: trendCharts.length + 1,
+            name: trendName,
+            tags: ["tag1"],
+            type: "real-time"
+        }
+        trendCharts.push(newTrend)
+        showNotification("趋势图表创建成功", "success")
+    }
+}
+
 Window {
     width: 1440
     height: 900
@@ -1113,7 +1238,7 @@ Window {
                                     ListView {
                                         model: ListModel {
                                             ListElement { name: "数据点位"; type: "tags" }
-                                            ListElement { name: "报警"; type: "alarms" }
+                                            ListElement { name: "报警管理"; type: "alarms" }
                                             ListElement { name: "趋势图表"; type: "trends" }
                                             ListElement { name: "报表"; type: "reports" }
                                         }
@@ -1127,6 +1252,17 @@ Window {
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 anchors.left: parent.left
                                                 anchors.leftMargin: 10
+                                            }
+                                            
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                onClicked: {
+                                                    if (model.type === "alarms") {
+                                                        showAlarmManager()
+                                                    } else if (model.type === "trends") {
+                                                        showTrendCharts()
+                                                    }
+                                                }
                                             }
                                         }
                                     }
