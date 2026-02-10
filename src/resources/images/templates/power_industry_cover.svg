@@ -1,0 +1,41 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1920" height="1080" fill="#F5F5F5"/>
+  <pattern id="power-grid" width="80" height="80" patternUnits="userSpaceOnUse">
+    <path d="M 80 0 L 0 0 0 80" fill="none" stroke="#E0E0E0" stroke-width="1"/>
+  </pattern>
+  <rect width="1920" height="1080" fill="url(#power-grid)"/>
+  <rect x="100" y="100" width="1720" height="880" rx="16" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="2"/>
+  <rect x="150" y="150" width="1620" height="100" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="960" y="205" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#333333">电力行业模板</text>
+  <rect x="150" y="270" width="480" height="360" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="650" y="270" width="480" height="360" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="1150" y="270" width="480" height="360" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="150" y="650" width="480" height="360" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="650" y="650" width="480" height="360" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="1150" y="650" width="480" height="360" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="390" y="320" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333333">发电机组</text>
+  <text x="890" y="320" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333333">变压器</text>
+  <text x="1390" y="320" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333333">开关柜</text>
+  <text x="390" y="700" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333333">输电线路</text>
+  <text x="890" y="700" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333333">配电系统</text>
+  <text x="1390" y="700" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333333">监控中心</text>
+  <rect x="250" y="350" width="280" height="200" rx="8" fill="#E8E8E8" stroke="#D0D0D0" stroke-width="1"/>
+  <rect x="750" y="350" width="280" height="200" rx="8" fill="#E8E8E8" stroke="#D0D0D0" stroke-width="1"/>
+  <rect x="1250" y="350" width="280" height="200" rx="8" fill="#E8E8E8" stroke="#D0D0D0" stroke-width="1"/>
+  <rect x="250" y="750" width="280" height="200" rx="8" fill="#E8E8E8" stroke="#D0D0D0" stroke-width="1"/>
+  <rect x="750" y="750" width="280" height="200" rx="8" fill="#E8E8E8" stroke="#D0D0D0" stroke-width="1"/>
+  <rect x="1250" y="750" width="280" height="200" rx="8" fill="#E8E8E8" stroke="#D0D0D0" stroke-width="1"/>
+  <rect x="310" y="390" width="160" height="120" rx="8" fill="#FFC107" stroke="#FFA000" stroke-width="2"/>
+  <circle cx="390" cy="450" r="40" fill="#FFA000" stroke="#FF8F00" stroke-width="2"/>
+  <rect x="810" y="390" width="160" height="120" rx="8" fill="#4CAF50" stroke="#45a049" stroke-width="2"/>
+  <rect x="850" y="410" width="80" height="80" rx="4" fill="#45a049" stroke="#388E3C" stroke-width="2"/>
+  <rect x="1310" y="390" width="160" height="120" rx="8" fill="#2196F3" stroke="#1976D2" stroke-width="2"/>
+  <rect x="1350" y="410" width="80" height="80" rx="4" fill="#1976D2" stroke="#1565C0" stroke-width="2"/>
+  <path d="M 310 790 L 470 790 L 470 850 L 310 850 Z" fill="#9C27B0" stroke="#7B1FA2" stroke-width="2"/>
+  <path d="M 350 790 L 350 850 M 430 790 L 430 850" stroke="#7B1FA2" stroke-width="2"/>
+  <rect x="810" y="790" width="160" height="120" rx="8" fill="#FF9800" stroke="#f57c00" stroke-width="2"/>
+  <rect x="850" y="810" width="80" height="80" rx="4" fill="#f57c00" stroke="#E65100" stroke-width="2"/>
+  <rect x="1310" y="790" width="160" height="120" rx="8" fill="#607D8B" stroke="#455A64" stroke-width="2"/>
+  <rect x="1350" y="810" width="80" height="80" rx="4" fill="#455A64" stroke="#37474F" stroke-width="2"/>
+  <text x="960" y="980" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#666666">电力行业SCADA系统模板 - 包含发电机组、变压器、开关柜等核心设备监控</text>
+</svg>
