@@ -1,0 +1,38 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1920" height="1080" fill="#F5F5F5"/>
+  <pattern id="chemical-grid" width="80" height="80" patternUnits="userSpaceOnUse">
+    <path d="M 80 0 L 0 0 0 80" fill="none" stroke="#E0E0E0" stroke-width="1"/>
+  </pattern>
+  <rect width="1920" height="1080" fill="url(#chemical-grid)"/>
+  <rect x="100" y="100" width="1720" height="880" rx="16" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="2"/>
+  <rect x="150" y="150" width="1620" height="100" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="960" y="205" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#333333">化工行业模板</text>
+  <rect x="150" y="270" width="480" height="360" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="650" y="270" width="480" height="360" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="1150" y="270" width="480" height="360" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="150" y="650" width="480" height="360" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="650" y="650" width="480" height="360" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="1150" y="650" width="480" height="360" rx="8" fill="#F8F8F8" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="390" y="320" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333333">储罐区</text>
+  <text x="890" y="320" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333333">反应釜</text>
+  <text x="1390" y="320" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333333">管道系统</text>
+  <text x="390" y="700" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333333">精馏塔</text>
+  <text x="890" y="700" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333333">污水处理</text>
+  <text x="1390" y="700" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333333">控制室</text>
+  <rect x="250" y="350" width="280" height="200" rx="8" fill="#E8E8E8" stroke="#D0D0D0" stroke-width="1"/>
+  <rect x="750" y="350" width="280" height="200" rx="8" fill="#E8E8E8" stroke="#D0D0D0" stroke-width="1"/>
+  <rect x="1250" y="350" width="280" height="200" rx="8" fill="#E8E8E8" stroke="#D0D0D0" stroke-width="1"/>
+  <rect x="250" y="750" width="280" height="200" rx="8" fill="#E8E8E8" stroke="#D0D0D0" stroke-width="1"/>
+  <rect x="750" y="750" width="280" height="200" rx="8" fill="#E8E8E8" stroke="#D0D0D0" stroke-width="1"/>
+  <rect x="1250" y="750" width="280" height="200" rx="8" fill="#E8E8E8" stroke="#D0D0D0" stroke-width="1"/>
+  <circle cx="390" cy="450" r="60" fill="#4CAF50" stroke="#45a049" stroke-width="2"/>
+  <rect x="350" y="400" width="80" height="100" rx="8" fill="#4CAF50" stroke="#45a049" stroke-width="2"/>
+  <circle cx="890" cy="450" r="60" fill="#2196F3" stroke="#1976D2" stroke-width="2"/>
+  <path d="M 1290 420 L 1570 420 L 1570 480 L 1290 480 Z" fill="#FF9800" stroke="#f57c00" stroke-width="2"/>
+  <path d="M 1350 420 L 1350 480 M 1420 420 L 1420 480 M 1490 420 L 1490 480" stroke="#f57c00" stroke-width="2"/>
+  <rect x="350" y="790" width="80" height="120" rx="8" fill="#9C27B0" stroke="#7B1FA2" stroke-width="2"/>
+  <circle cx="390" cy="790" r="40" fill="#9C27B0" stroke="#7B1FA2" stroke-width="2"/>
+  <rect x="790" y="790" width="200" height="120" rx="8" fill="#00BCD4" stroke="#0097A7" stroke-width="2"/>
+  <rect x="1290" y="790" width="200" height="120" rx="8" fill="#607D8B" stroke="#455A64" stroke-width="2"/>
+  <text x="960" y="980" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#666666">化工行业SCADA系统模板 - 包含储罐、反应釜、管道等核心设备监控</text>
+</svg>

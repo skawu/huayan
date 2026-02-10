@@ -1,0 +1,14 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" fill="#8B8B8B"/>
+  <pattern id="metal-pattern" width="64" height="64" patternUnits="userSpaceOnUse">
+    <rect width="64" height="64" fill="#8B8B8B"/>
+    <path d="M 0 16 L 64 16 M 0 32 L 64 32 M 0 48 L 64 48" stroke="#7B7B7B" stroke-width="2"/>
+    <path d="M 16 0 L 16 64 M 32 0 L 32 64 M 48 0 L 48 64" stroke="#7B7B7B" stroke-width="2"/>
+    <circle cx="32" cy="32" r="8" fill="#6B6B6B"/>
+  </pattern>
+  <rect width="1024" height="1024" fill="url(#metal-pattern)"/>
+  <rect x="128" y="128" width="768" height="768" rx="32" fill="#7B7B7B" stroke="#6B6B6B" stroke-width="8"/>
+  <rect x="256" y="256" width="512" height="512" rx="16" fill="#6B6B6B" stroke="#5B5B5B" stroke-width="4"/>
+  <circle cx="512" cy="512" r="128" fill="#5B5B5B" stroke="#4B4B4B" stroke-width="4"/>
+  <rect x="384" y="384" width="256" height="256" rx="16" fill="#4B4B4B" stroke="#3B3B3B" stroke-width="4"/>
+</svg>
