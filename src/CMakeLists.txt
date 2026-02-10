@@ -22,6 +22,32 @@ qt_add_executable(SCADASystem
     core/dataprocessor.h
     core/timeseriesdatabase.cpp
     core/timeseriesdatabase.h
+    editor/core/editorcore.cpp
+    editor/core/editorcore.h
+)
+
+# Copy editor QML files
+add_custom_command(TARGET SCADASystem POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/editor
+        ${CMAKE_BINARY_DIR}/editor
+    COMMENT "Copying editor files to build directory"
+)
+
+# Also copy editor files to the bin directory
+add_custom_command(TARGET SCADASystem POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/editor
+        ${CMAKE_BINARY_DIR}/bin/editor
+    COMMENT "Copying editor files to bin directory"
+)
+
+# Also copy editor files to the executable directory
+add_custom_command(TARGET SCADASystem POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/editor
+        $<TARGET_FILE_DIR:SCADASystem>/editor
+    COMMENT "Copying editor files to executable directory"
 )
 
 # Add QML module for main application

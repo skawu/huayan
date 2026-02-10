@@ -21,6 +21,8 @@
 #include "datasource/opcuadatasource.h"
 #endif
 
+#include "editor/core/editorcore.h"
+
 /**
  * @file main.cpp
  * @brief Huayan工业软件应用程序入口
@@ -56,15 +58,20 @@ int main(int argc, char *argv[])
     qmlRegisterType<HYTagManager>("Huayan.Core", 1, 0, "HYTagManager");
     qmlRegisterType<ChartDataModel>("Huayan.Core", 1, 0, "ChartDataModel");
     qmlRegisterType<ModbusDataSource>("Huayan.DataSource", 1, 0, "ModbusDataSource");
+    qmlRegisterType<EditorCore>("Huayan.Editor", 1, 0, "EditorCore");
 
     // 初始化数据源
     ModbusDataSource *modbusDataSource = new ModbusDataSource(tagManager, &app);
+
+    // 初始化编辑器核心
+    EditorCore *editorCore = new EditorCore(&app);
 
     // 设置QML上下文属性
     QQmlContext *context = engine.rootContext();
     context->setContextProperty("tagManager", tagManager);
     context->setContextProperty("chartDataModel", chartDataModel);
     context->setContextProperty("modbusDataSource", modbusDataSource);
+    context->setContextProperty("editorCore", editorCore);
 
     // Conditionally initialize and set up OpcUaDataSource if available
     #ifdef HAVE_OPCUA
@@ -174,6 +181,7 @@ int main(int argc, char *argv[])
     delete mqttDataSource;
     #endif
     delete modbusDataSource;
+    delete editorCore;
     delete chartDataModel;
     delete tagManager;
 
