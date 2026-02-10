@@ -378,11 +378,241 @@ function createCanvasComponent(name, x, y, width, height, color) {
     return null
 }
 
+// 数据绑定管理
+var dataBindings = {}
+
+// 应用数据绑定
+function applyDataBinding() {
+    const selectedComponent = getSelectedComponent()
+    if (!selectedComponent) {
+        showNotification("请先选择一个组件", "warning")
+        return
+    }
+    
+    const tagName = tagComboBox.currentText
+    if (tagName === "选择点位") {
+        showNotification("请选择一个数据点位", "warning")
+        return
+    }
+    
+    const property = propertyComboBox.currentText
+    const bindingType = bindingTypeComboBox.currentText
+    const updateFrequency = updateFrequencyComboBox.currentText
+    const historyEnabled = historyDataCheckBox.checked
+    const trendEnabled = trendChartCheckBox.checked
+    const expression = bindingExpressionField.text
+    
+    // 保存绑定配置
+    const bindingConfig = {
+        component: selectedComponent,
+        tagName: tagName,
+        property: property,
+        bindingType: bindingType,
+        updateFrequency: updateFrequency,
+        historyEnabled: historyEnabled,
+        trendEnabled: trendEnabled,
+        expression: expression
+    }
+    
+    // 存储绑定
+    const componentId = getComponentId(selectedComponent)
+    dataBindings[componentId] = bindingConfig
+    
+    // 启动数据更新
+    startDataUpdate(componentId, bindingConfig)
+    
+    showNotification("数据绑定成功", "success")
+}
+
+// 移除数据绑定
+function removeDataBinding() {
+    const selectedComponent = getSelectedComponent()
+    if (!selectedComponent) {
+        showNotification("请先选择一个组件", "warning")
+        return
+    }
+    
+    const componentId = getComponentId(selectedComponent)
+    if (dataBindings[componentId]) {
+        // 停止数据更新
+        stopDataUpdate(componentId)
+        
+        // 删除绑定
+        delete dataBindings[componentId]
+        
+        showNotification("数据绑定已解除", "success")
+    } else {
+        showNotification("该组件没有数据绑定", "info")
+    }
+}
+
+// 启动数据更新
+function startDataUpdate(componentId, bindingConfig) {
+    // 模拟数据更新
+    const updateInterval = getUpdateIntervalMs(bindingConfig.updateFrequency)
+    
+    // 创建定时器
+    bindingConfig.timer = setInterval(function() {
+        updateComponentFromData(bindingConfig)
+    }, updateInterval)
+}
+
+// 停止数据更新
+function stopDataUpdate(componentId) {
+    const bindingConfig = dataBindings[componentId]
+    if (bindingConfig && bindingConfig.timer) {
+        clearInterval(bindingConfig.timer)
+        bindingConfig.timer = null
+    }
+}
+
+// 从数据更新组件
+function updateComponentFromData(bindingConfig) {
+    if (!bindingConfig || !bindingConfig.component) return
+    
+    // 模拟数据获取
+    const tagValue = getSimulatedTagValue(bindingConfig.tagName)
+    
+    // 根据绑定类型处理
+    switch (bindingConfig.bindingType) {
+        case "实时绑定":
+            updateComponentProperty(bindingConfig.component, bindingConfig.property, tagValue)
+            break
+        case "条件绑定":
+            if (bindingConfig.expression) {
+                const result = evaluateExpression(bindingConfig.expression, tagValue)
+                updateComponentProperty(bindingConfig.component, bindingConfig.property, result)
+            }
+            break
+        case "表达式绑定":
+            if (bindingConfig.expression) {
+                const result = evaluateExpression(bindingConfig.expression, tagValue)
+                updateComponentProperty(bindingConfig.component, bindingConfig.property, result)
+            }
+            break
+    }
+}
+
+// 更新组件属性
+function updateComponentProperty(component, property, value) {
+    switch (property) {
+        case "填充色":
+            if (typeof value === "number") {
+                // 基于数值设置颜色
+                component.color = value > 50 ? "#F44336" : "#4CAF50"
+            } else if (typeof value === "string") {
+                component.color = value
+            }
+            break
+        case "位置":
+            if (typeof value === "number") {
+                // 基于数值设置位置
+                component.x = 100 + value * 2
+            }
+            break
+        case "大小":
+            if (typeof value === "number") {
+                // 基于数值设置大小
+                component.width = 100 + value * 0.5
+                component.height = 100 + value * 0.5
+            }
+            break
+        case "旋转":
+            if (typeof value === "number") {
+                component.rotation = value
+            }
+            break
+        case "透明度":
+            if (typeof value === "number") {
+                component.opacity = value / 100
+            }
+            break
+    }
+}
+
+// 获取模拟标签值
+function getSimulatedTagValue(tagName) {
+    // 模拟不同标签的值
+    const tagValues = {
+        "tag1": Math.random() * 100,
+        "tag2": Math.random() * 50 + 50,
+        "tag3": Math.random() * 360,
+        "tag4": Math.random() * 100,
+        "tag5": Math.random() > 0.5 ? 1 : 0
+    }
+    return tagValues[tagName] || 0
+}
+
+// 评估表达式
+function evaluateExpression(expression, value) {
+    try {
+        // 简单的表达式评估
+        const evalExpression = expression.replace(/value/g, value)
+        return eval(evalExpression)
+    } catch (e) {
+        console.error("表达式评估错误:", e)
+        return value
+    }
+}
+
+// 获取更新间隔（毫秒）
+function getUpdateIntervalMs(frequency) {
+    const intervals = {
+        "100ms": 100,
+        "200ms": 200,
+        "500ms": 500,
+        "1s": 1000,
+        "2s": 2000,
+        "5s": 5000
+    }
+    return intervals[frequency] || 1000
+}
+
+// 获取选中的组件
+function getSelectedComponent() {
+    // 查找第一个选中的组件
+    for (let i = 0; i < canvas.children.length; i++) {
+        const child = canvas.children[i]
+        if (child.item && child.item.selected) {
+            return child.item
+        }
+    }
+    return null
+}
+
+// 获取组件ID
+function getComponentId(component) {
+    return component.name + "_" + Date.now()
+}
+
+// 显示通知
+function showNotification(message, type) {
+    console.log(type + ": " + message)
+    // 实际应用中可以显示一个通知组件
+}
+
+// 初始化数据点位
+function initializeTags() {
+    // 模拟初始化一些数据点位
+    console.log("数据点位初始化完成")
+}
+
+// 初始化函数
+function initialize() {
+    initializeTags()
+    updateCanvasTransform()
+    updateStatusBar()
+}
+
 Window {
     width: 1440
     height: 900
     visible: true
     title: "Huayan 工业组态软件"
+    
+    Component.onCompleted: {
+        initialize()
+    }
     
     // 主布局
     ColumnLayout {
@@ -831,11 +1061,62 @@ Window {
                                     
                                     Label { text: "数据点位:" }
                                     ComboBox {
-                                        model: ["选择点位", "tag1", "tag2", "tag3"]
+                                        id: tagComboBox
+                                        model: ["选择点位", "tag1", "tag2", "tag3", "tag4", "tag5"]
                                     }
                                     Label { text: "绑定属性:" }
                                     ComboBox {
-                                        model: ["填充色", "位置", "大小", "旋转"]
+                                        id: propertyComboBox
+                                        model: ["填充色", "位置", "大小", "旋转", "透明度"]
+                                    }
+                                    Label { text: "绑定方式:" }
+                                    ComboBox {
+                                        id: bindingTypeComboBox
+                                        model: ["实时绑定", "条件绑定", "表达式绑定"]
+                                    }
+                                    Label { text: "更新频率:" }
+                                    ComboBox {
+                                        id: updateFrequencyComboBox
+                                        model: ["100ms", "200ms", "500ms", "1s", "2s", "5s"]
+                                    }
+                                    Label { text: "历史数据:" }
+                                    CheckBox {
+                                        id: historyDataCheckBox
+                                        text: "启用"
+                                    }
+                                    Label { text: "趋势图表:" }
+                                    CheckBox {
+                                        id: trendChartCheckBox
+                                        text: "启用"
+                                    }
+                                }
+                            }
+                            
+                            GroupBox {
+                                title: "绑定配置"
+                                
+                                ColumnLayout {
+                                    spacing: 5
+                                    
+                                    Label { text: "绑定表达式:" }
+                                    TextField {
+                                        id: bindingExpressionField
+                                        placeholderText: "例如: value > 50 ? 'red' : 'green'"
+                                        width: parent.width
+                                    }
+                                    
+                                    Button {
+                                        text: "应用绑定"
+                                        onClicked: {
+                                            applyDataBinding()
+                                        }
+                                    }
+                                    
+                                    Button {
+                                        text: "解除绑定"
+                                        onClicked: {
+                                            removeDataBinding()
+                                        }
                                     }
                                 }
                             }
