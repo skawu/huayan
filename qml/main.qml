@@ -9,6 +9,67 @@ import ControlComponents 1.0
 import ChartComponents 1.0
 import ThreeDComponents 1.0
 
+// 组件项组件
+Component {
+    id: componentItem
+    
+    Item {
+        id: root
+        property string name: ""
+        property string type: ""
+        
+        width: 80
+        height: 100
+        
+        Rectangle {
+            id: preview
+            width: root.width - 10
+            height: root.width - 10
+            anchors.centerIn: parent
+            anchors.topMargin: 5
+            color: "#F0F0F0"
+            border.color: "#CCCCCC"
+            border.width: 1
+            
+            // 组件预览
+            Loader {
+                anchors.fill: parent
+                anchors.margins: 5
+                sourceComponent: Qt.createQmlObject('import QtQuick 2.15; import ' + type.split('.')[0] + ' 1.0; ' + type.split('.')[1] + ' {}', preview)
+            }
+        }
+        
+        Text {
+            text: name
+            anchors.top: preview.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.topMargin: 5
+            font.pixelSize: 12
+        }
+        
+        // 拖放功能
+        MouseArea {
+            anchors.fill: parent
+            drag.target: root
+            drag.axis: Drag.XAndY
+            
+            onPressed: {
+                // 开始拖动
+            }
+            
+            onReleased: {
+                // 结束拖动，放置到画布
+            }
+        }
+    }
+}
+
+// 组件项别名
+Item {
+    id: ComponentItem
+    visible: false
+}
+
 Window {
     width: 1440
     height: 900
@@ -117,28 +178,121 @@ Window {
                         background: Rectangle { color: "#E0E0E0" }
                     }
                     
-                    // 项目结构
-                    TreeView {
+                    // 项目结构和组件库
+                    TabView {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         
-                        model: ListModel {
-                            ListElement { name: "项目"; type: "project" }
-                            ListElement { name: "页面 1"; type: "page" }
-                            ListElement { name: "页面 2"; type: "page" }
-                            ListElement { name: "组件库"; type: "library" }
-                            ListElement { name: "数据点位"; type: "tags" }
-                            ListElement { name: "报警"; type: "alarms" }
+                        Tab {
+                            title: "项目"
+                            
+                            TreeView {
+                                model: ListModel {
+                                    ListElement { name: "项目"; type: "project" }
+                                    ListElement { name: "页面 1"; type: "page" }
+                                    ListElement { name: "页面 2"; type: "page" }
+                                    ListElement { name: "数据点位"; type: "tags" }
+                                    ListElement { name: "报警"; type: "alarms" }
+                                }
+                                
+                                delegate: Item {
+                                    width: parent.width
+                                    height: 30
+                                    Text {
+                                        text: name
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 10
+                                    }
+                                }
+                            }
                         }
                         
-                        delegate: Item {
-                            width: parent.width
-                            height: 30
-                            Text {
-                                text: name
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.left: parent.left
-                                anchors.leftMargin: 10
+                        Tab {
+                            title: "组件库"
+                            
+                            ColumnLayout {
+                                spacing: 10
+                                padding: 5
+                                
+                                // 组件分类
+                                RowLayout {
+                                    spacing: 5
+                                    
+                                    Button { text: "基础组件" }
+                                    Button { text: "工业组件" }
+                                    Button { text: "控制组件" }
+                                    Button { text: "图表组件" }
+                                    Button { text: "3D组件" }
+                                }
+                                
+                                // 组件列表
+                                GridLayout {
+                                    columns: 2
+                                    spacing: 10
+                                    
+                                    // 基础组件
+                                    Loader {
+                                        sourceComponent: componentItem
+                                        onLoaded: {
+                                            item.name = "Indicator"
+                                            item.type = "BasicComponents.Indicator"
+                                        }
+                                    }
+                                    Loader {
+                                        sourceComponent: componentItem
+                                        onLoaded: {
+                                            item.name = "PushButton"
+                                            item.type = "BasicComponents.PushButton"
+                                        }
+                                    }
+                                    Loader {
+                                        sourceComponent: componentItem
+                                        onLoaded: {
+                                            item.name = "TextLabel"
+                                            item.type = "BasicComponents.TextLabel"
+                                        }
+                                    }
+                                    
+                                    // 工业组件
+                                    Loader {
+                                        sourceComponent: componentItem
+                                        onLoaded: {
+                                            item.name = "Valve"
+                                            item.type = "IndustrialComponents.Valve"
+                                        }
+                                    }
+                                    Loader {
+                                        sourceComponent: componentItem
+                                        onLoaded: {
+                                            item.name = "Tank"
+                                            item.type = "IndustrialComponents.Tank"
+                                        }
+                                    }
+                                    Loader {
+                                        sourceComponent: componentItem
+                                        onLoaded: {
+                                            item.name = "Motor"
+                                            item.type = "IndustrialComponents.Motor"
+                                        }
+                                    }
+                                    
+                                    // 控制组件
+                                    Loader {
+                                        sourceComponent: componentItem
+                                        onLoaded: {
+                                            item.name = "Slider"
+                                            item.type = "ControlComponents.Slider"
+                                        }
+                                    }
+                                    Loader {
+                                        sourceComponent: componentItem
+                                        onLoaded: {
+                                            item.name = "Knob"
+                                            item.type = "ControlComponents.Knob"
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
