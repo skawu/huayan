@@ -1,0 +1,25 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+    <!-- QML 文件 -->
+    <file>steel_plant_monitoring.qml</file>
+    
+    <!-- 配置文件 -->
+    <file>config/point_mapping.json</file>
+    <file>config/3d_model_config.json</file>
+    <file>config/alarm_rules.json</file>
+    <file>config/simulation_config.json</file>
+    
+    <!-- 仿真数据 -->
+    <file>data/normal_production_data.json</file>
+    <file>data/anomaly_alert_data.json</file>
+    
+    <!-- 3D 模型 -->
+    <file>models/README.md</file>
+    
+    <!-- 图标 -->
+    <file>icons/README.md</file>
+    
+    <!-- 文档 -->
+    <file>钢铁厂例程快速体验.md</file>
+</qresource>
+</RCC>

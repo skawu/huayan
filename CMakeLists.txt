@@ -98,6 +98,12 @@ if(BUILD_DOCUMENTATION)
     doxygen_add_docs(doxygen ${CMAKE_SOURCE_DIR}/src)
 endif()
 
+# Option for building examples
+option(BUILD_EXAMPLES "Build examples" OFF)
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
+
 # Install configuration
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/bin CACHE PATH "Installation prefix" FORCE)
 set(CMAKE_INSTALL_BINDIR . CACHE PATH "Executables directory" FORCE)

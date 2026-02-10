@@ -1,0 +1,137 @@
+{
+  "description": "钢铁厂异常告警数据",
+  "version": "1.0",
+  "timestamp": "2024-02-10T08:00:00Z",
+  "anomalyScenarios": [
+    {
+      "id": "blastFurnace.overTemperature",
+      "name": "高炉超温",
+      "timestamp": "2024-02-10T09:00:00Z",
+      "duration": 300,
+      "severity": "critical",
+      "affectedPoints": [
+        {
+          "address": "blastFurnace.temperature",
+          "normalValue": 1520.0,
+          "anomalyValue": 1650.0,
+          "threshold": 1600.0,
+          "unit": "℃"
+        }
+      ],
+      "alarmMessage": "高炉温度超过阈值，请立即处理",
+      "recoverySteps": [
+        "检查冷却系统",
+        "降低进料速度",
+        "增加冷却水流量"
+      ]
+    },
+    {
+      "id": "converter.lowOxygenFlow",
+      "name": "转炉氧气流量过低",
+      "timestamp": "2024-02-10T11:30:00Z",
+      "duration": 420,
+      "severity": "warning",
+      "affectedPoints": [
+        {
+          "address": "converter.oxygenFlow",
+          "normalValue": 85.0,
+          "anomalyValue": 55.0,
+          "threshold": 60.0,
+          "unit": "m³/h"
+        }
+      ],
+      "alarmMessage": "转炉氧气流量低于阈值，请检查",
+      "recoverySteps": [
+        "检查氧气管道",
+        "确认氧气阀门状态",
+        "联系氧气供应部门"
+      ]
+    },
+    {
+      "id": "rollingMill.abnormalSpeed",
+      "name": "轧钢转速异常",
+      "timestamp": "2024-02-10T14:15:00Z",
+      "duration": 360,
+      "severity": "critical",
+      "affectedPoints": [
+        {
+          "address": "rollingMill.speed",
+          "normalValue": 1.2,
+          "anomalyValue": 2.5,
+          "threshold": 1.8,
+          "unit": "m/s"
+        },
+        {
+          "address": "rollingMill.temperature",
+          "normalValue": 1450.0,
+          "anomalyValue": 1520.0,
+          "threshold": 1500.0,
+          "unit": "℃"
+        }
+      ],
+      "alarmMessage": "轧钢机转速超过阈值，请立即处理",
+      "recoverySteps": [
+        "紧急停机",
+        "检查调速系统",
+        "确认电机状态"
+      ]
+    },
+    {
+      "id": "rollingMill.lowCoolingWater",
+      "name": "轧钢机冷却水流量过低",
+      "timestamp": "2024-02-10T16:45:00Z",
+      "duration": 240,
+      "severity": "critical",
+      "affectedPoints": [
+        {
+          "address": "rollingMill.coolingWaterFlow",
+          "normalValue": 90.0,
+          "anomalyValue": 65.0,
+          "threshold": 70.0,
+          "unit": "L/min"
+        },
+        {
+          "address": "rollingMill.temperature",
+          "normalValue": 1450.0,
+          "anomalyValue": 1530.0,
+          "threshold": 1500.0,
+          "unit": "℃"
+        }
+      ],
+      "alarmMessage": "轧钢机冷却水流量低于阈值，请立即处理",
+      "recoverySteps": [
+        "检查冷却水管道",
+        "确认水泵状态",
+        "增加冷却水流量"
+      ]
+    },
+    {
+      "id": "blastFurnace.highPressure",
+      "name": "高炉压力过高",
+      "timestamp": "2024-02-10T19:20:00Z",
+      "duration": 300,
+      "severity": "warning",
+      "affectedPoints": [
+        {
+          "address": "blastFurnace.pressure",
+          "normalValue": 2.5,
+          "anomalyValue": 3.2,
+          "threshold": 3.0,
+          "unit": "MPa"
+        }
+      ],
+      "alarmMessage": "高炉压力超过阈值，请关注",
+      "recoverySteps": [
+        "检查压力释放阀",
+        "调整送风系统",
+        "监控压力变化"
+      ]
+    }
+  ],
+  "simulationParameters": {
+    "triggerInterval": 180000,  // 每3分钟尝试触发一次异常
+    "maxConcurrentAnomalies": 2,  // 最多同时触发2个异常
+    "recoveryTime": 600000,  // 异常恢复时间10分钟
+    "randomize": true  // 随机触发异常
+  }
+}
