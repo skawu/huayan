@@ -138,11 +138,42 @@ add_custom_command(TARGET SCADASystem POST_BUILD
     COMMENT "Copying built QML plugins to bin directory"
 )
 
+# Copy resources to build directory
+add_custom_command(TARGET SCADASystem POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/resources
+        ${CMAKE_BINARY_DIR}/resources
+    COMMENT "Copying resources to build directory"
+)
+
+# Also copy resources to the bin directory
+add_custom_command(TARGET SCADASystem POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/resources
+        ${CMAKE_BINARY_DIR}/bin/resources
+    COMMENT "Copying resources to bin directory"
+)
+
+# Also copy resources to the executable directory
+add_custom_command(TARGET SCADASystem POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/resources
+        $<TARGET_FILE_DIR:SCADASystem>/resources
+    COMMENT "Copying resources to executable directory"
+)
+
 # Ensure the plugins directory exists in build directory
 add_custom_command(TARGET SCADASystem PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory
         ${CMAKE_BINARY_DIR}/qml/plugins
     COMMENT "Creating QML plugins directory in build directory"
+)
+
+# Ensure the resources directory exists in build directory
+add_custom_command(TARGET SCADASystem PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        ${CMAKE_BINARY_DIR}/resources
+    COMMENT "Creating resources directory in build directory"
 )
 
 # Create run script for development
