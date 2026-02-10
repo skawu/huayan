@@ -1,26 +1,18 @@
 @echo off
 
-REM Run script for SCADASystem
+rem Run script for SCADASystem
 
-REM Set working directory
-cd "@CMAKE_SOURCE_DIR@"
+rem Get the directory where the script is located
+set SCRIPT_DIR=%~dp0
 
-REM Set environment variables
-if exist "@CMAKE_BINARY_DIR@\lib" (
-    set PATH="@CMAKE_BINARY_DIR@\lib";%PATH%
-)
+rem Set PATH to include the lib directory
+set PATH=%SCRIPT_DIR%lib;%PATH%
 
-if exist "@CMAKE_BINARY_DIR@\qml" (
-    set QML2_IMPORT_PATH="@CMAKE_BINARY_DIR@\qml";%QML2_IMPORT_PATH%
-)
+rem Set QML_IMPORT_PATH to include the qml directory
+set QML_IMPORT_PATH=%SCRIPT_DIR%qml;%QML_IMPORT_PATH%
 
-REM Run the application
-if exist "@CMAKE_BINARY_DIR@\bin\SCADASystem.exe" (
-    echo Starting SCADASystem...
-    "@CMAKE_BINARY_DIR@\bin\SCADASystem.exe"
-) else (
-    echo Error: SCADASystem executable not found at @CMAKE_BINARY_DIR@\bin\SCADASystem.exe
-    echo Please build the project first using 'cmake --build @CMAKE_BINARY_DIR@'
-    pause
-    exit /b 1
-)
+rem Set QT_PLUGIN_PATH to include the plugins directory
+set QT_PLUGIN_PATH=%SCRIPT_DIR%plugins;%QT_PLUGIN_PATH%
+
+rem Run the application
+"%SCRIPT_DIR%SCADASystem.exe"
