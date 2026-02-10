@@ -337,6 +337,18 @@ function updateCanvasTransform() {
 
 // 更新状态栏
 function updateStatusBar() {
+    // 更新页面信息
+    const pageLabel = statusBar.findChild(Label, "pageLabel")
+    if (pageLabel) {
+        pageLabel.text = "页面: " + (pages[currentPageIndex] ? pages[currentPageIndex].name : "无")
+    }
+    
+    // 更新组件数量
+    const componentLabel = statusBar.findChild(Label, "componentLabel")
+    if (componentLabel) {
+        componentLabel.text = "组件: " + canvas.children.length
+    }
+    
     // 更新缩放信息
     const scaleLabel = statusBar.findChild(Label, "scaleLabel")
     if (scaleLabel) {
@@ -604,6 +616,272 @@ function initialize() {
     updateStatusBar()
 }
 
+// 页面管理
+var currentPageIndex = 0
+var pages = [
+    { id: 1, name: "页面 1", components: [] },
+    { id: 2, name: "页面 2", components: [] }
+]
+
+// 新建页面
+function createNewPage() {
+    const newPageId = pages.length + 1
+    const newPageName = "页面 " + newPageId
+    
+    const newPage = {
+        id: newPageId,
+        name: newPageName,
+        components: []
+    }
+    
+    pages.push(newPage)
+    pageModel.append({ name: newPageName, type: "page", active: false })
+    
+    // 切换到新页面
+    switchPage(pages.length - 1)
+    
+    showNotification("页面创建成功", "success")
+}
+
+// 删除当前页面
+function deleteCurrentPage() {
+    if (pages.length <= 1) {
+        showNotification("至少需要保留一个页面", "warning")
+        return
+    }
+    
+    // 从模型中移除
+    pageModel.remove(currentPageIndex)
+    
+    // 从数组中移除
+    pages.splice(currentPageIndex, 1)
+    
+    // 切换到第一个页面
+    switchPage(0)
+    
+    showNotification("页面删除成功", "success")
+}
+
+// 重命名当前页面
+function renameCurrentPage() {
+    const newName = prompt("请输入新的页面名称:", pages[currentPageIndex].name)
+    if (newName && newName.trim() !== "") {
+        pages[currentPageIndex].name = newName
+        pageModel.set(currentPageIndex, { name: newName, type: "page", active: true })
+        showNotification("页面重命名成功", "success")
+    }
+}
+
+// 切换页面
+function switchPage(index) {
+    // 重置所有页面为非活动状态
+    for (let i = 0; i < pageModel.count; i++) {
+        pageModel.set(i, { active: false })
+    }
+    
+    // 设置当前页面为活动状态
+    pageModel.set(index, { active: true })
+    currentPageIndex = index
+    
+    // 更新状态栏
+    updateStatusBar()
+    
+    // 清空画布并加载页面组件
+    clearCanvas()
+    loadPageComponents(index)
+    
+    showNotification("已切换到页面 " + pages[index].name, "info")
+}
+
+// 清空画布
+function clearCanvas() {
+    // 清空画布上的所有组件
+    for (let i = canvas.children.length - 1; i >= 0; i--) {
+        canvas.children[i].destroy()
+    }
+}
+
+// 加载页面组件
+function loadPageComponents(pageIndex) {
+    const page = pages[pageIndex]
+    if (!page) return
+    
+    // 加载页面中的组件
+    page.components.forEach(function(componentData) {
+        createCanvasComponent(
+            componentData.name,
+            componentData.x,
+            componentData.y,
+            componentData.width,
+            componentData.height,
+            componentData.color
+        )
+    })
+}
+
+// 保存当前页面
+function saveCurrentPage() {
+    const page = pages[currentPageIndex]
+    if (!page) return
+    
+    // 保存当前页面的组件
+    page.components = []
+    
+    for (let i = 0; i < canvas.children.length; i++) {
+        const child = canvas.children[i]
+        if (child.item) {
+            page.components.push({
+                name: child.item.name,
+                x: child.x,
+                y: child.y,
+                width: child.width,
+                height: child.height,
+                color: child.item.color
+            })
+        }
+    }
+    
+    showNotification("页面保存成功", "success")
+}
+
+// 项目管理
+var currentProject = {
+    name: "未命名项目",
+    version: "1.0",
+    created: new Date().toISOString(),
+    modified: new Date().toISOString(),
+    pages: pages
+}
+
+// 新建项目
+function newProject() {
+    if (confirm("新建项目将清除当前项目内容，是否继续？")) {
+        // 重置页面
+        pages = [
+            { id: 1, name: "页面 1", components: [] }
+        ]
+        
+        // 重置模型
+        pageModel.clear()
+        pageModel.append({ name: "页面 1", type: "page", active: true })
+        
+        // 重置当前页面索引
+        currentPageIndex = 0
+        
+        // 清空画布
+        clearCanvas()
+        
+        // 重置项目信息
+        currentProject = {
+            name: "未命名项目",
+            version: "1.0",
+            created: new Date().toISOString(),
+            modified: new Date().toISOString(),
+            pages: pages
+        }
+        
+        showNotification("项目创建成功", "success")
+    }
+}
+
+// 打开项目
+function openProject() {
+    // 模拟文件选择
+    const projectName = prompt("请输入项目名称:", "示例项目")
+    if (projectName) {
+        // 模拟加载项目
+        pages = [
+            { id: 1, name: "主页面", components: [] },
+            { id: 2, name: "监控页面", components: [] }
+        ]
+        
+        // 重置模型
+        pageModel.clear()
+        pages.forEach(function(page, index) {
+            pageModel.append({ name: page.name, type: "page", active: index === 0 })
+        })
+        
+        // 重置当前页面索引
+        currentPageIndex = 0
+        
+        // 清空画布
+        clearCanvas()
+        
+        showNotification("项目加载成功", "success")
+    }
+}
+
+// 保存项目
+function saveProject() {
+    // 保存所有页面
+    pages.forEach(function(page, index) {
+        const oldIndex = currentPageIndex
+        switchPage(index)
+        saveCurrentPage()
+    })
+    
+    // 恢复当前页面
+    switchPage(currentPageIndex)
+    
+    // 更新项目信息
+    currentProject.modified = new Date().toISOString()
+    currentProject.pages = pages
+    
+    showNotification("项目保存成功", "success")
+}
+
+// 另存为
+function saveProjectAs() {
+    const newProjectName = prompt("请输入新的项目名称:", currentProject.name)
+    if (newProjectName) {
+        currentProject.name = newProjectName
+        saveProject()
+        showNotification("项目另存为成功", "success")
+    }
+}
+
+// 导出项目
+function exportProject() {
+    // 保存当前项目
+    saveProject()
+    
+    // 模拟导出为JSON
+    const projectJson = JSON.stringify(currentProject, null, 2)
+    console.log("项目导出:", projectJson)
+    
+    showNotification("项目导出成功", "success")
+}
+
+// 导入项目
+function importProject() {
+    // 模拟导入项目
+    const projectJson = prompt("请粘贴项目JSON:", "{\"name\": \"导入项目\", \"pages\": [...]}")
+    if (projectJson) {
+        try {
+            const importedProject = JSON.parse(projectJson)
+            if (importedProject.pages) {
+                pages = importedProject.pages
+                
+                // 重置模型
+                pageModel.clear()
+                pages.forEach(function(page, index) {
+                    pageModel.append({ name: page.name, type: "page", active: index === 0 })
+                })
+                
+                // 重置当前页面索引
+                currentPageIndex = 0
+                
+                // 清空画布
+                clearCanvas()
+                
+                showNotification("项目导入成功", "success")
+            }
+        } catch (e) {
+            showNotification("项目导入失败: " + e.message, "error")
+        }
+    }
+}
+
 Window {
     width: 1440
     height: 900
@@ -623,15 +901,50 @@ Window {
         MenuBar {
             Menu {
                 title: "文件"
-                MenuItem { text: "新建项目" }
-                MenuItem { text: "打开项目" }
-                MenuItem { text: "保存项目" }
-                MenuItem { text: "另存为" }
+                MenuItem {
+                    text: "新建项目"
+                    onClicked: {
+                        newProject()
+                    }
+                }
+                MenuItem {
+                    text: "打开项目"
+                    onClicked: {
+                        openProject()
+                    }
+                }
+                MenuItem {
+                    text: "保存项目"
+                    onClicked: {
+                        saveProject()
+                    }
+                }
+                MenuItem {
+                    text: "另存为"
+                    onClicked: {
+                        saveProjectAs()
+                    }
+                }
                 MenuSeparator { }
-                MenuItem { text: "导出项目" }
-                MenuItem { text: "导入项目" }
+                MenuItem {
+                    text: "导出项目"
+                    onClicked: {
+                        exportProject()
+                    }
+                }
+                MenuItem {
+                    text: "导入项目"
+                    onClicked: {
+                        importProject()
+                    }
+                }
                 MenuSeparator { }
-                MenuItem { text: "退出" }
+                MenuItem {
+                    text: "退出"
+                    onClicked: {
+                        Qt.quit()
+                    }
+                }
             }
             Menu {
                 title: "编辑"
@@ -724,23 +1037,98 @@ Window {
                         Tab {
                             title: "项目"
                             
-                            TreeView {
-                                model: ListModel {
-                                    ListElement { name: "项目"; type: "project" }
-                                    ListElement { name: "页面 1"; type: "page" }
-                                    ListElement { name: "页面 2"; type: "page" }
-                                    ListElement { name: "数据点位"; type: "tags" }
-                                    ListElement { name: "报警"; type: "alarms" }
+                            ColumnLayout {
+                                spacing: 5
+                                padding: 5
+                                
+                                // 页面管理工具栏
+                                RowLayout {
+                                    spacing: 5
+                                    
+                                    Button {
+                                        text: "新建页面"
+                                        onClicked: {
+                                            createNewPage()
+                                        }
+                                    }
+                                    Button {
+                                        text: "删除页面"
+                                        onClicked: {
+                                            deleteCurrentPage()
+                                        }
+                                    }
+                                    Button {
+                                        text: "重命名页面"
+                                        onClicked: {
+                                            renameCurrentPage()
+                                        }
+                                    }
                                 }
                                 
-                                delegate: Item {
-                                    width: parent.width
-                                    height: 30
-                                    Text {
-                                        text: name
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: 10
+                                // 页面列表
+                                ListView {
+                                    id: pageListView
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    
+                                    model: ListModel {
+                                        id: pageModel
+                                        ListElement { name: "页面 1"; type: "page"; active: true }
+                                        ListElement { name: "页面 2"; type: "page"; active: false }
+                                    }
+                                    
+                                    delegate: Item {
+                                        width: parent.width
+                                        height: 30
+                                        
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            color: model.active ? "#E3F2FD" : "transparent"
+                                            border.color: model.active ? "#2196F3" : "transparent"
+                                            border.width: 1
+                                        }
+                                        
+                                        Text {
+                                            text: name
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 10
+                                            color: model.active ? "#1976D2" : "#000000"
+                                            font.bold: model.active
+                                        }
+                                        
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            onClicked: {
+                                                switchPage(index)
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                // 项目结构
+                                GroupBox {
+                                    title: "项目结构"
+                                    
+                                    ListView {
+                                        model: ListModel {
+                                            ListElement { name: "数据点位"; type: "tags" }
+                                            ListElement { name: "报警"; type: "alarms" }
+                                            ListElement { name: "趋势图表"; type: "trends" }
+                                            ListElement { name: "报表"; type: "reports" }
+                                        }
+                                        
+                                        delegate: Item {
+                                            width: parent.width
+                                            height: 25
+                                            
+                                            Text {
+                                                text: name
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                anchors.left: parent.left
+                                                anchors.leftMargin: 10
+                                            }
+                                        }
                                     }
                                 }
                             }
