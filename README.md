@@ -119,8 +119,8 @@ huayan/
 - Qt 6.8 LTS or later (installed at `/opt/Qt/6.8.3` for Linux)
 - CMake 3.22 or later (Qt-provided CMake at `/opt/Qt/Tools/CMake`)
 - C++20 compatible compiler:
-  - Windows: MSVC 2022
-  - Linux: GCC 11+
+  - Windows: MSVC 2022 or MinGW-w64
+  - Linux: GCC 11+ or Clang 12+
 
 ### Using Qt Creator
 
@@ -143,7 +143,100 @@ huayan/
 4. **Run the Application**
    - Click the "Run" button (green triangle) or press Ctrl+R
 
-### Using Command Line
+### Using Cross-Platform Build Scripts
+
+We provide cross-platform build scripts to simplify the build process on both Linux and Windows:
+
+#### Linux/MacOS Build Script
+
+1. **Make the script executable:**
+   ```bash
+   chmod +x build_project.sh
+   ```
+
+2. **Basic usage:**
+   ```bash
+   # Build in Release mode (default)
+   ./build_project.sh
+   
+   # Build in Debug mode
+   ./build_project.sh --debug
+   
+   # Clean build
+   ./build_project.sh --clean
+   
+   # Build with specific number of parallel jobs
+   ./build_project.sh -j 8
+   
+   # Build and install after compilation
+   ./build_project.sh --install
+   ```
+
+3. **Advanced options:**
+   ```bash
+   # See all available options
+   ./build_project.sh --help
+   ```
+
+#### Windows Build Script
+
+1. **Basic usage:**
+   ```cmd
+   REM Build in Release mode (default)
+   build_project.bat
+   
+   REM Build in Debug mode
+   build_project.bat --debug
+   
+   REM Clean build
+   build_project.bat --clean
+   
+   REM Build with specific number of parallel jobs
+   build_project.bat --jobs 8
+   
+   REM Build and install after compilation
+   build_project.bat --install
+   ```
+
+2. **Advanced options:**
+   ```cmd
+   REM See all available options
+   build_project.bat --help
+   ```
+
+#### Makefile Build
+
+Alternatively, you can use the provided Makefile:
+
+1. **Basic usage:**
+   ```bash
+   # Build in Release mode (default)
+   make
+   
+   # Build in Debug mode
+   make BUILD_TYPE=Debug
+   
+   # Clean build
+   make clean
+   
+   # Build with specific number of parallel jobs
+   make JOBS=8
+   
+   # Install the application
+   make install
+   
+   # Package the application
+   make package
+   ```
+
+2. **See all options:**
+   ```bash
+   make help
+   ```
+
+### Manual Command Line Build
+
+If you prefer to build manually:
 
 1. **Create Build Directory**
    ```bash
