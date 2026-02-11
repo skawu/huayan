@@ -24,8 +24,7 @@ jobs:
         version: '6.8.3'
         host: ${{ matrix.os == 'windows-latest' && 'windows' || 'linux' }}
         target: desktop
-        arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || 'gcc_64' }}
-        tools: 'tools_qtcreator qt.tools.qtcreator'
+        arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || 'linux_gcc_64' }}
         dir: ${{ github.workspace }}/qt
         cache: true
 
