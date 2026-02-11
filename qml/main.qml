@@ -35,7 +35,20 @@ Component {
             Loader {
                 anchors.fill: parent
                 anchors.margins: 5
-                sourceComponent: Qt.createQmlObject('import QtQuick 2.15; import ' + type.split('.')[0] + ' 1.0; ' + type.split('.')[1] + ' {}', preview)
+                sourceComponent: {
+                    // Safely construct component with validation
+                    var typeParts = type.split('.');
+                    if (typeParts.length >= 2) {
+                        var moduleName = typeParts[0];
+                        var componentName = typeParts[1];
+                        // Validate that module and component names are valid identifiers
+                        if (moduleName.match(/^[A-Za-z][A-Za-z0-9]*$/) && componentName.match(/^[A-Za-z][A-Za-z0-9]*$/)) {
+                            return Qt.createQmlObject('import QtQuick 2.15; import ' + moduleName + ' 1.0; ' + componentName + ' {}', preview);
+                        }
+                    }
+                    // Return a default component if validation fails
+                    return Qt.createComponent("QtQuick 2.15/Rectangle.qml").createObject(preview, {color: "#FF0000", opacity: 0.5});
+                }()
             }
         }
         
