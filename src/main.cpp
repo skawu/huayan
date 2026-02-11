@@ -279,7 +279,42 @@ int main(int argc, char *argv[])
     
     qDebug() << "Loading QML file from:" << mainQmlPath;
     qDebug() << "QML file exists:" << QFile::exists(mainQmlPath);
-    engine.load(url);
+    
+    if (!QFile::exists(mainQmlPath)) {
+        qCritical() << "ERROR: QML file does not exist at:" << mainQmlPath;
+        qCritical() << "Trying alternative locations...";
+        
+        // Try alternative paths
+        QStringList altPaths;
+        altPaths << QCoreApplication::applicationDirPath() + "/../src/main.qml";
+        altPaths << QCoreApplication::applicationDirPath() + "/../qml/main.qml";
+        altPaths << QDir::currentPath() + "/src/main.qml";
+        altPaths << QDir::currentPath() + "/main.qml";
+        
+        bool found = false;
+        for (const QString &altPath : altPaths) {
+            if (QFile::exists(altPath)) {
+                qDebug() << "Found QML file at alternative location:" << altPath;
+                mainQmlPath = altPath;
+                const QUrl altUrl = QUrl::fromLocalFile(altPath);
+                engine.load(altUrl);
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found) {
+            qCritical() << "ERROR: Could not find main.qml at any expected location!";
+            qCritical() << "Searched paths:";
+            qCritical() << "-" << qmlPath + "/main.qml";
+            for (const QString &altPath : altPaths) {
+                qCritical() << "-" << altPath;
+            }
+            return -1;
+        }
+    } else {
+        engine.load(url);
+    }
 
     // 检查QML加载是否成功
     if (engine.rootObjects().isEmpty()) {
