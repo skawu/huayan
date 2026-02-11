@@ -25,6 +25,7 @@ jobs:
         host: ${{ matrix.os == 'windows-latest' && 'windows' || 'linux' }}
         target: desktop
         arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || 'gcc_64' }}
+        modules: 'qtcharts qt3d qtwebsockets qtwebchannel qtshadertools qtimageformats'
         cache: true
 
     - name: 安装依赖 (Ubuntu)
@@ -40,11 +41,14 @@ jobs:
 
     - name: 配置 CMake (Linux)
       if: matrix.os == 'ubuntu-latest'
-      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${{ env.Qt6_DIR }}"
+      run: |
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${{ env.Qt6_DIR }}"
+      shell: bash
 
     - name: 配置 CMake (Windows)
       if: matrix.os == 'windows-latest'
-      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${{ env.Qt6_DIR }}"
+      run: |
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${{ env.Qt6_DIR }}"
       shell: pwsh
 
     - name: 构建项目
