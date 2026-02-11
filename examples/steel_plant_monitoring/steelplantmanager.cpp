@@ -1,16 +1,16 @@
-#include "steelplantmanager.h"
-#include "simulateddatasource.h"
+#include "hysteelplantmanager.h"
+#include "hysimulateddatasource.h"
 #include <QDebug>
 #include <QFile>
 #include <QTextStream>
 #include <QRandomGenerator>
 
-SteelPlantManager::SteelPlantManager(QObject *parent) : QObject(parent)
+HYSteelPlantManager::HYSteelPlantManager(QObject *parent) : QObject(parent)
 {
     // 初始化成员变量
-    m_tagManager = new TagManager(this);
-    m_chartDataModel = new ChartDataModel(this);
-    m_simulatedDataSource = new SimulatedDataSource(this);
+    m_tagManager = new HYTagManager(this);
+    m_chartDataModel = new HYChartDataModel(this);
+    m_simulatedDataSource = new HYSimulatedDataSource(this);
     m_updateTimer = new QTimer(this);
     m_alarmCheckTimer = new QTimer(this);
     
@@ -18,11 +18,11 @@ SteelPlantManager::SteelPlantManager(QObject *parent) : QObject(parent)
     m_normalAlarmCount = 0;
     
     // 连接信号和槽
-    connect(m_updateTimer, &QTimer::timeout, this, &SteelPlantManager::updatePlantStatus);
-    connect(m_alarmCheckTimer, &QTimer::timeout, this, &SteelPlantManager::checkAlarms);
+    connect(m_updateTimer, &QTimer::timeout, this, &HYSteelPlantManager::updatePlantStatus);
+    connect(m_alarmCheckTimer, &QTimer::timeout, this, &HYSteelPlantManager::checkAlarms);
 }
 
-SteelPlantManager::~SteelPlantManager()
+HYSteelPlantManager::~HYSteelPlantManager()
 {
     // 清理资源
     delete m_tagManager;
@@ -32,9 +32,9 @@ SteelPlantManager::~SteelPlantManager()
     delete m_alarmCheckTimer;
 }
 
-void SteelPlantManager::initialize()
+void HYSteelPlantManager::initialize()
 {
-    qDebug() << "初始化钢铁厂监控平台...";
+    qDebug() << "初始化华颜钢铁厂监控平台...";
     
     // 初始化标签
     initializeTags();
@@ -58,10 +58,10 @@ void SteelPlantManager::initialize()
     m_rollingMillStatus["coolingWaterFlow"] = 90.0;
     m_rollingMillStatus["status"] = true;
     
-    qDebug() << "钢铁厂监控平台初始化完成";
+    qDebug() << "华颜钢铁厂监控平台初始化完成";
 }
 
-void SteelPlantManager::startSimulation()
+void HYSteelPlantManager::startSimulation()
 {
     qDebug() << "开始模拟...";
     
@@ -72,7 +72,7 @@ void SteelPlantManager::startSimulation()
     qDebug() << "模拟已开始";
 }
 
-void SteelPlantManager::stopSimulation()
+void HYSteelPlantManager::stopSimulation()
 {
     qDebug() << "停止模拟...";
     
@@ -83,7 +83,7 @@ void SteelPlantManager::stopSimulation()
     qDebug() << "模拟已停止";
 }
 
-void SteelPlantManager::toggleDevice(const QString &deviceId, bool status)
+void HYSteelPlantManager::toggleDevice(const QString &deviceId, bool status)
 {
     qDebug() << "切换设备状态:" << deviceId << "->" << status;
     
@@ -105,7 +105,7 @@ void SteelPlantManager::toggleDevice(const QString &deviceId, bool status)
     qDebug() << "设备状态已切换";
 }
 
-void SteelPlantManager::exportData(const QString &startTime, const QString &endTime, const QString &filePath)
+void HYSteelPlantManager::exportData(const QString &startTime, const QString &endTime, const QString &filePath)
 {
     qDebug() << "导出数据:" << startTime << "->" << endTime << "到" << filePath;
     
@@ -120,7 +120,7 @@ void SteelPlantManager::exportData(const QString &startTime, const QString &endT
     QTextStream out(&file);
     out << "时间,温度,压力,流量\n";
     
-    // 这里应该从ChartDataModel中获取数据
+    // 这里应该从HYChartDataModel中获取数据
     // 为了示例，我们生成一些模拟数据
     for (int i = 0; i < 24; ++i) {
         QDateTime time = QDateTime::currentDateTime().addSecs(-24 * 3600 + i * 3600);
@@ -140,7 +140,7 @@ void SteelPlantManager::exportData(const QString &startTime, const QString &endT
     qDebug() << "数据导出完成";
 }
 
-void SteelPlantManager::acknowledgeAlarm(const QString &alarmId)
+void HYSteelPlantManager::acknowledgeAlarm(const QString &alarmId)
 {
     qDebug() << "确认告警:" << alarmId;
     
@@ -161,47 +161,47 @@ void SteelPlantManager::acknowledgeAlarm(const QString &alarmId)
     qDebug() << "告警已确认";
 }
 
-QMap<QString, QVariant> SteelPlantManager::blastFurnaceStatus() const
+QMap<QString, QVariant> HYSteelPlantManager::blastFurnaceStatus() const
 {
     return m_blastFurnaceStatus;
 }
 
-QMap<QString, QVariant> SteelPlantManager::converterStatus() const
+QMap<QString, QVariant> HYSteelPlantManager::converterStatus() const
 {
     return m_converterStatus;
 }
 
-QMap<QString, QVariant> SteelPlantManager::rollingMillStatus() const
+QMap<QString, QVariant> HYSteelPlantManager::rollingMillStatus() const
 {
     return m_rollingMillStatus;
 }
 
-QVector<QPointF> SteelPlantManager::temperatureData() const
+QVector<QPointF> HYSteelPlantManager::temperatureData() const
 {
     return m_temperatureData;
 }
 
-QVector<QPointF> SteelPlantManager::pressureData() const
+QVector<QPointF> HYSteelPlantManager::pressureData() const
 {
     return m_pressureData;
 }
 
-QVector<QPointF> SteelPlantManager::flowData() const
+QVector<QPointF> HYSteelPlantManager::flowData() const
 {
     return m_flowData;
 }
 
-int SteelPlantManager::emergencyAlarmCount() const
+int HYSteelPlantManager::emergencyAlarmCount() const
 {
     return m_emergencyAlarmCount;
 }
 
-int SteelPlantManager::normalAlarmCount() const
+int HYSteelPlantManager::normalAlarmCount() const
 {
     return m_normalAlarmCount;
 }
 
-void SteelPlantManager::updatePlantStatus()
+void HYSteelPlantManager::updatePlantStatus()
 {
     // 生成随机数据波动
     double tempVariation = QRandomGenerator::global()->bounded(2.0) - 1.0;
@@ -262,7 +262,7 @@ void SteelPlantManager::updatePlantStatus()
     emit flowDataChanged();
 }
 
-void SteelPlantManager::checkAlarms()
+void HYSteelPlantManager::checkAlarms()
 {
     // 检查高炉告警
     if (m_blastFurnaceStatus["status"].toBool()) {
@@ -294,7 +294,7 @@ void SteelPlantManager::checkAlarms()
     }
 }
 
-void SteelPlantManager::initializeTags()
+void HYSteelPlantManager::initializeTags()
 {
     qDebug() << "初始化标签...";
     
@@ -319,7 +319,7 @@ void SteelPlantManager::initializeTags()
     qDebug() << "标签初始化完成";
 }
 
-void SteelPlantManager::updateChartData()
+void HYSteelPlantManager::updateChartData()
 {
     // 更新图表数据
     m_temperatureData = m_chartDataModel->getChartData("temperature");
@@ -332,7 +332,7 @@ void SteelPlantManager::updateChartData()
     emit flowDataChanged();
 }
 
-void SteelPlantManager::triggerAlarm(const QString &alarmId, const QString &message, bool isEmergency)
+void HYSteelPlantManager::triggerAlarm(const QString &alarmId, const QString &message, bool isEmergency)
 {
     // 检查告警是否已经存在
     if (m_alarmHistory.contains(alarmId)) {

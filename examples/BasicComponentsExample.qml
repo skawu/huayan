@@ -1,13 +1,11 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import BasicComponents 1.0
+import HYBasicComponents 1.0
 
 Rectangle {
     width: 800
     height: 600
     color: "#f0f0f0"
-    
-    title: "基础组件示例"
     
     Column {
         anchors.centerIn: parent
@@ -30,14 +28,14 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
             }
             
-            PushButton {
+            HYPushButton {
                 text: "普通按钮"
                 width: 120
                 height: 40
                 onClicked: console.log("普通按钮被点击")
             }
             
-            PushButton {
+            HYPushButton {
                 text: "禁用按钮"
                 width: 120
                 height: 40
@@ -55,14 +53,14 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
             }
             
-            Indicator {
+            HYIndicator {
                 width: 50
                 height: 50
                 value: true
                 color: "#4CAF50"
             }
             
-            Indicator {
+            HYIndicator {
                 width: 50
                 height: 50
                 value: false
@@ -80,7 +78,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
             }
             
-            TextLabel {
+            HYTextLabel {
                 text: "静态文本"
                 width: 120
                 height: 40

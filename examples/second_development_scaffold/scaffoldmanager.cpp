@@ -1,25 +1,36 @@
-#include "scaffoldmanager.h"
+#include "hy_scaffoldmanager.h"
 #include <QDebug>
 #include <QFile>
 #include <QTextStream>
+#include <QDateTime>
 
-ScaffoldManager::ScaffoldManager(QObject *parent) : QObject(parent)
+/**
+ * @file hy_scaffoldmanager.cpp
+ * @brief Huayan SCADA系统二次开发脚手架管理器实现
+ * 
+ * 实现了HY_ScaffoldManager类的核心功能，包括：
+ * - 模板管理（创建、加载、导出、导入）
+ * - API示例演示
+ * - 与核心模块的集成
+ */
+
+HY_ScaffoldManager::HY_ScaffoldManager(QObject *parent) : QObject(parent)
 {
     // 初始化成员变量
-    m_tagManager = new TagManager(this);
-    m_dataProcessor = new DataProcessor(this);
-    m_chartDataModel = new ChartDataModel(this);
+    m_hyTagManager = new HYTagManager(this);
+    m_hyDataProcessor = new HYDataProcessor(m_hyTagManager, this);
+    m_hyChartDataModel = new HYChartDataModel(m_hyTagManager, this);
 }
 
-ScaffoldManager::~ScaffoldManager()
+HY_ScaffoldManager::~HY_ScaffoldManager()
 {
     // 清理资源
-    delete m_tagManager;
-    delete m_dataProcessor;
-    delete m_chartDataModel;
+    delete m_hyTagManager;
+    delete m_hyDataProcessor;
+    delete m_hyChartDataModel;
 }
 
-void ScaffoldManager::initialize()
+void HY_ScaffoldManager::initialize()
 {
     qDebug() << "初始化脚手架管理器...";
     
@@ -32,7 +43,7 @@ void ScaffoldManager::initialize()
     qDebug() << "脚手架管理器初始化完成";
 }
 
-void ScaffoldManager::createTemplate(const QString &templateName, const QString &templateType)
+void HY_ScaffoldManager::createTemplate(const QString &templateName, const QString &templateType)
 {
     qDebug() << "创建模板:" << templateName << "(" << templateType << ")";
     
@@ -42,7 +53,7 @@ void ScaffoldManager::createTemplate(const QString &templateName, const QString 
     templateData["created"] = QDateTime::currentDateTime().toString();
     
     // 添加到模板列表
-    m_templateList[templateName] = templateData;
+    m_hyTemplateList[templateName] = templateData;
     
     // 发出信号
     emit templateListChanged();
@@ -51,18 +62,18 @@ void ScaffoldManager::createTemplate(const QString &templateName, const QString 
     qDebug() << "模板创建完成";
 }
 
-void ScaffoldManager::loadTemplate(const QString &templateName)
+void HY_ScaffoldManager::loadTemplate(const QString &templateName)
 {
     qDebug() << "加载模板:" << templateName;
     
     // 检查模板是否存在
-    if (!m_templateList.contains(templateName)) {
+    if (!m_hyTemplateList.contains(templateName)) {
         qDebug() << "模板不存在:" << templateName;
         return;
     }
     
     // 加载模板数据
-    QMap<QString, QVariant> templateData = m_templateList[templateName];
+    QMap<QString, QVariant> templateData = m_hyTemplateList[templateName];
     QString templateType = templateData["type"].toString();
     
     // 根据模板类型执行不同的加载逻辑
@@ -86,12 +97,12 @@ void ScaffoldManager::loadTemplate(const QString &templateName)
     qDebug() << "模板加载完成";
 }
 
-void ScaffoldManager::exportTemplate(const QString &templateName, const QString &filePath)
+void HY_ScaffoldManager::exportTemplate(const QString &templateName, const QString &filePath)
 {
     qDebug() << "导出模板:" << templateName << "到" << filePath;
     
     // 检查模板是否存在
-    if (!m_templateList.contains(templateName)) {
+    if (!m_hyTemplateList.contains(templateName)) {
         qDebug() << "模板不存在:" << templateName;
         return;
     }
@@ -105,7 +116,7 @@ void ScaffoldManager::exportTemplate(const QString &templateName, const QString 
     
     // 写入模板数据
     QTextStream out(&file);
-    QMap<QString, QVariant> templateData = m_templateList[templateName];
+    QMap<QString, QVariant> templateData = m_hyTemplateList[templateName];
     out << "TemplateName: " << templateName << "\n";
     out << "Type: " << templateData["type"].toString() << "\n";
     out << "Created: " << templateData["created"].toString() << "\n";
@@ -116,7 +127,7 @@ void ScaffoldManager::exportTemplate(const QString &templateName, const QString 
     qDebug() << "模板导出完成";
 }
 
-void ScaffoldManager::importTemplate(const QString &filePath)
+void HY_ScaffoldManager::importTemplate(const QString &filePath)
 {
     qDebug() << "导入模板:" << filePath;
     
@@ -152,7 +163,7 @@ void ScaffoldManager::importTemplate(const QString &filePath)
         QMap<QString, QVariant> templateData;
         templateData["type"] = templateType;
         templateData["created"] = created;
-        m_templateList[templateName] = templateData;
+        m_hyTemplateList[templateName] = templateData;
         
         // 发出信号
         emit templateListChanged();
@@ -164,12 +175,12 @@ void ScaffoldManager::importTemplate(const QString &filePath)
     }
 }
 
-void ScaffoldManager::runApiDemo(const QString &apiName)
+void HY_ScaffoldManager::runApiDemo(const QString &apiName)
 {
     qDebug() << "运行API示例:" << apiName;
     
     // 检查API是否存在
-    if (!m_apiList.contains(apiName)) {
+    if (!m_hyApiList.contains(apiName)) {
         qDebug() << "API不存在:" << apiName;
         return;
     }
@@ -179,19 +190,19 @@ void ScaffoldManager::runApiDemo(const QString &apiName)
     
     if (apiName == "tagManager.addTag") {
         // TagManager添加标签示例
-        m_tagManager->addTag("DemoTag", "AI", "演示标签");
+        m_hyTagManager->addTag("DemoTag", "AI", 0.0, "演示标签", "AI");
         result = "标签添加成功";
     } else if (apiName == "tagManager.updateTagValue") {
         // TagManager更新标签值示例
-        m_tagManager->updateTagValue("DemoTag", 100.0);
+        m_hyTagManager->setTagValue("DemoTag", 100.0);
         result = "标签值更新成功";
     } else if (apiName == "dataProcessor.processData") {
         // DataProcessor处理数据示例
-        QVariant processedValue = m_dataProcessor->processData("DemoTag", 100.0);
+        QVariant processedValue = m_hyDataProcessor->processData("DemoTag", 100.0);
         result = "数据处理结果: " + processedValue.toString();
     } else if (apiName == "chartDataModel.addDataPoint") {
         // ChartDataModel添加数据点示例
-        m_chartDataModel->addDataPoint("DemoChart", QDateTime::currentDateTime(), 100.0);
+        m_hyChartDataModel->addDataPoint("DemoChart", QDateTime::currentDateTime(), 100.0);
         result = "数据点添加成功";
     } else {
         result = "API示例执行完成";
@@ -203,17 +214,17 @@ void ScaffoldManager::runApiDemo(const QString &apiName)
     qDebug() << "API示例执行完成";
 }
 
-QMap<QString, QVariant> ScaffoldManager::templateList() const
+QMap<QString, QVariant> HY_ScaffoldManager::templateList() const
 {
-    return m_templateList;
+    return m_hyTemplateList;
 }
 
-QMap<QString, QVariant> ScaffoldManager::apiList() const
+QMap<QString, QVariant> HY_ScaffoldManager::apiList() const
 {
-    return m_apiList;
+    return m_hyApiList;
 }
 
-void ScaffoldManager::initializeTemplates()
+void HY_ScaffoldManager::initializeTemplates()
 {
     qDebug() << "初始化模板列表...";
     
@@ -221,41 +232,41 @@ void ScaffoldManager::initializeTemplates()
     QMap<QString, QVariant> dataAcquisitionTemplate;
     dataAcquisitionTemplate["type"] = "dataAcquisition";
     dataAcquisitionTemplate["created"] = QDateTime::currentDateTime().toString();
-    m_templateList["数据采集模板"] = dataAcquisitionTemplate;
+    m_hyTemplateList["数据采集模板"] = dataAcquisitionTemplate;
     
     QMap<QString, QVariant> visualizationTemplate;
     visualizationTemplate["type"] = "visualization";
     visualizationTemplate["created"] = QDateTime::currentDateTime().toString();
-    m_templateList["可视化面板模板"] = visualizationTemplate;
+    m_hyTemplateList["可视化面板模板"] = visualizationTemplate;
     
     QMap<QString, QVariant> alarmTemplate;
     alarmTemplate["type"] = "alarm";
     alarmTemplate["created"] = QDateTime::currentDateTime().toString();
-    m_templateList["告警处理模板"] = alarmTemplate;
+    m_hyTemplateList["告警处理模板"] = alarmTemplate;
     
     qDebug() << "模板列表初始化完成";
 }
 
-void ScaffoldManager::initializeApiList()
+void HY_ScaffoldManager::initializeApiList()
 {
     qDebug() << "初始化API列表...";
     
     // 添加API示例
     QMap<QString, QVariant> tagManagerApi;
-    tagManagerApi["category"] = "TagManager";
+    tagManagerApi["category"] = "HYTagManager";
     tagManagerApi["description"] = "标签管理API";
-    m_apiList["tagManager.addTag"] = tagManagerApi;
-    m_apiList["tagManager.updateTagValue"] = tagManagerApi;
+    m_hyApiList["tagManager.addTag"] = tagManagerApi;
+    m_hyApiList["tagManager.updateTagValue"] = tagManagerApi;
     
     QMap<QString, QVariant> dataProcessorApi;
-    dataProcessorApi["category"] = "DataProcessor";
+    dataProcessorApi["category"] = "HYDataProcessor";
     dataProcessorApi["description"] = "数据处理API";
-    m_apiList["dataProcessor.processData"] = dataProcessorApi;
+    m_hyApiList["dataProcessor.processData"] = dataProcessorApi;
     
     QMap<QString, QVariant> chartDataModelApi;
-    chartDataModelApi["category"] = "ChartDataModel";
+    chartDataModelApi["category"] = "HYChartDataModel";
     chartDataModelApi["description"] = "图表数据API";
-    m_apiList["chartDataModel.addDataPoint"] = chartDataModelApi;
+    m_hyApiList["chartDataModel.addDataPoint"] = chartDataModelApi;
     
     qDebug() << "API列表初始化完成";
 }

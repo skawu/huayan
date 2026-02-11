@@ -81,7 +81,7 @@ void monitorMemoryUsage() {
 int main(int argc, char *argv[])
 {
     // 设置Qt应用程序属性
-    QCoreApplication::setApplicationName("Huayan工业软件");
+    QCoreApplication::setApplicationName("HuayanSCADA");
     QCoreApplication::setApplicationVersion("1.0.0");
     QCoreApplication::setOrganizationName("Huayan Software");
     QCoreApplication::setOrganizationDomain("huayan.com");

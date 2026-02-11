@@ -1,5 +1,5 @@
-#ifndef SIMULATEDDATASOURCE_H
-#define SIMULATEDDATASOURCE_H
+#ifndef HYSIMULATEDDATASOURCE_H
+#define HYSIMULATEDDATASOURCE_H
 
 #include <QObject>
 #include <QMap>
@@ -7,18 +7,18 @@
 #include <QTimer>
 
 /**
- * @brief 模拟数据源
+ * @brief 华颜模拟数据源
  * 
  * 用于替代真实设备/数据库，生成模拟的工业数据
  * 确保示例在断网/无外部服务时可完整运行
  */
-class SimulatedDataSource : public QObject
+class HYSimulatedDataSource : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit SimulatedDataSource(QObject *parent = nullptr);
-    ~SimulatedDataSource();
+    explicit HYSimulatedDataSource(QObject *parent = nullptr);
+    ~HYSimulatedDataSource();
 
     // 方法
     Q_INVOKABLE void initialize();
@@ -44,4 +44,4 @@ private:
     QTimer *m_updateTimer;
 };
 
-#endif // SIMULATEDDATASOURCE_H
+#endif // HYSIMULATEDDATASOURCE_H

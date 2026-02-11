@@ -1,5 +1,5 @@
-#ifndef STEELPLANTMANAGER_H
-#define STEELPLANTMANAGER_H
+#ifndef HYSTEELPLANTMANAGER_H
+#define HYSTEELPLANTMANAGER_H
 
 #include <QObject>
 #include <QTimer>
@@ -8,19 +8,19 @@
 #include <QVector>
 
 // 包含Huayan核心头文件
-#include "core/tagmanager.h"
-#include "core/chartdatamodel.h"
+#include "core/hy_tagmanager.h"
+#include "core/hy_chartdatamodel.h"
 
 // 前置声明
-class SimulatedDataSource;
+class HYSimulatedDataSource;
 
 /**
- * @brief 钢铁厂监控平台管理器
+ * @brief 华颜钢铁厂监控平台管理器
  * 
  * 负责管理钢铁厂的各个设备和数据，包括高炉、转炉、轧钢等核心产线
- * 复用Huayan的TagManager和ChartDataModel来管理标签和图表数据
+ * 复用Huayan的HYTagManager和HYChartDataModel来管理标签和图表数据
  */
-class SteelPlantManager : public QObject
+class HYSteelPlantManager : public QObject
 {
     Q_OBJECT
 
@@ -35,8 +35,8 @@ class SteelPlantManager : public QObject
     Q_PROPERTY(int normalAlarmCount READ normalAlarmCount NOTIFY normalAlarmCountChanged)
 
 public:
-    explicit SteelPlantManager(QObject *parent = nullptr);
-    ~SteelPlantManager();
+    explicit HYSteelPlantManager(QObject *parent = nullptr);
+    ~HYSteelPlantManager();
 
     // 方法
     Q_INVOKABLE void initialize();
@@ -75,9 +75,9 @@ private slots:
 
 private:
     // 私有成员
-    TagManager *m_tagManager;
-    ChartDataModel *m_chartDataModel;
-    SimulatedDataSource *m_simulatedDataSource;
+    HYTagManager *m_tagManager;
+    HYChartDataModel *m_chartDataModel;
+    HYSimulatedDataSource *m_simulatedDataSource;
     QTimer *m_updateTimer;
     QTimer *m_alarmCheckTimer;
     
@@ -104,4 +104,4 @@ private:
     void triggerAlarm(const QString &alarmId, const QString &message, bool isEmergency);
 };
 
-#endif // STEELPLANTMANAGER_H
+#endif // HYSTEELPLANTMANAGER_H
