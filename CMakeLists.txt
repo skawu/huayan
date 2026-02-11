@@ -2,11 +2,29 @@ cmake_minimum_required(VERSION 3.22)
 
 project(SCADASystem VERSION 1.0 LANGUAGES CXX)
 
+# 设置C++标准
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# 启用自动生成
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
+
+# 适配Windows + llvm-mingw编译器
+if(WIN32 AND MINGW)
+    # 明确指定编译器标识
+    set(CMAKE_CXX_COMPILER_ID "GNU")
+    set(CMAKE_CXX_COMPILER_VERSION "11.0")
+    
+    # 添加MinGW特定的编译选项
+    add_compile_options(-Wall -Wextra -Wpedantic)
+    
+    # 确保正确识别C++20特性
+    set(CMAKE_CXX20_STANDARD_COMPILE_OPTION "-std=c++20")
+    set(CMAKE_CXX20_EXTENSION_COMPILE_OPTION "-std=gnu++20")
+endif()
 
 # Build type configuration
 if(NOT CMAKE_BUILD_TYPE)
