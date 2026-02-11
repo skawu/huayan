@@ -25,7 +25,7 @@ jobs:
         host: ${{ matrix.os == 'windows-latest' && 'windows' || 'linux' }}
         target: desktop
         arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || 'linux_gcc_64' }}
-        modules: 'qtserialbus qtcharts qt3d qtwebsockets qtwebchannel'
+        modules: 'qtserialbus qtserialport qtcharts qt3d qtwebsockets qtwebchannel qtshadertools qtimageformats'
         dir: ${{ github.workspace }}/qt
         cache: true
 
