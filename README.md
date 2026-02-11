@@ -1,6 +1,7 @@
 # Huayan Industrial SCADA System
 
-[![CI/CD Pipeline](https://github.com/skawu/huayan/actions/workflows/ci.yml/badge.svg)](https://github.com/skawu/huayan/actions/workflows/ci.yml)
+![Linux Build](https://github.com/skawu/huayan/actions/workflows/ci.yml/badge.svg?branch=main&event=push&job=build&matrix_os=ubuntu-latest)
+![Windows Build](https://github.com/skawu/huayan/actions/workflows/ci.yml/badge.svg?branch=main&event=push&job=build&matrix_os=windows-latest)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Qt Version](https://img.shields.io/badge/Qt-6.8.3-green.svg)](https://www.qt.io/)
 
