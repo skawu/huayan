@@ -115,8 +115,8 @@ huayan/
 - Qt 6.8 LTS 或更高版本（Linux 下安装在 `/opt/Qt/6.8.3`）
 - CMake 3.22 或更高版本（Qt 提供的 CMake 位于 `/opt/Qt/Tools/CMake`）
 - 支持 C++20 的编译器：
-  - Windows: MSVC 2022
-  - Linux: GCC 11+
+  - Windows: MSVC 2022 或 MinGW-w64
+  - Linux: GCC 11+ 或 Clang 12+
 
 ### 使用 Qt Creator
 
@@ -139,7 +139,100 @@ huayan/
 4. **运行应用程序**
    - 点击 "运行" 按钮（绿色三角形）或按 Ctrl+R
 
-### 使用命令行
+### 使用跨平台构建脚本
+
+我们提供了跨平台构建脚本来简化 Linux 和 Windows 上的构建过程：
+
+#### Linux/MacOS 构建脚本
+
+1. **使脚本可执行：**
+   ```bash
+   chmod +x build_project.sh
+   ```
+
+2. **基本用法：**
+   ```bash
+   # 构建发布版本（默认）
+   ./build_project.sh
+   
+   # 构建调试版本
+   ./build_project.sh --debug
+   
+   # 清理构建
+   ./build_project.sh --clean
+   
+   # 使用指定数量的并行作业构建
+   ./build_project.sh -j 8
+   
+   # 构建并安装
+   ./build_project.sh --install
+   ```
+
+3. **高级选项：**
+   ```bash
+   # 查看所有可用选项
+   ./build_project.sh --help
+   ```
+
+#### Windows 构建脚本
+
+1. **基本用法：**
+   ```cmd
+   REM 构建发布版本（默认）
+   build_project.bat
+   
+   REM 构建调试版本
+   build_project.bat --debug
+   
+   REM 清理构建
+   build_project.bat --clean
+   
+   REM 使用指定数量的并行作业构建
+   build_project.bat --jobs 8
+   
+   REM 构建并安装
+   build_project.bat --install
+   ```
+
+2. **高级选项：**
+   ```cmd
+   REM 查看所有可用选项
+   build_project.bat --help
+   ```
+
+#### Makefile 构建
+
+或者，您可以使用提供的 Makefile：
+
+1. **基本用法：**
+   ```bash
+   # 构建发布版本（默认）
+   make
+   
+   # 构建调试版本
+   make BUILD_TYPE=Debug
+   
+   # 清理构建
+   make clean
+   
+   # 使用指定数量的并行作业构建
+   make JOBS=8
+   
+   # 安装应用程序
+   make install
+   
+   # 打包应用程序
+   make package
+   ```
+
+2. **查看所有选项：**
+   ```bash
+   make help
+   ```
+
+### 手动命令行构建
+
+如果您更喜欢手动构建：
 
 1. **创建构建目录**
    ```bash
