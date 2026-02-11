@@ -9,6 +9,11 @@
 #include <QMutex>
 #include <QTimer>
 #include <QSet>
+#include <QDateTime>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QDir>
 
 /**
  * @file tagmanager.h
@@ -243,6 +248,100 @@ public:
      */
     void setTagImportant(const QString &tagName, bool important);
 
+    // 性能优化方法
+    /**
+     * @brief 批量添加点位
+     * @param tags 点位信息列表
+     * @return 添加是否成功
+     */
+    bool addTags(const QVector<QMap<QString, QVariant>> &tags);
+    
+    /**
+     * @brief 启用批量更新模式
+     * @param enabled 是否启用
+     */
+    void setBatchUpdateMode(bool enabled);
+    
+    /**
+     * @brief 设置批量更新间隔
+     * @param interval 间隔（毫秒）
+     */
+    void setBatchUpdateInterval(int interval);
+    
+    /**
+     * @brief 优化点位值更新，减少信号发射
+     * @param values 点位名称和值的映射
+     * @param immediate 是否立即通知
+     * @return 设置是否成功
+     */
+    bool setTagValuesOptimized(const QMap<QString, QVariant> &values, bool immediate = false);
+
+    // 历史数据存储
+    /**
+     * @brief 启用历史数据存储
+     * @param enabled 是否启用
+     * @param interval 存储间隔（毫秒）
+     * @param retentionDays 保留天数
+     */
+    void enableHistoryStorage(bool enabled, int interval = 1000, int retentionDays = 365);
+    
+    /**
+     * @brief 获取历史数据
+     * @param tagName 点位名称
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 历史数据列表
+     */
+    QVector<QPair<QDateTime, QVariant>> getHistoricalData(const QString &tagName, const QDateTime &startTime, const QDateTime &endTime);
+    
+    /**
+     * @brief 清理历史数据
+     * @param days 保留天数
+     */
+    void cleanHistoricalData(int days = 365);
+
+    // 断点续传
+    /**
+     * @brief 启用断点续传
+     * @param enabled 是否启用
+     * @param persistFilePath 续传文件路径
+     */
+    void enablePersistence(bool enabled, const QString &persistFilePath = "");
+    
+    /**
+     * @brief 保存点位状态
+     */
+    void saveState();
+    
+    /**
+     * @brief 加载点位状态
+     */
+    void loadState();
+
+    // 离线能力
+    /**
+     * @brief 设置离线模式
+     * @param offline 是否离线
+     */
+    void setOfflineMode(bool offline);
+    
+    /**
+     * @brief 获取离线模式状态
+     * @return 是否离线
+     */
+    bool isOfflineMode() const;
+    
+    /**
+     * @brief 同步离线数据
+     */
+    void syncOfflineData();
+    
+    /**
+     * @brief 设置同步间隔
+     * @param interval 同步间隔（毫秒）
+     */
+    void setSyncInterval(int interval);
+
 signals:
     /**
      * @brief 点位添加信号
@@ -268,6 +367,19 @@ signals:
      * @param values 点位名称和值的映射
      */
     void tagValuesChanged(const QMap<QString, QVariant> &values);
+    
+    /**
+     * @brief 离线模式切换信号
+     * @param offline 是否离线
+     */
+    void offlineModeChanged(bool offline);
+    
+    /**
+     * @brief 数据同步完成信号
+     * @param success 是否成功
+     * @param count 同步的数据条数
+     */
+    void syncCompleted(bool success, int count);
 
 private slots:
     /**
@@ -280,6 +392,16 @@ private slots:
      * @brief 延迟通知槽函数
      */
     void onDelayedNotification();
+    
+    /**
+     * @brief 历史数据存储槽函数
+     */
+    void onHistoryStorage();
+    
+    /**
+     * @brief 同步离线数据槽函数
+     */
+    void onSyncOfflineData();
 
 private:
     QMap<QString, HYTag *> m_hyTags; ///< 点位映射表
@@ -299,6 +421,23 @@ private:
     QTimer *m_hyNotificationTimer; ///< 延迟通知定时器
     QMap<QString, QVariant> m_hyPendingValues; ///< 待通知的点位值
     QSet<QString> m_hyImportantTags; ///< 重要点位集合
+
+    // 历史数据存储
+    QSqlDatabase m_hyDatabase; ///< 数据库连接
+    bool m_hyHistoryEnabled; ///< 是否启用历史数据存储
+    int m_hyHistoryInterval; ///< 历史数据存储间隔（毫秒）
+    QTimer *m_hyHistoryTimer; ///< 历史数据存储定时器
+    int m_hyHistoryRetentionDays; ///< 历史数据保留天数
+
+    // 断点续传
+    bool m_hyPersistEnabled; ///< 是否启用断点续传
+    QString m_hyPersistFilePath; ///< 断点续传文件路径
+
+    // 离线能力
+    bool m_hyOfflineMode; ///< 是否处于离线模式
+    QMap<QString, QVector<QPair<QDateTime, QVariant>>> m_hyOfflineData; ///< 离线数据缓存
+    QTimer *m_hySyncTimer; ///< 同步定时器
+    int m_hySyncInterval; ///< 同步间隔（毫秒）
 };
 
 #endif // HYTAGMANAGER_H

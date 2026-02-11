@@ -1,9 +1,12 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import QtQuick.Window 2.15
+import QtQuick.Dialogs 1.3
 import BasicComponents 1.0
 import IndustrialComponents 1.0
 import ChartComponents 1.0
+import "./themes"
 
 ApplicationWindow {
     id: mainWindow
@@ -11,6 +14,9 @@ ApplicationWindow {
     width: 1024
     height: 768
     title: "SCADA System"
+    
+    // 主题
+    property var theme: IndustrialTheme {}
     
     // 主页面切换
     property int currentPage: 0
@@ -20,6 +26,167 @@ ApplicationWindow {
     
     // 组件-标签绑定关系
     property var tagBindings: {}
+    
+    // 快捷键支持
+    Shortcut {
+        sequence: "Ctrl+S"
+        onActivated: {
+            if (currentPage === 2) {
+                saveConfiguration();
+            }
+        }
+    }
+    
+    Shortcut {
+        sequence: "Ctrl+Z"
+        onActivated: {
+            // 实现撤销功能
+            console.log("Undo operation");
+        }
+    }
+    
+    Shortcut {
+        sequence: "Ctrl+N"
+        onActivated: {
+            // 实现新建功能
+            console.log("New project");
+        }
+    }
+    
+    Shortcut {
+        sequence: "Ctrl+O"
+        onActivated: {
+            if (currentPage === 2) {
+                importProject();
+            }
+        }
+    }
+    
+    Shortcut {
+        sequence: "Ctrl+E"
+        onActivated: {
+            if (currentPage === 2) {
+                exportProject();
+            }
+        }
+    }
+    
+    // 窗口大小变化处理
+    onWidthChanged: {
+        console.log("Window width changed:", width);
+        adjustLayout();
+    }
+    
+    onHeightChanged: {
+        console.log("Window height changed:", height);
+        adjustLayout();
+    }
+    
+    // 自适应布局调整
+    function adjustLayout() {
+        // 根据窗口大小调整布局
+        if (width < 1280) {
+            // 小屏幕布局
+            console.log("Using small screen layout");
+            // 这里可以添加小屏幕布局调整逻辑
+        } else if (width < 1920) {
+            // 中等屏幕布局
+            console.log("Using medium screen layout");
+            // 这里可以添加中等屏幕布局调整逻辑
+        } else {
+            // 大屏幕布局
+            console.log("Using large screen layout");
+            // 这里可以添加大屏幕布局调整逻辑
+        }
+        
+        // 调整仪表盘页面的卡片大小
+        if (dashboardPage) {
+            var cardWidth = (dashboardPage.width - 40) / 3;
+            var cardHeight = (dashboardPage.height - 40) / 2;
+            // 这里可以添加卡片大小调整逻辑
+        }
+    }
+    
+    // 无障碍设计：确保按钮尺寸符合要求
+    Component.onCompleted: {
+        // 确保所有按钮尺寸≥48×48px
+        ensureButtonSizes();
+        
+        // 启动窗口大小监控
+        adjustLayout();
+    }
+    
+    // 确保按钮尺寸符合要求
+    function ensureButtonSizes() {
+        // 遍历所有按钮，确保尺寸符合要求
+        var buttons = findChildren(mainWindow, "Button");
+        for (var i = 0; i < buttons.length; i++) {
+            var button = buttons[i];
+            if (button.implicitWidth < 48) {
+                button.implicitWidth = 48;
+            }
+            if (button.implicitHeight < 48) {
+                button.implicitHeight = 48;
+            }
+        }
+    }
+    
+    // 告警音效提示
+    function playAlarmSound(severity) {
+        // 根据告警级别播放不同的音效
+        console.log("Playing alarm sound for severity:", severity);
+        // 这里可以添加音效播放逻辑
+    }
+    
+    // 实时参数预览
+    Rectangle {
+        id: parameterPreview
+        width: 200
+        height: 60
+        color: theme.surfaceColor
+        border.color: theme.borderColor
+        border.width: 1
+        radius: 4
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.margins: 10
+        visible: false
+        
+        ColumnLayout {
+            anchors.fill: parent
+            padding: 10
+            spacing: 5
+            
+            Text {
+                id: previewTitle
+                text: "Parameter Preview"
+                font.pixelSize: 12
+                font.bold: true
+                color: theme.textSecondary
+                Layout.fillWidth: true
+            }
+            
+            Text {
+                id: previewValue
+                text: "Value: N/A"
+                font.pixelSize: 14
+                color: theme.textPrimary
+                Layout.fillWidth: true
+            }
+        }
+    }
+    
+    // 显示参数预览
+    function showParameterPreview(title, value) {
+        previewTitle.text = title;
+        previewValue.text = "Value: " + value;
+        parameterPreview.visible = true;
+        
+        // 3秒后自动隐藏
+        setTimeout(function() {
+            parameterPreview.visible = false;
+        }, 3000);
+    }
     
     // 图层模型
     ListModel {
@@ -494,7 +661,7 @@ ApplicationWindow {
         Rectangle {
             Layout.fillWidth: true
             height: 50
-            color: "#3498DB"
+            color: theme.primaryColor
             
             RowLayout {
                 anchors.fill: parent
@@ -504,7 +671,7 @@ ApplicationWindow {
                     text: "SCADA System"
                     font.pixelSize: 20
                     font.bold: true
-                    color: "white"
+                    color: theme.textLight
                     Layout.leftMargin: 20
                     Layout.verticalAlignment: Layout.AlignVCenter
                 }
@@ -522,14 +689,14 @@ ApplicationWindow {
                         text: "Dashboard"
                         onClicked: mainWindow.currentPage = 0
                         background: Rectangle {
-                            color: mainWindow.currentPage === 0 ? "#2980B9" : "transparent"
-                            border.color: "white"
+                            color: mainWindow.currentPage === 0 ? theme.secondaryColor : "transparent"
+                            border.color: theme.textLight
                             border.width: 1
                             radius: 4
                         }
                         contentItem: Text {
                             text: parent.text
-                            color: "white"
+                            color: theme.textLight
                             font.pixelSize: 14
                         }
                     }
@@ -538,14 +705,14 @@ ApplicationWindow {
                         text: "Tags"
                         onClicked: mainWindow.currentPage = 1
                         background: Rectangle {
-                            color: mainWindow.currentPage === 1 ? "#2980B9" : "transparent"
-                            border.color: "white"
+                            color: mainWindow.currentPage === 1 ? theme.secondaryColor : "transparent"
+                            border.color: theme.textLight
                             border.width: 1
                             radius: 4
                         }
                         contentItem: Text {
                             text: parent.text
-                            color: "white"
+                            color: theme.textLight
                             font.pixelSize: 14
                         }
                     }
@@ -554,14 +721,14 @@ ApplicationWindow {
                         text: "Editor"
                         onClicked: mainWindow.currentPage = 2
                         background: Rectangle {
-                            color: mainWindow.currentPage === 2 ? "#2980B9" : "transparent"
-                            border.color: "white"
+                            color: mainWindow.currentPage === 2 ? theme.secondaryColor : "transparent"
+                            border.color: theme.textLight
                             border.width: 1
                             radius: 4
                         }
                         contentItem: Text {
                             text: parent.text
-                            color: "white"
+                            color: theme.textLight
                             font.pixelSize: 14
                         }
                     }
@@ -570,14 +737,14 @@ ApplicationWindow {
                         text: "Components"
                         onClicked: mainWindow.currentPage = 3
                         background: Rectangle {
-                            color: mainWindow.currentPage === 3 ? "#2980B9" : "transparent"
-                            border.color: "white"
+                            color: mainWindow.currentPage === 3 ? theme.secondaryColor : "transparent"
+                            border.color: theme.textLight
                             border.width: 1
                             radius: 4
                         }
                         contentItem: Text {
                             text: parent.text
-                            color: "white"
+                            color: theme.textLight
                             font.pixelSize: 14
                         }
                     }
@@ -596,6 +763,7 @@ ApplicationWindow {
             Page {
                 id: dashboardPage
                 padding: 20
+                background: Rectangle { color: theme.backgroundColor }
                 
                 GridLayout {
                     columns: 3
@@ -603,204 +771,402 @@ ApplicationWindow {
                     spacing: 20
                     
                     // 电机状态
-                    Card {
+                    Rectangle {
                         width: (dashboardPage.width - 40) / 3
                         height: (dashboardPage.height - 40) / 2
-                        title: "Motor Status"
+                        color: theme.cardColor
+                        border.color: theme.borderColor
+                        border.width: 1
+                        radius: 8
+                        
+                        // 阴影效果
+                        layer.enabled: true
+                        layer.effect: DropShadow {
+                            color: theme.shadowColor
+                            radius: 4
+                            samples: 8
+                            offset.x: 0
+                            offset.y: 2
+                        }
                         
                         ColumnLayout {
-                            anchors.centerIn: parent
-                            spacing: 20
-                            
-                            Motor {
-                                id: motor1
-                                width: 100
-                                height: 100
-                                value: tagsModel.get(0).value
-                                label: "Motor 1"
-                            }
+                            anchors.fill: parent
+                            padding: 16
+                            spacing: 10
                             
                             Text {
-                                text: "Status: " + (motor1.value ? "Running" : "Stopped")
+                                text: "Motor Status"
                                 font.pixelSize: 16
+                                font.bold: true
+                                color: theme.textPrimary
+                                Layout.fillWidth: true
                                 horizontalAlignment: Text.AlignHCenter
+                            }
+                            
+                            Item {
+                                Layout.fillHeight: true
+                                
+                                ColumnLayout {
+                                    anchors.centerIn: parent
+                                    spacing: 20
+                                    
+                                    Motor {
+                                        id: motor1
+                                        width: 100
+                                        height: 100
+                                        value: tagsModel.get(0).value
+                                        label: "Motor 1"
+                                    }
+                                    
+                                    Text {
+                                        text: "Status: " + (motor1.value ? "Running" : "Stopped")
+                                        font.pixelSize: 16
+                                        color: theme.textPrimary
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+                                }
                             }
                         }
                     }
                     
                     // 阀门状态
-                    Card {
+                    Rectangle {
                         width: (dashboardPage.width - 40) / 3
                         height: (dashboardPage.height - 40) / 2
-                        title: "Valve Status"
+                        color: theme.cardColor
+                        border.color: theme.borderColor
+                        border.width: 1
+                        radius: 8
+                        
+                        // 阴影效果
+                        layer.enabled: true
+                        layer.effect: DropShadow {
+                            color: theme.shadowColor
+                            radius: 4
+                            samples: 8
+                            offset.x: 0
+                            offset.y: 2
+                        }
                         
                         ColumnLayout {
-                            anchors.centerIn: parent
-                            spacing: 20
-                            
-                            Valve {
-                                id: valve1
-                                width: 100
-                                height: 100
-                                value: tagsModel.get(1).value
-                                label: "Valve 1"
-                            }
+                            anchors.fill: parent
+                            padding: 16
+                            spacing: 10
                             
                             Text {
-                                text: "Status: " + (valve1.value ? "Open" : "Closed")
+                                text: "Valve Status"
                                 font.pixelSize: 16
+                                font.bold: true
+                                color: theme.textPrimary
+                                Layout.fillWidth: true
                                 horizontalAlignment: Text.AlignHCenter
+                            }
+                            
+                            Item {
+                                Layout.fillHeight: true
+                                
+                                ColumnLayout {
+                                    anchors.centerIn: parent
+                                    spacing: 20
+                                    
+                                    Valve {
+                                        id: valve1
+                                        width: 100
+                                        height: 100
+                                        value: tagsModel.get(1).value
+                                        label: "Valve 1"
+                                    }
+                                    
+                                    Text {
+                                        text: "Status: " + (valve1.value ? "Open" : "Closed")
+                                        font.pixelSize: 16
+                                        color: theme.textPrimary
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+                                }
                             }
                         }
                     }
                     
                     // 储罐状态
-                    Card {
+                    Rectangle {
                         width: (dashboardPage.width - 40) / 3
                         height: (dashboardPage.height - 40) / 2
-                        title: "Tank Level"
+                        color: theme.cardColor
+                        border.color: theme.borderColor
+                        border.width: 1
+                        radius: 8
+                        
+                        // 阴影效果
+                        layer.enabled: true
+                        layer.effect: DropShadow {
+                            color: theme.shadowColor
+                            radius: 4
+                            samples: 8
+                            offset.x: 0
+                            offset.y: 2
+                        }
                         
                         ColumnLayout {
-                            anchors.centerIn: parent
-                            spacing: 20
-                            
-                            Tank {
-                                id: tank1
-                                width: 100
-                                height: 150
-                                value: tagsModel.get(2).value
-                                label: "Tank 1"
-                            }
+                            anchors.fill: parent
+                            padding: 16
+                            spacing: 10
                             
                             Text {
-                                text: "Level: " + Math.round(tank1.value * 100) + "%"
+                                text: "Tank Level"
                                 font.pixelSize: 16
+                                font.bold: true
+                                color: theme.textPrimary
+                                Layout.fillWidth: true
                                 horizontalAlignment: Text.AlignHCenter
+                            }
+                            
+                            Item {
+                                Layout.fillHeight: true
+                                
+                                ColumnLayout {
+                                    anchors.centerIn: parent
+                                    spacing: 20
+                                    
+                                    Tank {
+                                        id: tank1
+                                        width: 100
+                                        height: 150
+                                        value: tagsModel.get(2).value
+                                        label: "Tank 1"
+                                    }
+                                    
+                                    Text {
+                                        text: "Level: " + Math.round(tank1.value * 100) + "%"
+                                        font.pixelSize: 16
+                                        color: theme.textPrimary
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+                                }
                             }
                         }
                     }
                     
                     // 温度传感器
-                    Card {
+                    Rectangle {
                         width: (dashboardPage.width - 40) / 3
                         height: (dashboardPage.height - 40) / 2
-                        title: "Temperature"
+                        color: theme.cardColor
+                        border.color: theme.borderColor
+                        border.width: 1
+                        radius: 8
+                        
+                        // 阴影效果
+                        layer.enabled: true
+                        layer.effect: DropShadow {
+                            color: theme.shadowColor
+                            radius: 4
+                            samples: 8
+                            offset.x: 0
+                            offset.y: 2
+                        }
                         
                         ColumnLayout {
-                            anchors.centerIn: parent
-                            spacing: 20
+                            anchors.fill: parent
+                            padding: 16
+                            spacing: 10
                             
-                            TextLabel {
-                                id: tempLabel
-                                width: 150
-                                height: 50
-                                text: tagsModel.get(3).value + " °C"
-                                label: "Temperature"
-                                textSize: 24
-                                boldText: true
+                            Text {
+                                text: "Temperature"
+                                font.pixelSize: 16
+                                font.bold: true
+                                color: theme.textPrimary
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
                             }
                             
-                            TrendChart {
-                                width: 250
-                                height: 100
-                                data: [22, 23, 24, 25, 25.5, 25, 24.5]
-                                title: "Temperature Trend"
+                            Item {
+                                Layout.fillHeight: true
+                                
+                                ColumnLayout {
+                                    anchors.centerIn: parent
+                                    spacing: 20
+                                    
+                                    TextLabel {
+                                        id: tempLabel
+                                        width: 150
+                                        height: 50
+                                        text: tagsModel.get(3).value + " °C"
+                                        label: "Temperature"
+                                        textSize: 24
+                                        boldText: true
+                                    }
+                                    
+                                    TrendChart {
+                                        width: 250
+                                        height: 100
+                                        data: [22, 23, 24, 25, 25.5, 25, 24.5]
+                                        title: "Temperature Trend"
+                                    }
+                                }
                             }
                         }
                     }
                     
                     // 压力传感器
-                    Card {
+                    Rectangle {
                         width: (dashboardPage.width - 40) / 3
                         height: (dashboardPage.height - 40) / 2
-                        title: "Pressure"
+                        color: theme.cardColor
+                        border.color: theme.borderColor
+                        border.width: 1
+                        radius: 8
+                        
+                        // 阴影效果
+                        layer.enabled: true
+                        layer.effect: DropShadow {
+                            color: theme.shadowColor
+                            radius: 4
+                            samples: 8
+                            offset.x: 0
+                            offset.y: 2
+                        }
                         
                         ColumnLayout {
-                            anchors.centerIn: parent
-                            spacing: 20
+                            anchors.fill: parent
+                            padding: 16
+                            spacing: 10
                             
-                            TextLabel {
-                                id: pressureLabel
-                                width: 150
-                                height: 50
-                                text: tagsModel.get(4).value + " bar"
-                                label: "Pressure"
-                                textSize: 24
-                                boldText: true
+                            Text {
+                                text: "Pressure"
+                                font.pixelSize: 16
+                                font.bold: true
+                                color: theme.textPrimary
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
                             }
                             
-                            TrendChart {
-                                width: 250
-                                height: 100
-                                data: [9.8, 10.0, 10.1, 10.2, 10.1, 10.0, 10.2]
-                                title: "Pressure Trend"
-                                lineColor: "#4CAF50"
+                            Item {
+                                Layout.fillHeight: true
+                                
+                                ColumnLayout {
+                                    anchors.centerIn: parent
+                                    spacing: 20
+                                    
+                                    TextLabel {
+                                        id: pressureLabel
+                                        width: 150
+                                        height: 50
+                                        text: tagsModel.get(4).value + " bar"
+                                        label: "Pressure"
+                                        textSize: 24
+                                        boldText: true
+                                    }
+                                    
+                                    TrendChart {
+                                        width: 250
+                                        height: 100
+                                        data: [9.8, 10.0, 10.1, 10.2, 10.1, 10.0, 10.2]
+                                        title: "Pressure Trend"
+                                        lineColor: theme.successColor
+                                    }
+                                }
                             }
                         }
                     }
                     
                     // 系统状态
-                    Card {
+                    Rectangle {
                         width: (dashboardPage.width - 40) / 3
                         height: (dashboardPage.height - 40) / 2
-                        title: "System Status"
+                        color: theme.cardColor
+                        border.color: theme.borderColor
+                        border.width: 1
+                        radius: 8
+                        
+                        // 阴影效果
+                        layer.enabled: true
+                        layer.effect: DropShadow {
+                            color: theme.shadowColor
+                            radius: 4
+                            samples: 8
+                            offset.x: 0
+                            offset.y: 2
+                        }
                         
                         ColumnLayout {
-                            anchors.centerIn: parent
-                            spacing: 15
+                            anchors.fill: parent
+                            padding: 16
+                            spacing: 10
                             
-                            RowLayout {
-                                spacing: 10
-                                
-                                Indicator {
-                                    id: connIndicator
-                                    width: 50
-                                    height: 50
-                                    value: true
-                                    label: "Connection"
-                                }
-                                
-                                Text {
-                                    text: "Connected"
-                                    font.pixelSize: 16
-                                    verticalAlignment: Text.AlignVCenter
-                                }
+                            Text {
+                                text: "System Status"
+                                font.pixelSize: 16
+                                font.bold: true
+                                color: theme.textPrimary
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
                             }
                             
-                            RowLayout {
-                                spacing: 10
+                            Item {
+                                Layout.fillHeight: true
                                 
-                                Indicator {
-                                    id: dataIndicator
-                                    width: 50
-                                    height: 50
-                                    value: true
-                                    label: "Data"
-                                }
-                                
-                                Text {
-                                    text: "Data Receiving"
-                                    font.pixelSize: 16
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-                            }
-                            
-                            RowLayout {
-                                spacing: 10
-                                
-                                Indicator {
-                                    id: alarmIndicator
-                                    width: 50
-                                    height: 50
-                                    value: false
-                                    label: "Alarm"
-                                    onColor: "#F44336"
-                                }
-                                
-                                Text {
-                                    text: "No Alarms"
-                                    font.pixelSize: 16
-                                    verticalAlignment: Text.AlignVCenter
+                                ColumnLayout {
+                                    anchors.centerIn: parent
+                                    spacing: 15
+                                    
+                                    RowLayout {
+                                        spacing: 10
+                                        
+                                        Indicator {
+                                            id: connIndicator
+                                            width: 50
+                                            height: 50
+                                            value: true
+                                            label: "Connection"
+                                        }
+                                        
+                                        Text {
+                                            text: "Connected"
+                                            font.pixelSize: 16
+                                            color: theme.textPrimary
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                    }
+                                    
+                                    RowLayout {
+                                        spacing: 10
+                                        
+                                        Indicator {
+                                            id: dataIndicator
+                                            width: 50
+                                            height: 50
+                                            value: true
+                                            label: "Data"
+                                        }
+                                        
+                                        Text {
+                                            text: "Data Receiving"
+                                            font.pixelSize: 16
+                                            color: theme.textPrimary
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                    }
+                                    
+                                    RowLayout {
+                                        spacing: 10
+                                        
+                                        Indicator {
+                                            id: alarmIndicator
+                                            width: 50
+                                            height: 50
+                                            value: false
+                                            label: "Alarm"
+                                            onColor: theme.errorColor
+                                        }
+                                        
+                                        Text {
+                                            text: "No Alarms"
+                                            font.pixelSize: 16
+                                            color: theme.textPrimary
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                    }
                                 }
                             }
                         }

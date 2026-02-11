@@ -201,7 +201,7 @@ if(NOT DEFINED MACOSX_BUNDLE_GUI_IDENTIFIER)
 endif()
 
 # Create package target
-add_custom_target(package
+add_custom_target(create-package
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --config Release
     COMMAND ${CMAKE_COMMAND} --install ${CMAKE_BINARY_DIR} --config Release
     COMMENT "Creating package"
@@ -221,3 +221,69 @@ add_custom_target(run
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running SCADASystem"
 )
+
+# CPack configuration for creating installation packages
+set(CPACK_PACKAGE_NAME "Huayan工业SCADA系统")
+set(CPACK_PACKAGE_VENDOR "Huayan Software")
+set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_DESCRIPTION "基于Qt 6.8 LTS的工业SCADA系统，支持钢铁、化工、电力等行业的组态编辑和运维管理")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/skawu/huayan")
+set(CPACK_PACKAGE_FILE_NAME "huayan-${CPACK_PACKAGE_VERSION}")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README_CN.md")
+
+# Windows specific configuration
+if(WIN32)
+    set(CPACK_GENERATOR "NSIS")
+    set(CPACK_NSIS_DISPLAY_NAME "Huayan工业SCADA系统")
+    set(CPACK_NSIS_PACKAGE_NAME "Huayan工业SCADA系统 ${CPACK_PACKAGE_VERSION}")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\SCADASystem.exe")
+    set(CPACK_NSIS_HELP_LINK "${CPACK_PACKAGE_HOMEPAGE_URL}")
+    set(CPACK_NSIS_URL_INFO_ABOUT "${CPACK_PACKAGE_HOMEPAGE_URL}")
+    set(CPACK_NSIS_CONTACT "support@huayan.com")
+    set(CPACK_NSIS_MODIFY_PATH ON)
+    set(CPACK_NSIS_CREATE_ICONS_EXTRA "\n  CreateShortCut '$SMPROGRAMS\\$STARTMENU_FOLDER\\Huayan工业SCADA系统.lnk' '$INSTDIR\\bin\\SCADASystem.exe'")
+    set(CPACK_NSIS_DELETE_ICONS_EXTRA "\n  Delete '$SMPROGRAMS\\$STARTMENU_FOLDER\\Huayan工业SCADA系统.lnk'")
+
+# Linux specific configuration
+elseif(UNIX AND NOT APPLE)
+    set(CPACK_GENERATOR "DEB;RPM;TGZ")
+    set(CPACK_DEBIAN_PACKAGE_NAME "huayan")
+    set(CPACK_DEBIAN_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}")
+    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Huayan Software <support@huayan.com>")
+    set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION}")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "qt6-base, qt6-declarative, qt6-network, qt6-serialbus, qt6-charts, qt6-quickcontrols2")
+    set(CPACK_DEBIAN_PACKAGE_SECTION "science")
+    set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+    set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "${CPACK_PACKAGE_HOMEPAGE_URL}")
+    
+    set(CPACK_RPM_PACKAGE_NAME "huayan")
+    set(CPACK_RPM_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}")
+    set(CPACK_RPM_PACKAGE_RELEASE "1")
+    set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
+    set(CPACK_RPM_PACKAGE_SUMMARY "Huayan工业SCADA系统")
+    set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION}")
+    set(CPACK_RPM_PACKAGE_GROUP "Applications/Science")
+    set(CPACK_RPM_PACKAGE_VENDOR "${CPACK_PACKAGE_VENDOR}")
+    set(CPACK_RPM_PACKAGE_URL "${CPACK_PACKAGE_HOMEPAGE_URL}")
+    set(CPACK_RPM_PACKAGE_LICENSE "Apache-2.0")
+    set(CPACK_RPM_PACKAGE_REQUIRES "qt6-base, qt6-declarative, qt6-network, qt6-serialbus, qt6-charts, qt6-quickcontrols2")
+
+# ARM specific configuration
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
+    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "arm64")
+    set(CPACK_RPM_PACKAGE_ARCHITECTURE "aarch64")
+    set(CPACK_PACKAGE_FILE_NAME "huayan-${CPACK_PACKAGE_VERSION}-arm64")
+endif()
+
+# macOS specific configuration
+elseif(APPLE)
+    set(CPACK_GENERATOR "DragNDrop")
+    set(CPACK_DMG_VOLUME_NAME "Huayan工业SCADA系统")
+    set(CPACK_DMG_DS_STORE_SETUP_SCRIPT "${CMAKE_SOURCE_DIR}/scripts/dmg-setup.scpt")
+    set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_SOURCE_DIR}/assets/dmg-background.png")
+endif()
+
+# Include CPack
+include(CPack)

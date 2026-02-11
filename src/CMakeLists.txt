@@ -11,6 +11,12 @@ qt_add_executable(SCADASystem
     core/dataprocessor.cpp
     core/chartdatamodel.cpp
     core/chartdatamodel.h
+    core/configmanager.cpp
+    core/configmanager.h
+    core/extensionmanager.cpp
+    core/extensionmanager.h
+    datasource/datasource.cpp
+    datasource/datasource.h
     datasource/modbusdatasource.cpp
     datasource/modbusdatasource.h
     datasource/mqttdatasource.cpp

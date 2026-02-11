@@ -11,15 +11,15 @@
  */
 
 ModbusDataSource::ModbusDataSource(HYTagManager *tagManager, QObject *parent) 
-    : QObject(parent),
-      m_tagManager(tagManager),
+    : DataSource(tagManager, parent),
       m_client(nullptr),
       m_syncTimer(new QTimer(this)),
-      m_slaveId(1)
+      m_slaveId(1),
+      m_port(502)
 {
     // 初始化同步定时器
     m_syncTimer->setInterval(100); // 默认100ms同步一次
-    connect(m_syncTimer, &QTimer::timeout, this, &ModbusDataSource::syncData);
+    QObject::connect(m_syncTimer, &QTimer::timeout, this, &ModbusDataSource::syncData);
 }
 
 ModbusDataSource::~ModbusDataSource()
@@ -43,7 +43,7 @@ bool ModbusDataSource::connectToServer(const QString &host, quint16 port, quint8
     m_slaveId = slaveId;
     
     // 连接信号槽
-    connect(m_client, &QModbusDevice::stateChanged, this, &ModbusDataSource::onConnectionStateChanged);
+    QObject::connect(m_client, &QModbusDevice::stateChanged, this, &ModbusDataSource::onConnectionStateChanged);
 
     // 设置连接参数
     m_client->setConnectionParameter(QModbusDevice::NetworkPortParameter, port);
@@ -73,6 +73,11 @@ bool ModbusDataSource::connectToServer(const QString &host, quint16 port, quint8
 
 void ModbusDataSource::disconnectFromServer()
 {
+    disconnect();
+}
+
+void ModbusDataSource::disconnect()
+{
     QMutexLocker locker(&m_mutex);
 
     // 停止同步定时器
@@ -89,6 +94,147 @@ void ModbusDataSource::disconnectFromServer()
     m_registerBindings.clear();
 
     emit connectionStatusChanged(false);
+}
+
+bool ModbusDataSource::connect(const QMap<QString, QVariant> &parameters)
+{
+    QString host = parameters.value("host").toString();
+    quint16 port = parameters.value("port", 502).toUInt();
+    quint8 slaveId = parameters.value("slaveId", 1).toUInt();
+    
+    return connectToServer(host, port, slaveId);
+}
+
+QString ModbusDataSource::type() const
+{
+    return "modbus";
+}
+
+QString ModbusDataSource::name() const
+{
+    return "Modbus TCP";
+}
+
+bool ModbusDataSource::parseAddress(const QString &address, QModbusDataUnit::RegisterType &registerType, quint16 &regAddress) const
+{
+    // 地址格式: "coil:100", "input:200", "holding:300", "discrete:400"
+    QStringList parts = address.split(":");
+    if (parts.size() != 2) {
+        return false;
+    }
+    
+    QString typeStr = parts[0].toLower();
+    bool ok;
+    regAddress = parts[1].toUInt(&ok);
+    if (!ok) {
+        return false;
+    }
+    
+    if (typeStr == "coil") {
+        registerType = QModbusDataUnit::Coils;
+    } else if (typeStr == "input") {
+        registerType = QModbusDataUnit::InputRegisters;
+    } else if (typeStr == "holding") {
+        registerType = QModbusDataUnit::HoldingRegisters;
+    } else if (typeStr == "discrete") {
+        registerType = QModbusDataUnit::DiscreteInputs;
+    } else {
+        return false;
+    }
+    
+    return true;
+}
+
+QString ModbusDataSource::createAddressString(QModbusDataUnit::RegisterType registerType, quint16 address) const
+{
+    QString typeStr;
+    switch (registerType) {
+    case QModbusDataUnit::Coils:
+        typeStr = "coil";
+        break;
+    case QModbusDataUnit::InputRegisters:
+        typeStr = "input";
+        break;
+    case QModbusDataUnit::HoldingRegisters:
+        typeStr = "holding";
+        break;
+    case QModbusDataUnit::DiscreteInputs:
+        typeStr = "discrete";
+        break;
+    default:
+        typeStr = "unknown";
+        break;
+    }
+    return typeStr + ":" + QString::number(address);
+}
+
+bool ModbusDataSource::bindAddressToTag(const QString &address, const QString &tagName, int samplingInterval)
+{
+    QModbusDataUnit::RegisterType registerType;
+    quint16 regAddress;
+    
+    if (!parseAddress(address, registerType, regAddress)) {
+        return false;
+    }
+    
+    return bindRegisterToTag(registerType, regAddress, tagName, samplingInterval);
+}
+
+bool ModbusDataSource::unbindAddressFromTag(const QString &address)
+{
+    QModbusDataUnit::RegisterType registerType;
+    quint16 regAddress;
+    
+    if (!parseAddress(address, registerType, regAddress)) {
+        return false;
+    }
+    
+    return unbindRegisterFromTag(registerType, regAddress);
+}
+
+QVariant ModbusDataSource::readData(const QString &address)
+{
+    QModbusDataUnit::RegisterType registerType;
+    quint16 regAddress;
+    
+    if (!parseAddress(address, registerType, regAddress)) {
+        return QVariant();
+    }
+    
+    if (registerType == QModbusDataUnit::Coils || registerType == QModbusDataUnit::DiscreteInputs) {
+        if (registerType == QModbusDataUnit::Coils) {
+            return readCoil(regAddress);
+        } else {
+            QVector<quint16> values = readRegisters(registerType, regAddress, 1);
+            return !values.isEmpty() && values[0] != 0;
+        }
+    } else {
+        QVector<quint16> values = readRegisters(registerType, regAddress, 1);
+        if (values.isEmpty()) {
+            return QVariant();
+        }
+        return values[0];
+    }
+}
+
+bool ModbusDataSource::writeData(const QString &address, const QVariant &value)
+{
+    QModbusDataUnit::RegisterType registerType;
+    quint16 regAddress;
+    
+    if (!parseAddress(address, registerType, regAddress)) {
+        return false;
+    }
+    
+    if (registerType == QModbusDataUnit::Coils) {
+        return writeCoil(regAddress, value.toBool());
+    } else if (registerType == QModbusDataUnit::HoldingRegisters) {
+        QVector<quint16> values = {static_cast<quint16>(value.toUInt())};
+        return writeRegisters(registerType, regAddress, values);
+    } else {
+        // InputRegisters和DiscreteInputs是只读的
+        return false;
+    }
 }
 
 bool ModbusDataSource::isConnected() const
@@ -157,12 +303,12 @@ QVector<quint16> ModbusDataSource::readRegisters(QModbusDataUnit::RegisterType r
 
     // Use a local event loop to wait for the reply
     QEventLoop loop;
-    connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
+    QObject::connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
     
     // Wait for the reply with a timeout
     QTimer timer;
     timer.setSingleShot(true);
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     timer.start(1000);
     
     loop.exec();
@@ -202,12 +348,12 @@ bool ModbusDataSource::writeRegisters(QModbusDataUnit::RegisterType registerType
 
     // Use a local event loop to wait for the reply
     QEventLoop loop;
-    connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
+    QObject::connect(reply, &QModbusReply::finished, &loop, &QEventLoop::quit);
     
     // Wait for the reply with a timeout
     QTimer timer;
     timer.setSingleShot(true);
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     timer.start(1000);
     
     loop.exec();
@@ -308,7 +454,7 @@ void ModbusDataSource::syncData()
         // 发送读取请求
         QModbusReply *reply = m_client->sendReadRequest(dataUnit, m_slaveId);
         if (reply) {
-            connect(reply, &QModbusReply::finished, this, [this, reply]() {
+            QObject::connect(reply, &QModbusReply::finished, this, [this, reply]() {
                 onReadFinished(reply);
             });
         }
