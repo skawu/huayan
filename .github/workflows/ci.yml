@@ -8,63 +8,108 @@ on:
 
 jobs:
   build:
-    name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
-
+        os: [ubuntu-22.04, windows-2022]
+        qt-version: ['6.8.3']
+    
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v4
-
-    - name: Set up Qt
+      
+    - name: Install Qt
       uses: jurplel/install-qt-action@v4
       with:
-        version: '6.7.3'
-        arch: ${{ matrix.os == 'ubuntu-latest' ? 'gcc_64' : 'win64_msvc2022_64' }}
-        cache: true
-
-    - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
+        version: ${{ matrix.qt-version }}
+        host: ${{ matrix.os == 'windows-2022' && 'windows' || matrix.os == 'ubuntu-22.04' && 'linux' || 'mac' }}
+        target: desktop
+        arch: ${{ matrix.os == 'windows-2022' && 'win64_msvc2022_64' || 'gcc_64' }}
+        dir: ${{ github.workspace }}/qt
+        modules: qtcharts qt3d qtwebsockets qtwebchannel qtwebengine
+        archives: qtbase qtdeclarative qtcharts qt3d qtwebsockets qtwebchannel qtshadertools qtimageformats
+        
+    - name: Install Linux Dependencies
+      if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential libgl1-mesa-dev libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
-
-    - name: Configure CMake
-      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
-
-    - name: Build project
-      run: cmake --build build --config Release --parallel
-
-    - name: Run tests (if available)
+        sudo apt-get install -y build-essential cmake libgl-dev libxcb-cursor0
+        
+    - name: Install Windows Dependencies
+      if: runner.os == 'Windows'
       run: |
-        if [ -f build/tests/unit/run-tests ]; then
-          cd build/tests/unit && ./run-tests
-        elif [ -f build/tests/run-tests ]; then
-          cd build/tests && ./run-tests
-        else
-          echo "No tests found"
-        fi
-      if: matrix.os == 'ubuntu-latest'
-
-    - name: Run tests (Windows)
-      if: matrix.os == 'windows-latest'
+        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+        
+    - name: Setup CMake and Ninja
+      uses: lukka/get-cmake@latest
+      
+    - name: Configure CMake (Linux)
+      if: runner.os == 'Linux'
       run: |
-        if (Test-Path "build\tests\unit\Release\run-tests.exe") {
-          cd build\tests\unit\Release
-          .\run-tests.exe
-        } elseif (Test-Path "build\tests\Release\run-tests.exe") {
-          cd build\tests\Release
-          .\run-tests.exe
-        } else {
-          Write-Host "No tests found"
-        }
-      shell: pwsh
-
-    - name: Upload build artifacts
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$Qt6_DIR
+      env:
+        CC: gcc
+        CXX: g++
+        
+    - name: Configure CMake (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        mkdir build
+        cd build
+        cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$env:Qt6_DIR
+      env:
+        CC: cl
+        CXX: cl
+        
+    - name: Build Project
+      run: |
+        cd build
+        cmake --build . --parallel --config Release
+        
+    - name: Run Tests
+      run: |
+        cd build
+        ctest --verbose --output-on-failure --build-config Release
+        
+    - name: Package Application (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        cd build
+        make install
+        cd ..
+        mkdir -p artifacts/linux
+        tar -czf artifacts/linux/huayan-scada-linux.tar.gz -C bin .
+        
+    - name: Package Application (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        cd build
+        make install
+        cd ..
+        mkdir artifacts\windows
+        powershell Compress-Archive -Path bin\* -DestinationPath artifacts\windows\huayan-scada-windows.zip
+        
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.os }}-build
-        path: build/
-        retention-days: 7
+        name: huayan-scada-${{ runner.os }}-${{ runner.arch }}
+        path: artifacts/
+        
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Download Artifacts
+      uses: actions/download-artifact@v4
+      
+    - name: Deploy to Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          **/*
+        generate_release_notes: true
