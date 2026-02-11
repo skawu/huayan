@@ -139,100 +139,65 @@ huayan/
 4. **运行应用程序**
    - 点击 "运行" 按钮（绿色三角形）或按 Ctrl+R
 
-### 使用跨平台构建脚本
+### 使用构建脚本（推荐）
 
-我们提供了跨平台构建脚本来简化 Linux 和 Windows 上的构建过程：
-
-#### Linux/MacOS 构建脚本
+为了更轻松地使用正确的 Qt6 环境进行设置，我们提供了自动化构建脚本：
 
 1. **使脚本可执行：**
    ```bash
-   chmod +x build_project.sh
+   chmod +x build.sh
    ```
 
-2. **基本用法：**
+2. **运行构建脚本：**
    ```bash
    # 构建发布版本（默认）
-   ./build_project.sh
+   ./build.sh
    
    # 构建调试版本
-   ./build_project.sh --debug
+   ./build.sh --debug
    
    # 清理构建
-   ./build_project.sh --clean
+   ./build.sh --clean
    
    # 使用指定数量的并行作业构建
-   ./build_project.sh -j 8
+   ./build.sh --jobs 8
    
    # 构建并安装
-   ./build_project.sh --install
+   ./build.sh --install
    ```
 
-3. **高级选项：**
-   ```bash
-   # 查看所有可用选项
-   ./build_project.sh --help
-   ```
-
-#### Windows 构建脚本
-
-1. **基本用法：**
-   ```cmd
-   REM 构建发布版本（默认）
-   build_project.bat
-   
-   REM 构建调试版本
-   build_project.bat --debug
-   
-   REM 清理构建
-   build_project.bat --clean
-   
-   REM 使用指定数量的并行作业构建
-   build_project.bat --jobs 8
-   
-   REM 构建并安装
-   build_project.bat --install
-   ```
-
-2. **高级选项：**
-   ```cmd
-   REM 查看所有可用选项
-   build_project.bat --help
-   ```
-
-#### Makefile 构建
-
-或者，您可以使用提供的 Makefile：
-
-1. **基本用法：**
-   ```bash
-   # 构建发布版本（默认）
-   make
-   
-   # 构建调试版本
-   make BUILD_TYPE=Debug
-   
-   # 清理构建
-   make clean
-   
-   # 使用指定数量的并行作业构建
-   make JOBS=8
-   
-   # 安装应用程序
-   make install
-   
-   # 打包应用程序
-   make package
-   ```
-
-2. **查看所有选项：**
-   ```bash
-   make help
-   ```
-
-### 手动命令行构建
+### 使用命令行
 
 如果您更喜欢手动构建：
+
+1. **创建构建目录**
+   ```bash
+   mkdir build && cd build
+   ```
+
+2. **使用 CMake 配置**（确保 Qt6 在您的 PATH 中）
+   ```bash
+   cmake .. -DCMAKE_PREFIX_PATH=/opt/Qt/6.8.3/gcc_64 -DCMAKE_BUILD_TYPE=Release
+   ```
+
+3. **构建项目**
+   ```bash
+   make -j$(nproc)
+   ```
+
+4. **安装应用程序**（到自包含的 bin 目录）
+   ```bash
+   make install
+   ```
+
+5. **运行应用程序**
+   ```bash
+   # 使用运行脚本（处理环境设置）
+   ../bin/run.sh
+   
+   # 或手动设置环境变量
+   LD_LIBRARY_PATH=../bin/lib QT_QPA_PLATFORM_PLUGIN_PATH=../bin/plugins/platforms ../bin/bin/huayan
+   ```
 
 1. **创建构建目录**
    ```bash
