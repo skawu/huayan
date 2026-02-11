@@ -143,9 +143,11 @@ huayan/
 4. **Run the Application**
    - Click the "Run" button (green triangle) or press Ctrl+R
 
-### Using Build Script (Recommended)
+### Using Build Scripts (Recommended)
 
-For easier setup with the correct Qt6 environment, we provide an automated build script:
+For easier setup with the correct Qt6 environment, we provide automated build scripts for both platforms:
+
+#### Linux/macOS
 
 1. **Make the script executable:**
    ```bash
@@ -168,6 +170,26 @@ For easier setup with the correct Qt6 environment, we provide an automated build
    
    # Build and install after compilation
    ./build.sh --install
+   ```
+
+#### Windows
+
+1. **Run the build script:**
+   ```cmd
+   REM Build in Release mode (default)
+   build.bat
+   
+   REM Build in Debug mode
+   build.bat --debug
+   
+   REM Clean build
+   build.bat --clean
+   
+   REM Build with specific number of parallel jobs
+   build.bat --jobs 8
+   
+   REM Build and install after compilation
+   build.bat --install
    ```
 
 ### Using Command Line

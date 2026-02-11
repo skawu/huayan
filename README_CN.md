@@ -141,7 +141,9 @@ huayan/
 
 ### 使用构建脚本（推荐）
 
-为了更轻松地使用正确的 Qt6 环境进行设置，我们提供了自动化构建脚本：
+为了更轻松地使用正确的 Qt6 环境进行设置，我们提供了适用于两个平台的自动化构建脚本：
+
+#### Linux/macOS
 
 1. **使脚本可执行：**
    ```bash
@@ -164,6 +166,26 @@ huayan/
    
    # 构建并安装
    ./build.sh --install
+   ```
+
+#### Windows
+
+1. **运行构建脚本：**
+   ```cmd
+   REM 构建发布版本（默认）
+   build.bat
+   
+   REM 构建调试版本
+   build.bat --debug
+   
+   REM 清理构建
+   build.bat --clean
+   
+   REM 使用指定数量的并行作业构建
+   build.bat --jobs 8
+   
+   REM 构建并安装
+   build.bat --install
    ```
 
 ### 使用命令行
