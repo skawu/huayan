@@ -2,24 +2,27 @@
 
 # Run script for SCADASystem
 
-# Set working directory
-cd "/home/hdzk/workspace/project"
+# Get the directory where the script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Set environment variables
-if [ -d "/home/hdzk/workspace/project/lib" ]; then
-    export LD_LIBRARY_PATH="/home/hdzk/workspace/project/lib:$LD_LIBRARY_PATH"
+# Set working directory to script directory
+cd "$SCRIPT_DIR"
+
+# Set environment variables using relative paths
+if [ -d "$SCRIPT_DIR/lib" ]; then
+    export LD_LIBRARY_PATH="$SCRIPT_DIR/lib:$LD_LIBRARY_PATH"
 fi
 
-if [ -d "/home/hdzk/workspace/project/qml" ]; then
-    export QML2_IMPORT_PATH="/home/hdzk/workspace/project/qml:$QML2_IMPORT_PATH"
+if [ -d "$SCRIPT_DIR/qml" ]; then
+    export QML2_IMPORT_PATH="$SCRIPT_DIR/qml:$QML2_IMPORT_PATH"
 fi
 
 # Run the application
-if [ -f "/home/hdzk/workspace/project/bin/SCADASystem" ]; then
+if [ -f "$SCRIPT_DIR/bin/SCADASystem" ]; then
     echo "Starting SCADASystem..."
-    "/home/hdzk/workspace/project/bin/SCADASystem"
+    "$SCRIPT_DIR/bin/SCADASystem"
 else
-    echo "Error: SCADASystem executable not found at /home/hdzk/workspace/project/bin/SCADASystem"
-    echo "Please build the project first using 'cmake --build /home/hdzk/workspace/project'"
+    echo "Error: SCADASystem executable not found at $SCRIPT_DIR/bin/SCADASystem"
+    echo "Please build the project first using 'cmake --build .' from the project root"
     exit 1
 fi
