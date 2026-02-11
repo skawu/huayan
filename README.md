@@ -143,100 +143,65 @@ huayan/
 4. **Run the Application**
    - Click the "Run" button (green triangle) or press Ctrl+R
 
-### Using Cross-Platform Build Scripts
+### Using Build Script (Recommended)
 
-We provide cross-platform build scripts to simplify the build process on both Linux and Windows:
-
-#### Linux/MacOS Build Script
+For easier setup with the correct Qt6 environment, we provide an automated build script:
 
 1. **Make the script executable:**
    ```bash
-   chmod +x build_project.sh
+   chmod +x build.sh
    ```
 
-2. **Basic usage:**
+2. **Run the build script:**
    ```bash
    # Build in Release mode (default)
-   ./build_project.sh
+   ./build.sh
    
    # Build in Debug mode
-   ./build_project.sh --debug
+   ./build.sh --debug
    
    # Clean build
-   ./build_project.sh --clean
+   ./build.sh --clean
    
    # Build with specific number of parallel jobs
-   ./build_project.sh -j 8
+   ./build.sh --jobs 8
    
    # Build and install after compilation
-   ./build_project.sh --install
+   ./build.sh --install
    ```
 
-3. **Advanced options:**
-   ```bash
-   # See all available options
-   ./build_project.sh --help
-   ```
-
-#### Windows Build Script
-
-1. **Basic usage:**
-   ```cmd
-   REM Build in Release mode (default)
-   build_project.bat
-   
-   REM Build in Debug mode
-   build_project.bat --debug
-   
-   REM Clean build
-   build_project.bat --clean
-   
-   REM Build with specific number of parallel jobs
-   build_project.bat --jobs 8
-   
-   REM Build and install after compilation
-   build_project.bat --install
-   ```
-
-2. **Advanced options:**
-   ```cmd
-   REM See all available options
-   build_project.bat --help
-   ```
-
-#### Makefile Build
-
-Alternatively, you can use the provided Makefile:
-
-1. **Basic usage:**
-   ```bash
-   # Build in Release mode (default)
-   make
-   
-   # Build in Debug mode
-   make BUILD_TYPE=Debug
-   
-   # Clean build
-   make clean
-   
-   # Build with specific number of parallel jobs
-   make JOBS=8
-   
-   # Install the application
-   make install
-   
-   # Package the application
-   make package
-   ```
-
-2. **See all options:**
-   ```bash
-   make help
-   ```
-
-### Manual Command Line Build
+### Using Command Line
 
 If you prefer to build manually:
+
+1. **Create Build Directory**
+   ```bash
+   mkdir build && cd build
+   ```
+
+2. **Configure with CMake** (ensure Qt6 is in your PATH)
+   ```bash
+   cmake .. -DCMAKE_PREFIX_PATH=/opt/Qt/6.8.3/gcc_64 -DCMAKE_BUILD_TYPE=Release
+   ```
+
+3. **Build the Project**
+   ```bash
+   make -j$(nproc)
+   ```
+
+4. **Install the Application** (to self-contained bin directory)
+   ```bash
+   make install
+   ```
+
+5. **Run the Application**
+   ```bash
+   # Using the run script (handles environment setup)
+   ../bin/run.sh
+   
+   # Or manually with environment variables
+   LD_LIBRARY_PATH=../bin/lib QT_QPA_PLATFORM_PLUGIN_PATH=../bin/plugins/platforms ../bin/bin/huayan
+   ```
 
 1. **Create Build Directory**
    ```bash
