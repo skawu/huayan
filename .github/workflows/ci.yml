@@ -25,8 +25,7 @@ jobs:
         host: ${{ matrix.os == 'windows-latest' && 'windows' || 'linux' }}
         target: desktop
         arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || 'gcc_64' }}
-        modules: 'qtcharts qtscxml qtvirtualkeyboard qtwebchannel qtwebsockets qt3d'
-        archives: 'qtbase qtdeclarative qttools qttranslations qtdoc qtwayland'
+        modules: 'qtcharts qt3d'
         cache: true
 
     - name: 安装依赖 (Ubuntu)
