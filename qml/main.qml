@@ -94,6 +94,7 @@ Item {
     id: CanvasComponent
     visible: false
 }
+}
 
 // 画布组件
 Component {
