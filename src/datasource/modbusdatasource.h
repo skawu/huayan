@@ -6,7 +6,7 @@
 #include <QModbusDataUnit>
 #include <QTimer>
 #include <QMutex>
-#include "../core/tagmanager.h"
+#include "datasource.h"
 
 /**
  * @file modbusdatasource.h
@@ -16,7 +16,7 @@
  * 提供Modbus TCP服务器的连接、读写和数据同步功能
  */
 
-class ModbusDataSource : public QObject
+class ModbusDataSource : public DataSource
 {
     Q_OBJECT
 
@@ -35,6 +35,71 @@ public:
 
     // 连接管理
     /**
+     * @brief 连接到数据源
+     * @param parameters 连接参数
+     * @return 连接是否成功
+     */
+    bool connect(const QMap<QString, QVariant> &parameters) override;
+    
+    /**
+     * @brief 断开与数据源的连接
+     */
+    void disconnect() override;
+    
+    /**
+     * @brief 检查连接状态
+     * @return 是否连接
+     */
+    bool isConnected() const override;
+
+    // 点位绑定
+    /**
+     * @brief 绑定数据源地址到Huayan点位
+     * @param address 数据源地址
+     * @param tagName Huayan点位名称
+     * @param samplingInterval 采样间隔（毫秒）
+     * @return 绑定是否成功
+     */
+    bool bindAddressToTag(const QString &address, const QString &tagName, int samplingInterval = 100) override;
+    
+    /**
+     * @brief 解除数据源地址与Huayan点位的绑定
+     * @param address 数据源地址
+     * @return 解除绑定是否成功
+     */
+    bool unbindAddressFromTag(const QString &address) override;
+
+    // 数据操作
+    /**
+     * @brief 读取数据
+     * @param address 数据源地址
+     * @return 读取的值
+     */
+    QVariant readData(const QString &address) override;
+    
+    /**
+     * @brief 写入数据
+     * @param address 数据源地址
+     * @param value 要写入的值
+     * @return 写入是否成功
+     */
+    bool writeData(const QString &address, const QVariant &value) override;
+
+    // 数据源信息
+    /**
+     * @brief 获取数据源类型
+     * @return 数据源类型
+     */
+    QString type() const override;
+    
+    /**
+     * @brief 获取数据源名称
+     * @return 数据源名称
+     */
+    QString name() const override;
+
+    // 传统方法（保持向后兼容）
+    /**
      * @brief 连接到Modbus TCP服务器
      * @param host 主机地址
      * @param port 端口号
@@ -48,13 +113,6 @@ public:
      */
     void disconnectFromServer();
     
-    /**
-     * @brief 检查连接状态
-     * @return 是否连接
-     */
-    bool isConnected() const;
-
-    // 点位绑定
     /**
      * @brief 绑定Modbus寄存器到Huayan点位
      * @param registerType 寄存器类型
@@ -74,7 +132,6 @@ public:
      */
     bool unbindRegisterFromTag(QModbusDataUnit::RegisterType registerType, quint16 address);
 
-    // 数据操作
     /**
      * @brief 读取Modbus寄存器
      * @param registerType 寄存器类型
@@ -116,20 +173,6 @@ public:
      */
     QList<bool> readMultipleCoils(quint16 address, quint16 count);
 
-signals:
-    /**
-     * @brief 连接状态变化信号
-     * @param connected 是否连接
-     */
-    void connectionStatusChanged(bool connected);
-    
-    /**
-     * @brief 数据更新信号
-     * @param tagName 点位名称
-     * @param value 新值
-     */
-    void dataUpdated(const QString &tagName, const QVariant &value);
-
 private slots:
     /**
      * @brief 连接状态变化槽函数
@@ -149,11 +192,12 @@ private slots:
     void syncData();
 
 private:
-    HYTagManager *m_tagManager; ///< 点位管理器指针
     QModbusTcpClient *m_client; ///< Modbus TCP客户端
     QTimer *m_syncTimer; ///< 同步定时器
     QMutex m_mutex; ///< 互斥锁
     quint8 m_slaveId; ///< 从站ID
+    QString m_host; ///< 主机地址
+    quint16 m_port; ///< 端口号
     
     // 寄存器绑定映射
     struct RegisterBinding {
@@ -161,6 +205,10 @@ private:
         int samplingInterval; ///< 采样间隔
     };
     QMap<QPair<QModbusDataUnit::RegisterType, quint16>, RegisterBinding> m_registerBindings; ///< 寄存器绑定映射表
+    
+    // 地址解析辅助函数
+    bool parseAddress(const QString &address, QModbusDataUnit::RegisterType &registerType, quint16 &regAddress) const;
+    QString createAddressString(QModbusDataUnit::RegisterType registerType, quint16 address) const;
 };
 
 #endif // MODBUSDATASOURCE_H
