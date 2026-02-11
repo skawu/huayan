@@ -4,11 +4,11 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtCharts 2.15
 import SteelPlantMonitoring 1.0
-import BasicComponents 1.0
-import IndustrialComponents 1.0
-import HMIControls 1.0
-import ControlComponents 1.0
-import ThreeDComponents 1.0
+import HYBasicComponents 1.0
+import HYIndustrialComponents 1.0
+import HYHMIControls 1.0
+import HYControlComponents 1.0
+import HYThreeDComponents 1.0
 
 Window {
     width: 1920
@@ -17,7 +17,7 @@ Window {
     title: "钢铁厂监控平台"
 
     // 钢铁厂管理器
-    SteelPlantManager {
+    HYSteelPlantManager {
         id: steelPlantManager
         onAlarmTriggered: {
             showAlarm(alarmId, message, isEmergency);
@@ -25,7 +25,7 @@ Window {
     }
 
     // 模拟数据源
-    SimulatedDataSource {
+    HYSimulatedDataSource {
         id: simulatedDataSource
     }
 

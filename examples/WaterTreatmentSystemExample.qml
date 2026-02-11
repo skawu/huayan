@@ -1,8 +1,9 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import IndustrialComponents 1.0
-import BasicComponents 1.0
-import ChartComponents 1.0
+import QtQuick.Layouts 1.15
+import HYIndustrialComponents 1.0
+import HYBasicComponents 1.0
+import HYChartComponents 1.0
 
 /**
  * @brief 水处理系统示例
@@ -12,13 +13,13 @@ import ChartComponents 1.0
  * 2. 实时数据图表显示
  * 3. 报警系统
  * 4. 设备控制界面
+ * 5. 工业告警弹窗
+ * 6. 历史数据回溯
  */
 Rectangle {
     width: 1000
     height: 800
     color: "#f0f0f0"
-    
-    title: "水处理系统监控"
     
     // 系统状态数据
     property bool mainPumpRunning: true
@@ -34,6 +35,18 @@ Rectangle {
     property bool levelAlarm: false
     property bool pressureAlarm: false
     property bool temperatureAlarm: false
+    property bool alarmActive: false
+    property string alarmMessage: ""
+    property int alarmCount: 0
+    
+    // 历史数据
+    property var historicalData: {
+        "waterLevel": [],
+        "pressure": [],
+        "temperature": []
+    }
+    property int historyMaxPoints: 100
+    property bool showingHistory: false
     
     // 主布局
     Grid {
@@ -80,14 +93,14 @@ Rectangle {
                             font.bold: true
                         }
                         
-                        Pump {
-                            width: 100
-                            height: 100
-                            running: mainPumpRunning
-                            runningColor: "#4CAF50"
-                            stoppedColor: "#F44336"
-                            anchors.horizontalCenter: parent.horizontalCenter
-                        }
+                        HYPump {
+                    width: 100
+                    height: 100
+                    running: mainPumpRunning
+                    runningColor: "#4CAF50"
+                    stoppedColor: "#F44336"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
                         
                         Row {
                             spacing: 10
@@ -120,14 +133,14 @@ Rectangle {
                             font.bold: true
                         }
                         
-                        Pump {
-                            width: 100
-                            height: 100
-                            running: backupPumpRunning
-                            runningColor: "#4CAF50"
-                            stoppedColor: "#F44336"
-                            anchors.horizontalCenter: parent.horizontalCenter
-                        }
+                        HYPump {
+                    width: 100
+                    height: 100
+                    running: backupPumpRunning
+                    runningColor: "#4CAF50"
+                    stoppedColor: "#F44336"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
                         
                         Row {
                             spacing: 10
@@ -160,14 +173,14 @@ Rectangle {
                             font.bold: true
                         }
                         
-                        Valve {
-                            width: 100
-                            height: 100
-                            open: inletValveOpen
-                            openColor: "#4CAF50"
-                            closedColor: "#F44336"
-                            anchors.horizontalCenter: parent.horizontalCenter
-                        }
+                        HYValve {
+                    width: 100
+                    height: 100
+                    open: inletValveOpen
+                    openColor: "#4CAF50"
+                    closedColor: "#F44336"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
                         
                         Row {
                             spacing: 10
@@ -200,14 +213,14 @@ Rectangle {
                             font.bold: true
                         }
                         
-                        Valve {
-                            width: 100
-                            height: 100
-                            open: outletValveOpen
-                            openColor: "#4CAF50"
-                            closedColor: "#F44336"
-                            anchors.horizontalCenter: parent.horizontalCenter
-                        }
+                        HYValve {
+                    width: 100
+                    height: 100
+                    open: outletValveOpen
+                    openColor: "#4CAF50"
+                    closedColor: "#F44336"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
                         
                         Row {
                             spacing: 10
@@ -269,15 +282,15 @@ Rectangle {
                             font.bold: true
                         }
                         
-                        Tank {
-                            width: 150
-                            height: 250
-                            level: waterLevel
-                            fillColor: "#2196F3"
-                            showLevelText: true
-                            unit: "%"
-                            anchors.horizontalCenter: parent.horizontalCenter
-                        }
+                        HYTank {
+                    width: 150
+                    height: 250
+                    level: waterLevel
+                    fillColor: "#2196F3"
+                    showLevelText: true
+                    unit: "%"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
                         
                         Text {
                             text: "液位: " + waterLevel.toFixed(1) + "%"
@@ -313,15 +326,15 @@ Rectangle {
                                 }
                             }
                             
-                            Gauge {
-                                width: 120
-                                height: 120
-                                value: pressure * 10
-                                minValue: 0
-                                maxValue: 100
-                                unit: "%"
-                                fillColor: pressureAlarm ? "#F44336" : "#4CAF50"
-                            }
+                            HYGauge {
+                    width: 120
+                    height: 120
+                    value: pressure * 10
+                    minValue: 0
+                    maxValue: 100
+                    unit: "%"
+                    fillColor: pressureAlarm ? "#F44336" : "#4CAF50"
+                }
                         }
                         
                         // 温度传感器
@@ -341,15 +354,15 @@ Rectangle {
                                 }
                             }
                             
-                            Gauge {
-                                width: 120
-                                height: 120
-                                value: temperature
-                                minValue: 0
-                                maxValue: 50
-                                unit: "°C"
-                                fillColor: temperatureAlarm ? "#F44336" : "#2196F3"
-                            }
+                            HYGauge {
+                    width: 120
+                    height: 120
+                    value: temperature
+                    minValue: 0
+                    maxValue: 50
+                    unit: "°C"
+                    fillColor: temperatureAlarm ? "#F44336" : "#2196F3"
+                }
                         }
                         
                         // 过滤器状态
@@ -388,11 +401,32 @@ Rectangle {
                 anchors.margins: 10
                 spacing: 10
                 
-                Text {
-                    text: "实时数据图表"
-                    font.pointSize: 18
-                    font.bold: true
-                    color: "#333333"
+                Row {
+                    spacing: 10
+                    
+                    Text {
+                        text: showingHistory ? "历史数据图表" : "实时数据图表"
+                        font.pointSize: 18
+                        font.bold: true
+                        color: "#333333"
+                    }
+                    
+                    Button {
+                        text: showingHistory ? "查看实时数据" : "查看历史数据"
+                        onClicked: {
+                            showingHistory = !showingHistory
+                        }
+                        background: Rectangle {
+                            color: "#2196F3"
+                            radius: 4
+                        }
+                        contentItem: Text {
+                            text: parent.text
+                            color: "#ffffff"
+                            font.pointSize: 12
+                            font.bold: true
+                        }
+                    }
                 }
                 
                 Row {
@@ -408,12 +442,12 @@ Rectangle {
                             font.bold: true
                         }
                         
-                        TrendChart {
-                            width: 220
-                            height: 150
-                            title: "液位 (%)"
-                            color: "#2196F3"
-                        }
+                        HYTrendChart {
+                    width: 220
+                    height: 150
+                    title: "液位 (%)"
+                    color: "#2196F3"
+                }
                     }
                     
                     // 压力趋势图
@@ -426,12 +460,12 @@ Rectangle {
                             font.bold: true
                         }
                         
-                        TrendChart {
-                            width: 220
-                            height: 150
-                            title: "压力 (bar)"
-                            color: "#4CAF50"
-                        }
+                        HYTrendChart {
+                    width: 220
+                    height: 150
+                    title: "压力 (bar)"
+                    color: "#4CAF50"
+                }
                     }
                     
                     // 温度趋势图
@@ -444,11 +478,54 @@ Rectangle {
                             font.bold: true
                         }
                         
-                        TrendChart {
-                            width: 220
-                            height: 150
-                            title: "温度 (°C)"
-                            color: "#FF9800"
+                        HYTrendChart {
+                    width: 220
+                    height: 150
+                    title: "温度 (°C)"
+                    color: "#FF9800"
+                }
+                    }
+                }
+                
+                // 历史数据控制
+                Row {
+                    spacing: 10
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: showingHistory
+                    
+                    Button {
+                        text: "刷新历史数据"
+                        onClicked: {
+                            // 模拟刷新历史数据
+                            console.log("刷新历史数据")
+                        }
+                        background: Rectangle {
+                            color: "#4CAF50"
+                            radius: 4
+                        }
+                        contentItem: Text {
+                            text: parent.text
+                            color: "#ffffff"
+                            font.pointSize: 12
+                            font.bold: true
+                        }
+                    }
+                    
+                    Button {
+                        text: "导出历史数据"
+                        onClicked: {
+                            // 模拟导出历史数据
+                            console.log("导出历史数据")
+                        }
+                        background: Rectangle {
+                            color: "#9C27B0"
+                            radius: 4
+                        }
+                        contentItem: Text {
+                            text: parent.text
+                            color: "#ffffff"
+                            font.pointSize: 12
+                            font.bold: true
                         }
                     }
                 }
@@ -651,6 +728,8 @@ Rectangle {
                             levelAlarm = false
                             pressureAlarm = false
                             temperatureAlarm = false
+                            alarmActive = false
+                            alarmMessage = ""
                         }
                         background: Rectangle {
                             color: "#9C27B0"
@@ -670,6 +749,7 @@ Rectangle {
                             levelAlarm = true
                             pressureAlarm = true
                             temperatureAlarm = true
+                            showAlarm("测试报警", "系统测试报警功能")
                         }
                         background: Rectangle {
                             color: "#FF9800"
@@ -681,6 +761,101 @@ Rectangle {
                             font.pointSize: 12
                             font.bold: true
                         }
+                    }
+                }
+            }
+        }
+    }
+    
+    // 工业告警弹窗
+    Rectangle {
+        id: alarmDialog
+        width: 400
+        height: 200
+        color: "#ffffff"
+        radius: 8
+        border.color: "#F44336"
+        border.width: 2
+        anchors.centerIn: parent
+        visible: alarmActive
+        z: 100
+        
+        Column {
+            anchors.fill: parent
+            anchors.margins: 20
+            spacing: 15
+            
+            Row {
+                spacing: 10
+                
+                Rectangle {
+                    width: 40
+                    height: 40
+                    color: "#F44336"
+                    radius: 20
+                    
+                    Text {
+                        anchors.centerIn: parent
+                        text: "!"
+                        color: "#ffffff"
+                        font.pointSize: 24
+                        font.bold: true
+                    }
+                }
+                
+                Text {
+                    text: alarmMessage
+                    font.pointSize: 16
+                    font.bold: true
+                    color: "#333333"
+                    wrapMode: Text.WordWrap
+                }
+            }
+            
+            Text {
+                text: "请及时处理告警，确保系统正常运行。"
+                font.pointSize: 14
+                color: "#666666"
+                wrapMode: Text.WordWrap
+            }
+            
+            Row {
+                spacing: 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                
+                Button {
+                    text: "确认"
+                    onClicked: {
+                        alarmActive = false
+                        alarmMessage = ""
+                    }
+                    background: Rectangle {
+                        color: "#4CAF50"
+                        radius: 4
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        color: "#ffffff"
+                        font.pointSize: 12
+                        font.bold: true
+                    }
+                }
+                
+                Button {
+                    text: "忽略"
+                    onClicked: {
+                        alarmActive = false
+                        alarmMessage = ""
+                    }
+                    background: Rectangle {
+                        color: "#9E9E9E"
+                        radius: 4
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        color: "#ffffff"
+                        font.pointSize: 12
+                        font.bold: true
                     }
                 }
             }
@@ -706,6 +881,10 @@ Rectangle {
             temperature = Math.max(0, Math.min(50, temperature + (Math.random() * 0.2 - 0.1)))
             
             // 检查报警条件
+            bool oldLevelAlarm = levelAlarm
+            bool oldPressureAlarm = pressureAlarm
+            bool oldTemperatureAlarm = temperatureAlarm
+            
             levelAlarm = (waterLevel < 10 || waterLevel > 90)
             pressureAlarm = (pressure < 1 || pressure > 8)
             temperatureAlarm = (temperature < 5 || temperature > 40)
@@ -714,6 +893,52 @@ Rectangle {
             if (Math.random() > 0.995) {
                 filterDirty = !filterDirty
             }
+            
+            // 记录历史数据
+            recordHistoricalData()
+            
+            // 显示告警
+            if (levelAlarm && !oldLevelAlarm) {
+                showAlarm("液位告警", waterLevel < 10 ? "液位过低，请检查进水系统" : "液位过高，请检查出水系统")
+            }
+            
+            if (pressureAlarm && !oldPressureAlarm) {
+                showAlarm("压力告警", pressure < 1 ? "压力过低，请检查水泵" : "压力过高，请检查管道")
+            }
+            
+            if (temperatureAlarm && !oldTemperatureAlarm) {
+                showAlarm("温度告警", temperature < 5 ? "温度过低，请检查加热系统" : "温度过高，请检查冷却系统")
+            }
+        }
+    }
+    
+    // 显示告警
+    function showAlarm(title, message) {
+        alarmMessage = title + "\n" + message
+        alarmActive = true
+        alarmCount++
+    }
+    
+    // 记录历史数据
+    function recordHistoricalData() {
+        var now = new Date().getTime()
+        
+        // 记录液位数据
+        historicalData.waterLevel.push({time: now, value: waterLevel})
+        if (historicalData.waterLevel.length > historyMaxPoints) {
+            historicalData.waterLevel.shift()
+        }
+        
+        // 记录压力数据
+        historicalData.pressure.push({time: now, value: pressure})
+        if (historicalData.pressure.length > historyMaxPoints) {
+            historicalData.pressure.shift()
+        }
+        
+        // 记录温度数据
+        historicalData.temperature.push({time: now, value: temperature})
+        if (historicalData.temperature.length > historyMaxPoints) {
+            historicalData.temperature.shift()
         }
     }
 }

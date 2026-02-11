@@ -1,13 +1,11 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import IndustrialComponents 1.0
+import HYIndustrialComponents 1.0
 
 Rectangle {
     width: 800
     height: 600
     color: "#f0f0f0"
-    
-    title: "工业组件示例"
     
     Column {
         anchors.centerIn: parent
@@ -30,13 +28,13 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
             }
             
-            Valve {
+            HYValve {
                 width: 100
                 height: 100
                 open: true
             }
             
-            Valve {
+            HYValve {
                 width: 100
                 height: 100
                 open: false
@@ -53,7 +51,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
             }
             
-            Tank {
+            HYTank {
                 width: 100
                 height: 150
                 level: 75
@@ -70,13 +68,13 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
             }
             
-            Motor {
+            HYMotor {
                 width: 100
                 height: 100
                 running: true
             }
             
-            Motor {
+            HYMotor {
                 width: 100
                 height: 100
                 running: false
@@ -93,7 +91,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
             }
             
-            Gauge {
+            HYGauge {
                 width: 150
                 height: 150
                 value: 65
@@ -113,7 +111,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
             }
             
-            IndustrialButton {
+            HYIndustrialButton {
                 width: 120
                 height: 60
                 text: "启动"
@@ -121,7 +119,7 @@ Rectangle {
                 onClicked: console.log("启动按钮被点击")
             }
             
-            IndustrialButton {
+            HYIndustrialButton {
                 width: 120
                 height: 60
                 text: "停止"
@@ -140,21 +138,21 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
             }
             
-            IndustrialIndicator {
+            HYIndustrialIndicator {
                 width: 80
                 height: 80
                 state: "normal"
                 text: "运行"
             }
             
-            IndustrialIndicator {
+            HYIndustrialIndicator {
                 width: 80
                 height: 80
                 state: "warning"
                 text: "警告"
             }
             
-            IndustrialIndicator {
+            HYIndustrialIndicator {
                 width: 80
                 height: 80
                 state: "error"

@@ -1,25 +1,25 @@
-#include "simulateddatasource.h"
+#include "hysimulateddatasource.h"
 #include <QDebug>
 #include <QRandomGenerator>
 
-SimulatedDataSource::SimulatedDataSource(QObject *parent) : QObject(parent)
+HYSimulatedDataSource::HYSimulatedDataSource(QObject *parent) : QObject(parent)
 {
     // 初始化成员变量
     m_updateTimer = new QTimer(this);
     
     // 连接信号和槽
-    connect(m_updateTimer, &QTimer::timeout, this, &SimulatedDataSource::updateData);
+    connect(m_updateTimer, &QTimer::timeout, this, &HYSimulatedDataSource::updateData);
 }
 
-SimulatedDataSource::~SimulatedDataSource()
+HYSimulatedDataSource::~HYSimulatedDataSource()
 {
     // 清理资源
     delete m_updateTimer;
 }
 
-void SimulatedDataSource::initialize()
+void HYSimulatedDataSource::initialize()
 {
-    qDebug() << "初始化模拟数据源...";
+    qDebug() << "初始化华颜模拟数据源...";
     
     // 初始化模拟数据
     m_data["blastFurnace.temperature"] = 1500.0;
@@ -37,30 +37,30 @@ void SimulatedDataSource::initialize()
     m_data["rollingMill.coolingWaterFlow"] = 90.0;
     m_data["rollingMill.status"] = true;
     
-    qDebug() << "模拟数据源初始化完成";
+    qDebug() << "华颜模拟数据源初始化完成";
 }
 
-void SimulatedDataSource::start()
+void HYSimulatedDataSource::start()
 {
-    qDebug() << "启动模拟数据源...";
+    qDebug() << "启动华颜模拟数据源...";
     
     // 启动定时器
     m_updateTimer->start(500); // 500ms更新一次
     
-    qDebug() << "模拟数据源已启动";
+    qDebug() << "华颜模拟数据源已启动";
 }
 
-void SimulatedDataSource::stop()
+void HYSimulatedDataSource::stop()
 {
-    qDebug() << "停止模拟数据源...";
+    qDebug() << "停止华颜模拟数据源...";
     
     // 停止定时器
     m_updateTimer->stop();
     
-    qDebug() << "模拟数据源已停止";
+    qDebug() << "华颜模拟数据源已停止";
 }
 
-QVariant SimulatedDataSource::readValue(const QString &address)
+QVariant HYSimulatedDataSource::readValue(const QString &address)
 {
     // 读取值
     if (m_data.contains(address)) {
@@ -71,7 +71,7 @@ QVariant SimulatedDataSource::readValue(const QString &address)
     return QVariant();
 }
 
-bool SimulatedDataSource::writeValue(const QString &address, const QVariant &value)
+bool HYSimulatedDataSource::writeValue(const QString &address, const QVariant &value)
 {
     qDebug() << "写入值:" << address << "->" << value;
     
@@ -85,12 +85,12 @@ bool SimulatedDataSource::writeValue(const QString &address, const QVariant &val
     return true;
 }
 
-QMap<QString, QVariant> SimulatedDataSource::getAllValues() const
+QMap<QString, QVariant> HYSimulatedDataSource::getAllValues() const
 {
     return m_data;
 }
 
-void SimulatedDataSource::updateData()
+void HYSimulatedDataSource::updateData()
 {
     // 生成随机数据波动
     double tempVariation = QRandomGenerator::global()->bounded(2.0) - 1.0;
