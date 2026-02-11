@@ -47,7 +47,12 @@ Component {
                         }
                     }
                     // Return a default component if validation fails
-                    return Qt.createComponent("QtQuick 2.15/Rectangle.qml").createObject(preview, {color: "#FF0000", opacity: 0.5});
+                    var comp = Qt.createComponent(Qt.resolvedUrl("QtQuick/Rectangle.qml"));
+                    if (comp.status === Component.Error) {
+                        console.error("Component error:", comp.errorString());
+                        return null;
+                    }
+                    return comp.createObject(preview, {color: "#FF0000", opacity: 0.5});
                 }
             }
         }
