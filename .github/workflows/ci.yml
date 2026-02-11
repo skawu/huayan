@@ -21,7 +21,7 @@ jobs:
     - name: 设置 Qt
       uses: jurplel/install-qt-action@v4
       with:
-        version: '6.8.3'
+        version: '6.7.3'
         host: ${{ matrix.os == 'windows-latest' && 'windows' || 'linux' }}
         target: desktop
         arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || 'gcc_64' }}
