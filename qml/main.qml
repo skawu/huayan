@@ -48,7 +48,7 @@ Component {
                     }
                     // Return a default component if validation fails
                     return Qt.createComponent("QtQuick 2.15/Rectangle.qml").createObject(preview, {color: "#FF0000", opacity: 0.5});
-                }()
+                }
             }
         }
         
