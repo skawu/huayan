@@ -1,35 +1,35 @@
 #!/bin/bash
 
-# Qt6 Project Build Script for Huayan SCADA System
-# Automatically detects Qt6 environment and sets up build
+# Qt6 项目构建脚本 for Huayan SCADA System
+# 自动检测 Qt6 环境并设置构建
 
-set -e  # Exit on any error
+set -e  # 出现任何错误即退出
 
-# Colors for output
+# 输出颜色
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m' # 无颜色
 
-# Print colored output
+# 彩色输出打印
 print_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${BLUE}[信息]${NC} $1"
 }
 
 print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}[成功]${NC} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}[警告]${NC} $1"
 }
 
 print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}[错误]${NC} $1"
 }
 
-# Detect platform
+# 检测平台
 detect_platform() {
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         PLATFORM="linux"
@@ -41,14 +41,14 @@ detect_platform() {
         PLATFORM="unknown"
     fi
     
-    print_info "Detected platform: $PLATFORM"
+    print_info "检测到平台: $PLATFORM"
 }
 
-# Find Qt6 installation
+# 查找 Qt6 安装
 find_qt6() {
-    print_info "Searching for Qt6 installation..."
+    print_info "正在搜索 Qt6 安装..."
     
-    # Common Qt6 installation paths
+    # 常见 Qt6 安装路径
     QT6_POSSIBLE_PATHS=()
     
     if [[ "$PLATFORM" == "linux" ]]; then
@@ -105,14 +105,14 @@ find_qt6() {
         done
     done
     
-    # Last resort: check Qt installation in /opt/Qt with version detection
+    # 最后手段：检查 /opt/Qt 中的 Qt 安装并检测版本
     if [[ -d "/opt/Qt" ]]; then
         for qt_version_dir in /opt/Qt/6.*; do
             if [[ -d "$qt_version_dir" ]]; then
                 for compiler_dir in "$qt_version_dir"/*/; do
                     if [[ -f "$compiler_dir/bin/qmake" ]] || [[ -f "$compiler_dir/bin/qmake.exe" ]]; then
                         QT6_DIR="$compiler_dir"
-                        print_info "Found Qt6 at: $QT6_DIR"
+                        print_info "找到 Qt6 位置: $QT6_DIR"
                         return 0
                     fi
                 done
@@ -120,11 +120,11 @@ find_qt6() {
         done
     fi
     
-    print_error "Could not find Qt6 installation. Please install Qt 6.8 LTS or later."
+    print_error "无法找到 Qt6 安装。请安装 Qt 6.8 LTS 或更高版本。"
     return 1
 }
 
-# Parse command line arguments
+# 解析命令行参数
 parse_arguments() {
     BUILD_TYPE="Release"
     BUILD_DIR="build"
@@ -163,43 +163,43 @@ parse_arguments() {
                 shift 2
                 ;;
             -h|--help)
-                echo "Usage: $0 [OPTIONS]"
-                echo "Options:"
-                echo "  -d, --debug       Build in Debug mode"
-                echo "  -r, --release     Build in Release mode (default)"
-                echo "  -c, --clean       Clean previous build before building"
-                echo "  -i, --install     Install the application after building"
-                echo "  -j, --jobs N      Number of parallel jobs (default: auto-detected)"
-                echo "  -b, --build-dir   Build directory (default: build)"
-                echo "  -q, --qt-path     Qt6 installation path (default: auto-detected)"
-                echo "  -h, --help        Show this help message"
+                echo "用法: $0 [选项]"
+                echo "选项:"
+                echo "  -d, --debug       Debug 模式构建"
+                echo "  -r, --release     Release 模式构建（默认）"
+                echo "  -c, --clean       构建前清理之前的构建"
+                echo "  -i, --install     构建后安装应用程序"
+                echo "  -j, --jobs N      并行作业数（默认：自动检测）"
+                echo "  -b, --build-dir   构建目录（默认：build）"
+                echo "  -q, --qt-path     Qt6 安装路径（默认：自动检测）"
+                echo "  -h, --help        显示此帮助信息"
                 exit 0
                 ;;
             *)
-                print_error "Unknown option: $1"
+                print_error "未知选项: $1"
                 exit 1
                 ;;
         esac
     done
     
-    print_info "Build configuration:"
-    print_info "  Platform: $PLATFORM"
-    print_info "  Qt6 path: $QT6_DIR"
-    print_info "  Build type: $BUILD_TYPE"
-    print_info "  Build directory: $BUILD_DIR"
-    print_info "  Clean build: $CLEAN_BUILD"
-    print_info "  Install after build: $INSTALL_AFTER_BUILD"
-    print_info "  Parallel jobs: $NUM_JOBS"
+    print_info "构建配置:"
+    print_info "  平台: $PLATFORM"
+    print_info "  Qt6 路径: $QT6_DIR"
+    print_info "  构建类型: $BUILD_TYPE"
+    print_info "  构建目录: $BUILD_DIR"
+    print_info "  清理构建: $CLEAN_BUILD"
+    print_info "  构建后安装: $INSTALL_AFTER_BUILD"
+    print_info "  并行作业数: $NUM_JOBS"
 }
 
-# Prepare build environment
+# 准备构建环境
 prepare_environment() {
-    print_info "Preparing build environment..."
+    print_info "准备构建环境..."
     
-    # Add Qt6 to PATH
+    # 添加 Qt6 到 PATH
     export PATH="$QT6_DIR/bin:$PATH"
     
-    # Set Qt6-related environment variables
+    # 设置 Qt6 相关环境变量
     if [[ "$PLATFORM" == "linux" ]]; then
         export LD_LIBRARY_PATH="$QT6_DIR/lib:$LD_LIBRARY_PATH"
         export PKG_CONFIG_PATH="$QT6_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
@@ -211,31 +211,31 @@ prepare_environment() {
         export PATH="$QT6_DIR/lib:$PATH"
     fi
     
-    print_success "Build environment prepared"
+    print_success "构建环境准备完成"
 }
 
-# Prepare build directory
+# 准备构建目录
 prepare_build_directory() {
     if [[ "$CLEAN_BUILD" == true ]]; then
         if [[ -d "$BUILD_DIR" ]]; then
-            print_info "Cleaning build directory: $BUILD_DIR"
+            print_info "清理构建目录: $BUILD_DIR"
             rm -rf "$BUILD_DIR"
         fi
     fi
     
     mkdir -p "$BUILD_DIR"
-    print_success "Build directory prepared: $BUILD_DIR"
+    print_success "构建目录准备完成: $BUILD_DIR"
 }
 
-# Configure the project
+# 配置项目
 configure_project() {
-    print_info "Configuring project with Qt6 from: $QT6_DIR"
+    print_info "使用 Qt6 配置项目: $QT6_DIR"
     
     cd "$BUILD_DIR"
     
-    # Determine CMake generator based on platform
+    # 根据平台确定 CMake 生成器
     if [[ "$PLATFORM" == "windows" ]]; then
-        # On Windows, check for MSVC vs MinGW
+        # 在 Windows 上，检查 MSVC 与 MinGW
         if [[ -f "$QT6_DIR/bin/cl.exe" ]] || command -v cl &> /dev/null; then
             GENERATOR="-G \"Visual Studio 17 2022\" -A x64"
         else
@@ -245,60 +245,60 @@ configure_project() {
         GENERATOR=""
     fi
     
-    # Configure with Qt6 path
+    # 使用 Qt6 路径配置
     cmake .. \
         -DCMAKE_PREFIX_PATH="$QT6_DIR" \
         -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
         $GENERATOR
     
     if [ $? -ne 0 ]; then
-        print_error "CMake configuration failed"
+        print_error "CMake 配置失败"
         exit 1
     fi
     
-    print_success "Project configured successfully"
+    print_success "项目配置成功"
     cd ..
 }
 
-# Build the project
+# 构建项目
 build_project() {
-    print_info "Building project with $NUM_JOBS parallel jobs..."
+    print_info "使用 $NUM_JOBS 个并行作业构建项目..."
     
     cd "$BUILD_DIR"
     
     make -j"$NUM_JOBS"
     
     if [ $? -ne 0 ]; then
-        print_error "Build failed"
+        print_error "构建失败"
         exit 1
     fi
     
-    print_success "Project built successfully"
+    print_success "项目构建成功"
     cd ..
 }
 
-# Install the project
+# 安装项目
 install_project() {
     if [[ "$INSTALL_AFTER_BUILD" == true ]]; then
-        print_info "Installing project..."
+        print_info "安装项目..."
         
         cd "$BUILD_DIR"
         
         make install
         
         if [ $? -ne 0 ]; then
-            print_error "Installation failed"
+            print_error "安装失败"
             exit 1
         fi
         
-        print_success "Project installed successfully"
+        print_success "项目安装成功"
         cd ..
     fi
 }
 
-# Main execution
+# 主执行
 main() {
-    print_info "Starting Qt6-based build for Huayan SCADA System"
+    print_info "开始基于 Qt6 的 Huayan SCADA System 构建"
     
     detect_platform
     find_qt6 || exit 1
@@ -309,9 +309,9 @@ main() {
     build_project
     install_project
     
-    print_success "Build completed successfully!"
-    print_info "Built files are located in: $BUILD_DIR/"
-    print_info "To run the application, go to $BUILD_DIR/ and execute the generated executable"
+    print_success "构建成功完成!"
+    print_info "构建文件位于: $BUILD_DIR/"
+    print_info "要运行应用程序，请进入 $BUILD_DIR/ 并执行生成的可执行文件"
 }
 
 # Execute main function with all arguments

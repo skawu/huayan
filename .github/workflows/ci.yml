@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD 流水线
 
 on:
   push:
@@ -15,10 +15,10 @@ jobs:
         qt-version: ['6.8.3']
     
     steps:
-    - name: Checkout repository
+    - name: 检出代码库
       uses: actions/checkout@v4
       
-    - name: Install Qt
+    - name: 安装 Qt
       uses: jurplel/install-qt-action@v4
       with:
         version: ${{ matrix.qt-version }}
@@ -29,21 +29,21 @@ jobs:
         modules: qtcharts qt3d qtwebsockets qtwebchannel qtwebengine
         archives: qtbase qtdeclarative qtcharts qt3d qtwebsockets qtwebchannel qtshadertools qtimageformats
         
-    - name: Install Linux Dependencies
+    - name: 安装 Linux 依赖
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential cmake libgl-dev libxcb-cursor0
         
-    - name: Install Windows Dependencies
+    - name: 安装 Windows 依赖
       if: runner.os == 'Windows'
       run: |
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
         
-    - name: Setup CMake and Ninja
+    - name: 设置 CMake 和 Ninja
       uses: lukka/get-cmake@latest
       
-    - name: Configure CMake (Linux)
+    - name: 配置 CMake (Linux)
       if: runner.os == 'Linux'
       run: |
         mkdir build
@@ -53,7 +53,7 @@ jobs:
         CC: gcc
         CXX: g++
         
-    - name: Configure CMake (Windows)
+    - name: 配置 CMake (Windows)
       if: runner.os == 'Windows'
       run: |
         mkdir build
@@ -63,17 +63,17 @@ jobs:
         CC: cl
         CXX: cl
         
-    - name: Build Project
+    - name: 构建项目
       run: |
         cd build
         cmake --build . --parallel --config Release
         
-    - name: Run Tests
+    - name: 运行测试
       run: |
         cd build
         ctest --verbose --output-on-failure --build-config Release
         
-    - name: Package Application (Linux)
+    - name: 打包应用程序 (Linux)
       if: runner.os == 'Linux'
       run: |
         cd build
@@ -82,7 +82,7 @@ jobs:
         mkdir -p artifacts/linux
         tar -czf artifacts/linux/huayan-scada-linux.tar.gz -C bin .
         
-    - name: Package Application (Windows)
+    - name: 打包应用程序 (Windows)
       if: runner.os == 'Windows'
       run: |
         cd build
@@ -91,7 +91,7 @@ jobs:
         mkdir artifacts\windows
         powershell Compress-Archive -Path bin\* -DestinationPath artifacts\windows\huayan-scada-windows.zip
         
-    - name: Upload Artifacts
+    - name: 上传构建产物
       uses: actions/upload-artifact@v4
       with:
         name: huayan-scada-${{ runner.os }}-${{ runner.arch }}
@@ -103,10 +103,10 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
-    - name: Download Artifacts
+    - name: 下载构建产物
       uses: actions/download-artifact@v4
       
-    - name: Deploy to Release
+    - name: 发布到 Release
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:

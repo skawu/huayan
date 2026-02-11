@@ -1,19 +1,19 @@
 @echo off
-rem Qt6 Project Build Script for Huayan SCADA System
-rem Automatically detects Qt6 environment and sets up build
+rem Qt6 项目构建脚本 for Huayan SCADA System
+rem 自动检测 Qt6 环境并设置构建
 
-echo Starting Qt6-based build for Huayan SCADA System
+echo 开始基于 Qt6 的 Huayan SCADA System 构建
 
-rem Detect platform (this script assumes Windows)
+rem 检测平台（此脚本假设为 Windows）
 set PLATFORM=windows
-echo Detected platform: %PLATFORM%
+echo 检测到平台: %PLATFORM%
 
-rem Find Qt6 installation
-echo Searching for Qt6 installation...
+rem 查找 Qt6 安装
+echo 正在搜索 Qt6 安装...
 
 set QT6_DIR=
 
-rem Common Qt6 installation paths on Windows
+rem Windows 上常见的 Qt6 安装路径
 for /F "tokens=*" %%i in ('dir "C:\Qt\6.*" /AD /B 2^>nul') do (
   for /F "tokens=*" %%j in ('dir "C:\Qt\%%i\*" /AD /B 2^>nul') do (
     if exist "C:\Qt\%%i\%%j\bin\qmake.exe" (
@@ -23,7 +23,7 @@ for /F "tokens=*" %%i in ('dir "C:\Qt\6.*" /AD /B 2^>nul') do (
   )
 )
 
-rem Check in user profile
+rem 检查用户配置文件
 for /F "tokens=*" %%i in ('dir "%USERPROFILE%\Qt\6.*" /AD /B 2^>nul') do (
   for /F "tokens=*" %%j in ('dir "%USERPROFILE%\Qt\%%i\*" /AD /B 2^>nul') do (
     if exist "%USERPROFILE%\Qt\%%i\%%j\bin\qmake.exe" (
@@ -35,17 +35,17 @@ for /F "tokens=*" %%i in ('dir "%USERPROFILE%\Qt\6.*" /AD /B 2^>nul') do (
 
 :found_qt
 if "%QT6_DIR%"=="" (
-  echo ERROR: Could not find Qt6 installation. Please install Qt 6.8 LTS or later.
+  echo 错误: 无法找到 Qt6 安装。请安装 Qt 6.8 LTS 或更高版本。
   exit /b 1
 )
 
-echo Found Qt6 at: %QT6_DIR%
+echo 找到 Qt6 位置: %QT6_DIR%
 
-rem Set Qt6-related environment variables
+rem 设置 Qt6 相关环境变量
 set "PATH=%QT6_DIR%\bin;%PATH%"
 set "PATH=%QT6_DIR%\lib;%PATH%"
 
-rem Parse command line arguments
+rem 解析命令行参数
 set BUILD_TYPE=Release
 set BUILD_DIR=build
 set CLEAN_BUILD=false
@@ -74,44 +74,44 @@ shift
 goto :arg_loop
 
 :show_help
-echo Usage: %0 [OPTIONS]
-echo Options:
-echo   -d, --debug       Build in Debug mode
-echo   -r, --release     Build in Release mode (default)
-echo   -c, --clean       Clean previous build before building
-echo   -i, --install     Install the application after building
-echo   -j, --jobs N      Number of parallel jobs (default: 4)
-echo   -b, --build-dir   Build directory (default: build)
-echo   -q, --qt-path     Qt6 installation path (default: auto-detected)
-echo   -h, --help        Show this help message
+echo 用法: %0 [选项]
+echo 选项:
+echo   -d, --debug       Debug 模式构建
+echo   -r, --release     Release 模式构建（默认）
+echo   -c, --clean       构建前清理之前的构建
+echo   -i, --install     构建后安装应用程序
+echo   -j, --jobs N      并行作业数（默认：4）
+echo   -b, --build-dir   构建目录（默认：build）
+echo   -q, --qt-path     Qt6 安装路径（默认：自动检测）
+echo   -h, --help        显示此帮助信息
 exit /b 0
 
 :after_args
 
-echo Build configuration:
-echo   Platform: %PLATFORM%
-echo   Qt6 path: %QT6_DIR%
-echo   Build type: %BUILD_TYPE%
-echo   Build directory: %BUILD_DIR%
-echo   Clean build: %CLEAN_BUILD%
-echo   Install after build: %INSTALL_AFTER_BUILD%
-echo   Parallel jobs: %NUM_JOBS%
+echo 构建配置:
+echo   平台: %PLATFORM%
+echo   Qt6 路径: %QT6_DIR%
+echo   构建类型: %BUILD_TYPE%
+echo   构建目录: %BUILD_DIR%
+echo   清理构建: %CLEAN_BUILD%
+echo   构建后安装: %INSTALL_AFTER_BUILD%
+echo   并行作业数: %NUM_JOBS%
 
-rem Prepare build directory
+rem 准备构建目录
 if "%CLEAN_BUILD%"=="true" (
   if exist "%BUILD_DIR%" (
-    echo Cleaning build directory: %BUILD_DIR%
+    echo 清理构建目录: %BUILD_DIR%
     rmdir /s /q "%BUILD_DIR%"
   )
 )
 
 if not exist "%BUILD_DIR%" mkdir "%BUILD_DIR%"
 
-rem Configure the project
-echo Configuring project with Qt6 from: %QT6_DIR%
+rem 配置项目
+echo 使用 Qt6 配置项目: %QT6_DIR%
 cd "%BUILD_DIR%"
 
-rem Determine CMake generator based on Qt installation
+rem 根据安装的 Qt 确定 CMake 生成器
 if exist "%QT6_DIR%\bin\cl.exe" (
   cmake .. -DCMAKE_PREFIX_PATH="%QT6_DIR%" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" -G "Visual Studio 17 2022" -A x64
 ) else (
@@ -119,15 +119,15 @@ if exist "%QT6_DIR%\bin\cl.exe" (
 )
 
 if errorlevel 1 (
-  echo CMake configuration failed
+  echo CMake 配置失败
   cd ..
   exit /b 1
 )
 
-echo Project configured successfully
+echo 项目配置成功
 
-rem Build the project
-echo Building project with %NUM_JOBS% parallel jobs...
+rem 构建项目
+echo 使用 %NUM_JOBS% 个并行作业构建项目...
 if exist "ninja.exe" (
   ninja -j %NUM_JOBS%
 ) else (
@@ -135,17 +135,17 @@ if exist "ninja.exe" (
 )
 
 if errorlevel 1 (
-  echo Build failed
+  echo 构建失败
   cd ..
   exit /b 1
 )
 
-echo Project built successfully
+echo 项目构建成功
 cd ..
 
-rem Install the project
+rem 安装项目
 if "%INSTALL_AFTER_BUILD%"=="true" (
-  echo Installing project...
+  echo 安装项目...
   cd "%BUILD_DIR%"
   
   if exist "ninja.exe" (
@@ -155,15 +155,15 @@ if "%INSTALL_AFTER_BUILD%"=="true" (
   )
   
   if errorlevel 1 (
-    echo Installation failed
+    echo 安装失败
     cd ..
     exit /b 1
   )
   
-  echo Project installed successfully
+  echo 项目安装成功
   cd ..
 )
 
-echo Build completed successfully!
-echo Built files are located in: %BUILD_DIR%/
-echo To run the application, go to %BUILD_DIR%/ and execute the generated executable
+echo 构建成功完成!
+echo 构建文件位于: %BUILD_DIR%/
+echo 要运行应用程序，请进入 %BUILD_DIR%/ 并执行生成的可执行文件
