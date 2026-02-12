@@ -12,3 +12,6 @@ add_subdirectory(unit)
 
 # 添加集成测试
 add_subdirectory(integration)
+
+# 添加QML测试
+add_subdirectory(qml)
