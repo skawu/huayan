@@ -344,18 +344,18 @@ Window {
                 if (componentData.properties) {
                     for (var key in componentData.properties) {
                         var value = componentData.properties[key]
-                        var row = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Layouts 1.15; RowLayout { spacing: 5 }', propertyGrid)
+                        var row = Qt.createQmlObject('import QtQuick; import QtQuick.Layouts; RowLayout { spacing: 5 }', propertyGrid)
                         
-                        var label = Qt.createQmlObject('import QtQuick 2.15; Label { text: "' + key + ':"; color: "white"; width: 80 }', row)
+                        var label = Qt.createQmlObject('import QtQuick; import QtQuick.Controls; Label { text: "' + key + ':"; color: "white"; width: 80 }', row)
                         
                         if (typeof value === 'string') {
-                            var textField = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; TextField { text: "' + value + '"; onTextChanged: { componentItem.propertyName = "' + key + '"; componentItem.propertyValue = text; componentItem.propertyChanged() } }', row)
+                            var textField = Qt.createQmlObject('import QtQuick; import QtQuick.Controls; TextField { text: "' + value + '"; onTextChanged: { componentItem.propertyName = "' + key + '"; componentItem.propertyValue = text; componentItem.propertyChanged() } }', row)
                             textField.Layout.fillWidth: true
                         } else if (typeof value === 'number') {
-                            var spinBox = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; SpinBox { value: ' + value + '; onValueChanged: { componentItem.propertyName = "' + key + '"; componentItem.propertyValue = value; componentItem.propertyChanged() } }', row)
+                            var spinBox = Qt.createQmlObject('import QtQuick; import QtQuick.Controls; SpinBox { value: ' + value + '; onValueChanged: { componentItem.propertyName = "' + key + '"; componentItem.propertyValue = value; componentItem.propertyChanged() } }', row)
                             spinBox.Layout.fillWidth: true
                         } else if (typeof value === 'boolean') {
-                            var checkBox = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; CheckBox { checked: ' + value + '; onCheckedChanged: { componentItem.propertyName = "' + key + '"; componentItem.propertyValue = checked; componentItem.propertyChanged() } }', row)
+                            var checkBox = Qt.createQmlObject('import QtQuick; import QtQuick.Controls; CheckBox { checked: ' + value + '; onCheckedChanged: { componentItem.propertyName = "' + key + '"; componentItem.propertyValue = checked; componentItem.propertyChanged() } }', row)
                         }
                     }
                 }
