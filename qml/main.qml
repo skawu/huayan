@@ -43,12 +43,12 @@ Component {
                         var componentName = typeParts[1];
                         // Validate that module and component names are valid identifiers
                         if (moduleName.match(/^[A-Za-z][A-Za-z0-9]*$/) && componentName.match(/^[A-Za-z][A-Za-z0-9]*$/)) {
-                            return Qt.createQmlObject('import QtQuick 2.15; import ' + moduleName + ' 1.0; ' + componentName + ' {}', preview);
+                            return Qt.createQmlObject('import QtQuick; import ' + moduleName + '; ' + componentName + ' {}', preview);
                         }
                     }
                     // Return a default component if validation fails
                     var defaultComp = Qt.createQmlObject("
-                        import QtQuick 2.15;
+                        import QtQuick;
                         Rectangle {
                             color: '#FF0000';
                             opacity: 0.5;
