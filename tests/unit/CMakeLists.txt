@@ -72,3 +72,32 @@ target_include_directories(test_timeseriesdatabase PRIVATE
     ${CMAKE_SOURCE_DIR}/src/core
 )
 add_test(NAME TimeSeriesDatabaseTest COMMAND test_timeseriesdatabase)
+
+# 配置管理器测试
+add_executable(test_configmanager test_configmanager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/configmanager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/configmanager.h
+)
+target_link_libraries(test_configmanager PRIVATE
+    Qt6::Test
+    Qt6::Core
+    Qt6::Network
+)
+target_include_directories(test_configmanager PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/core
+)
+add_test(NAME ConfigManagerTest COMMAND test_configmanager)
+
+# 扩展管理器测试
+add_executable(test_extensionmanager test_extensionmanager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/extensionmanager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/extensionmanager.h
+)
+target_link_libraries(test_extensionmanager PRIVATE
+    Qt6::Test
+    Qt6::Core
+)
+target_include_directories(test_extensionmanager PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/core
+)
+add_test(NAME ExtensionManagerTest COMMAND test_extensionmanager)
