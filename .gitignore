@@ -82,5 +82,11 @@ config/
 *.ini
 *.conf
 
-# 测试目录
-/tests/
+# 构建输出目录
+/build/
+/bin/
+
+# 临时文件
+*.tmp
+*.log
+*.bak
