@@ -41,7 +41,7 @@ Window {
                 text: "保存模板"
                 onClicked: {
                     fileDialog.title = "保存模板"
-                    fileDialog.selectExisting: false
+                    fileDialog.selectExisting = false
                     fileDialog.nameFilters = ["JSON 文件 (*.json)"]
                     fileDialog.open()
                 }
@@ -51,7 +51,7 @@ Window {
                 text: "加载模板"
                 onClicked: {
                     fileDialog.title = "加载模板"
-                    fileDialog.selectExisting: true
+                    fileDialog.selectExisting = true
                     fileDialog.nameFilters = ["JSON 文件 (*.json)"]
                     fileDialog.open()
                 }
@@ -350,10 +350,10 @@ Window {
                         
                         if (typeof value === 'string') {
                             var textField = Qt.createQmlObject('import QtQuick; import QtQuick.Controls; TextField { text: "' + value + '"; onTextChanged: { componentItem.propertyName = "' + key + '"; componentItem.propertyValue = text; componentItem.propertyChanged() } }', row)
-                            textField.Layout.fillWidth: true
+                            textField.Layout.fillWidth = true
                         } else if (typeof value === 'number') {
                             var spinBox = Qt.createQmlObject('import QtQuick; import QtQuick.Controls; SpinBox { value: ' + value + '; onValueChanged: { componentItem.propertyName = "' + key + '"; componentItem.propertyValue = value; componentItem.propertyChanged() } }', row)
-                            spinBox.Layout.fillWidth: true
+                            spinBox.Layout.fillWidth = true
                         } else if (typeof value === 'boolean') {
                             var checkBox = Qt.createQmlObject('import QtQuick; import QtQuick.Controls; CheckBox { checked: ' + value + '; onCheckedChanged: { componentItem.propertyName = "' + key + '"; componentItem.propertyValue = checked; componentItem.propertyChanged() } }', row)
                         }

@@ -10,6 +10,7 @@ add_executable(test_tagmanager test_tagmanager.cpp
 target_link_libraries(test_tagmanager PRIVATE
     Qt6::Test
     Qt6::Core
+    Qt6::Sql
 )
 target_include_directories(test_tagmanager PRIVATE
     ${CMAKE_SOURCE_DIR}/src/core
