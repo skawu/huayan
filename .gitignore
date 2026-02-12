@@ -90,3 +90,25 @@ config/
 *.tmp
 *.log
 *.bak
+
+# CMake生成的文件
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+compile_commands.json
+.ninja_log
+.ninja_deps
+build.ninja
+CTestTestfile.cmake
+Testing/
+
+# 编辑器备份文件
+*~
+*.swp
+*.swo
+
+# IDE配置
+.vscode/
+.idea/
+*.user
