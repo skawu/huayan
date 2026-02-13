@@ -13,8 +13,23 @@ if [ -d "$SCRIPT_DIR/lib" ]; then
     export LD_LIBRARY_PATH="$SCRIPT_DIR/lib:$LD_LIBRARY_PATH"
 fi
 
+# Also add the bin/lib directory for installed libraries
+if [ -d "$SCRIPT_DIR/bin/lib" ]; then
+    export LD_LIBRARY_PATH="$SCRIPT_DIR/bin/lib:$LD_LIBRARY_PATH"
+fi
+
 if [ -d "$SCRIPT_DIR/qml" ]; then
     export QML2_IMPORT_PATH="$SCRIPT_DIR/qml:$QML2_IMPORT_PATH"
+fi
+
+# Add QML import path for installed QML modules
+if [ -d "$SCRIPT_DIR/bin/qml" ]; then
+    export QML2_IMPORT_PATH="$SCRIPT_DIR/bin/qml:$QML2_IMPORT_PATH"
+fi
+
+# Add Qt plugin path for installed plugins
+if [ -d "$SCRIPT_DIR/bin/plugins" ]; then
+    export QT_PLUGIN_PATH="$SCRIPT_DIR/bin/plugins:$QT_PLUGIN_PATH"
 fi
 
 # Run the application
