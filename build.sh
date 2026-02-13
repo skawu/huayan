@@ -444,10 +444,11 @@ copy_qt_libraries() {
     # 也从系统位置复制必要的 XCB 库
     local xcb_system_libs=("libxcb-cursor.so.0" "libxcb-shape.so.0" "libxcb-xfixes.so.0" "libxcb-render.so.0")
     for lib in "${xcb_system_libs[@]}"; do
-        local system_lib_path=$(find /usr/lib /lib -name "$lib" -type f 2>/dev/null | head -n 1)
+        # 查找系统中匹配的库文件
+        local system_lib_path=$(find /usr/lib /lib -name "$lib*" -type f 2>/dev/null | head -n 1)
         if [ -n "$system_lib_path" ]; then
             cp -f "$system_lib_path" "$TARGET_DIR/lib/" 2>/dev/null || true
-            print_info "复制系统 XCB 库 $lib"
+            print_info "复制系统 XCB 库 $(basename $system_lib_path)"
         fi
     done
     fi
