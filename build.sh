@@ -328,7 +328,14 @@ install_project() {
         
         # 根据是否有自定义安装路径决定安装目标
         if [[ -n "$CUSTOM_INSTALL_PATH" ]]; then
-            INSTALL_TARGET="$CUSTOM_INSTALL_PATH"
+            # 如果是相对路径，转换为绝对路径以确保正确安装
+            if [[ "${CUSTOM_INSTALL_PATH:0:1}" == "/" ]]; then
+                # 已经是绝对路径
+                INSTALL_TARGET="$CUSTOM_INSTALL_PATH"
+            else
+                # 转换为绝对路径（相对于项目根目录）
+                INSTALL_TARGET="$(pwd)/../$CUSTOM_INSTALL_PATH"
+            fi
         else
             INSTALL_TARGET="../bin"
         fi
