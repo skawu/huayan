@@ -15,8 +15,8 @@ Component {
     
     Item {
         id: root
-        property string name: "";
-        property string type: "";
+        property string name: ""
+        property string type: ""
         
         width: 80
         height: 100
@@ -50,8 +50,8 @@ Component {
                     var defaultComp = Qt.createQmlObject("
                         import QtQuick;
                         Rectangle {
-                            color: '#FF0000';
-                            opacity: 0.5;
+                            color: '#FF0000'
+                            opacity: 0.5
                         }", preview);
                     return defaultComp;
                 }
@@ -101,12 +101,12 @@ Component {
     
     Item {
         id: root
-        property string name: "";
-        property string color: "#FFFFFF";
-        property string borderColor: "#CCCCCC";
-        property int borderWidth: 1;
-        property real rotation: 0;
-        property bool selected: false;
+        property string name: ""
+        property string color: "#FFFFFF"
+        property string borderColor: "#CCCCCC"
+        property int borderWidth: 1
+        property real rotation: 0
+        property bool selected: false
         
         width: 100
         height: 100
@@ -277,8 +277,8 @@ Component {
     id: resizeHandle
     
     Item {
-        property var target: null;
-        property string position: "";
+        property var target: null
+        property string position: ""
         
         width: 8
         height: 8
@@ -1394,16 +1394,16 @@ Window {
                     anchors.fill: parent
                     
                     // 画布变换属性
-                    property real scale: 1.0;
-                    property real minScale: 0.1;
-                    property real maxScale: 5.0;
-                    property real offsetX: 0;
-                    property real offsetY: 0;
-                    property bool isPanning: false;
-                    property real panStartX: 0;
-                    property real panStartY: 0;
-                    property real panOffsetX: 0;
-                    property real panOffsetY: 0;
+                    property real scale: 1.0
+                    property real minScale: 0.1
+                    property real maxScale: 5.0
+                    property real offsetX: 0
+                    property real offsetY: 0
+                    property bool isPanning: false
+                    property real panStartX: 0
+                    property real panStartY: 0
+                    property real panOffsetX: 0
+                    property real panOffsetY: 0
                     
                     // 鼠标区域
                     MouseArea {
