@@ -130,6 +130,7 @@ parse_arguments() {
     BUILD_DIR="build"
     CLEAN_ONLY=false
     REBUILD=false
+    DISTCLEAN=false
     INSTALL_AFTER_BUILD=false
     NUM_JOBS=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
     
@@ -149,6 +150,10 @@ parse_arguments() {
                 ;;
             --rebuild)
                 REBUILD=true
+                shift
+                ;;
+            --distclean)
+                DISTCLEAN=true
                 shift
                 ;;
             -i|--install)
@@ -174,6 +179,7 @@ parse_arguments() {
                 echo "  -r, --release     Release 模式构建（默认）"
                 echo "  -c, --clean       清理构建目录"
                  echo "  --rebuild         清理后重新构建"
+                 echo "  --distclean       清理构建目录和安装目录"
                  echo "  -i, --install     构建后安装应用程序"
                 echo "  -j, --jobs N      并行作业数（默认：自动检测）"
                 echo "  -b, --build-dir   构建目录（默认：build）"
@@ -320,7 +326,24 @@ main() {
     find_qt6 || exit 1
     parse_arguments "$@"
     
-    # 如果是仅清理模式，则只清理构建目录
+    # 如果是分布式清理模式，则清理构建目录和安装目录
+     if [[ "$DISTCLEAN" == true ]]; then
+         if [[ -d "$BUILD_DIR" ]]; then
+             print_info "清理构建目录: $BUILD_DIR"
+             rm -rf "$BUILD_DIR"
+         fi
+         
+         INSTALL_DIR="$(dirname "$BUILD_DIR")/bin"
+         if [[ -d "$INSTALL_DIR" ]]; then
+             print_info "清理安装目录: $INSTALL_DIR"
+             rm -rf "$INSTALL_DIR"
+         fi
+         
+         print_success "分布式清理完成!"
+         return 0
+     fi
+     
+     # 如果是仅清理模式，则只清理构建目录
      if [[ "$CLEAN_ONLY" == true ]]; then
          if [[ -d "$BUILD_DIR" ]]; then
              print_info "清理构建目录: $BUILD_DIR"
