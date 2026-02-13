@@ -359,11 +359,56 @@ install_only() {
         
         cd "$BUILD_DIR"
         
-        make install
+        # 绕过make install，直接复制必要的文件
+        print_info "使用直接复制方法进行安装..."
         
-        if [ $? -ne 0 ]; then
-            print_error "安装失败"
+        # 创建安装目录
+        mkdir -p "../bin"
+        
+        # 复制可执行文件
+        if [ -f "./SCADASystem" ]; then
+            cp -f "./SCADASystem" "../bin/"
+            print_info "已复制可执行文件"
+        else
+            print_error "可执行文件不存在于构建目录"
             exit 1
+        fi
+        
+        # 复制必要的库文件
+        if [ -f "./src/libSCADASystemQml.so" ]; then
+            mkdir -p "../bin/qml/SCADASystemQml"
+            cp -f "./src/libSCADASystemQml.so" "../bin/qml/SCADASystemQml/"
+        fi
+        
+        # 复制QML插件
+        if [ -d "./qml/plugins" ]; then
+            mkdir -p "../bin/qml"
+            cp -rf "./qml/plugins" "../bin/qml/"
+        fi
+        
+        # 复制其他必要文件
+        if [ -f "./run.sh" ]; then
+            cp -f "./run.sh" "../bin/"
+        fi
+        
+        # 复制资源文件（避免复制多余目录结构）
+        if [ -d "./qml" ] && [ ! -L "./qml" ]; then
+            # 只复制qml目录内容，不覆盖已有的qml/plugins
+            rsync -av --exclude='plugins' "./qml/" "../bin/qml/" 2>/dev/null || cp -rf "./qml" "../bin/" 2>/dev/null || true
+        fi
+        
+        if [ -d "./resources" ]; then
+            cp -rf "./resources" "../bin/"
+        fi
+        
+        if [ -d "./editor" ]; then
+            cp -rf "./editor" "../bin/"
+        fi
+        
+        # 确保不创建多余的bin/bin结构
+        if [ -d "../bin/bin" ] && [ -f "../bin/bin/SCADASystem" ] && [ -f "../bin/SCADASystem" ]; then
+            print_info "移除多余的 bin/bin 目录..."
+            rm -rf "../bin/bin"
         fi
         
         print_success "项目安装成功"
