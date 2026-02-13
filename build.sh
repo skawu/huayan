@@ -449,6 +449,21 @@ copy_qt_libraries() {
         if [ -n "$system_lib_path" ]; then
             cp -f "$system_lib_path" "$TARGET_DIR/lib/" 2>/dev/null || true
             print_info "复制系统 XCB 库 $(basename $system_lib_path)"
+            
+            # 创建必要的符号链接（例如 libxcb-cursor0 -> libxcb-cursor.so.0.0.0）
+            local lib_filename=$(basename $system_lib_path)
+            local lib_basename=$(echo $lib_filename | sed 's/\.so\..*//')
+            local lib_major_version=$(echo $lib_filename | sed 's/.*\.so\.\([0-9]*\).*/\1/')
+            
+            # 如果库名包含版本号，创建简化版本的符号链接
+            if [[ $lib_filename == *"so."* ]]; then
+                # 创建 libname0 -> libname.so.version 的符号链接
+                local symlink_name="${lib_basename}0"
+                if [ ! -f "$TARGET_DIR/lib/$symlink_name" ]; then
+                    ln -sf "$lib_filename" "$TARGET_DIR/lib/$symlink_name"
+                    print_info "创建符号链接 $symlink_name -> $lib_filename"
+                fi
+            fi
         fi
     done
     fi
