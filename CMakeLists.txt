@@ -86,6 +86,12 @@ qt_standard_project_setup()
 # Set QML import path
 set(QML_IMPORT_PATH ${CMAKE_SOURCE_DIR}/qml CACHE STRING "QML import path")
 
+# Disable optional plugin modules by default
+set(ENABLE_CHART_COMPONENTS OFF CACHE BOOL "Enable Chart Components plugin")
+set(ENABLE_CONTROL_COMPONENTS OFF CACHE BOOL "Enable Control Components plugin")
+set(ENABLE_HMI_CONTROLS OFF CACHE BOOL "Enable HMI Controls plugin")
+set(ENABLE_THREED_COMPONENTS OFF CACHE BOOL "Enable 3D Components plugin")
+
 # Add subdirectories
 add_subdirectory(src)
 add_subdirectory(qml/plugins)

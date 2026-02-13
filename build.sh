@@ -12,6 +12,33 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # 无颜色
 
+# 检查是否已经存在 run.sh 文件，如果不存在则创建它
+if [ ! -f "run.sh" ]; then
+  cat > run.sh << 'RUN_SCRIPT_EOF'
+#!/bin/bash
+
+# 获取脚本所在目录的绝对路径
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Set QML_IMPORT_PATH to include the qml directory
+export QML_IMPORT_PATH="$SCRIPT_DIR/qml:$QML_IMPORT_PATH"
+
+# Set QT_PLUGIN_PATH to include the plugins directory
+export QT_PLUGIN_PATH="$SCRIPT_DIR/plugins:$QT_PLUGIN_PATH"
+
+# Set platform-specific environment variables to help with XCB plugin initialization
+export QT_QPA_EGLFS_DISABLE_INPUT=1
+export QT_QPA_EGLFS_INTEGRATION=none
+export QT_QPA_PLATFORM= xcb
+export QT_DEBUG_PLUGINS=1
+
+# Run the application
+"$SCRIPT_DIR/SCADASystem"
+RUN_SCRIPT_EOF
+  chmod +x run.sh
+  echo "已创建 run.sh 启动脚本"
+fi
+
 # 彩色输出打印
 print_info() {
     echo -e "${BLUE}[信息]${NC} $1"
@@ -367,6 +394,7 @@ copy_qt_libraries() {
         "Qt6QuickControls2"
         "Qt6QuickTemplates2"
         "Qt6QuickLayouts"
+        "Qt6XcbQpa"
     )
     
     for lib in "${additional_libs[@]}"; do

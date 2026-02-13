@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/">
+    <file alias="/qt/qml/BasicComponents">/home/hdzk/workspace/project/qml/plugins/BasicComponents</file>
+
+  </qresource>
+</RCC>

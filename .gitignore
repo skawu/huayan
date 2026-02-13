@@ -39,6 +39,14 @@ CMakeFiles/
 cmake_install.cmake
 install_manifest.txt
 
+# Generated CMake files
+**/cmake_install.cmake
+**/CMakeFiles/
+Makefile
+CPackConfig.cmake
+CPackSourceConfig.cmake
+*.cmake
+
 # QML 插件产物
 qml/plugins/**/*.so
 qml/plugins/**/*.dll

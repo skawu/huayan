@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/">
+    <file alias="/qt/qml/ControlComponents">/home/hdzk/workspace/project/qml/plugins/ControlComponents</file>
+
+  </qresource>
+</RCC>
