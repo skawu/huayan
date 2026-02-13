@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/">
+    <file alias="/qt/qml/ChartComponents">/home/hdzk/workspace/project/qml/plugins/ChartComponents</file>
+
+  </qresource>
+</RCC>

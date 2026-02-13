@@ -1,0 +1,12 @@
+module Huayan.HMIControls
+
+Button 1.0 Button.qml
+IndicatorLight 1.0 IndicatorLight.qml
+Slider 1.0 Slider.qml
+DIPSwitch 1.0 DIPSwitch.qml
+Dashboard 1.0 Dashboard.qml
+ToggleSwitch 1.0 ToggleSwitch.qml
+ProgressBar 1.0 ProgressBar.qml
+NumericDisplay 1.0 NumericDisplay.qml
+TextDisplay 1.0 TextDisplay.qml
+MultiStateButton 1.0 MultiStateButton.qml

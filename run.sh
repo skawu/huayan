@@ -1,43 +1,19 @@
 #!/bin/bash
 
-# Run script for SCADASystem
+# 获取脚本所在目录的绝对路径
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Get the directory where the script is located
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Set QML_IMPORT_PATH to include the qml directory
+export QML_IMPORT_PATH="$SCRIPT_DIR/qml:$QML_IMPORT_PATH"
 
-# Set working directory to script directory
-cd "$SCRIPT_DIR"
+# Set QT_PLUGIN_PATH to include the plugins directory
+export QT_PLUGIN_PATH="$SCRIPT_DIR/plugins:$QT_PLUGIN_PATH"
 
-# Set environment variables using relative paths
-if [ -d "$SCRIPT_DIR/lib" ]; then
-    export LD_LIBRARY_PATH="$SCRIPT_DIR/lib:$LD_LIBRARY_PATH"
-fi
-
-# Also add the bin/lib directory for installed libraries
-if [ -d "$SCRIPT_DIR/bin/lib" ]; then
-    export LD_LIBRARY_PATH="$SCRIPT_DIR/bin/lib:$LD_LIBRARY_PATH"
-fi
-
-if [ -d "$SCRIPT_DIR/qml" ]; then
-    export QML2_IMPORT_PATH="$SCRIPT_DIR/qml:$QML2_IMPORT_PATH"
-fi
-
-# Add QML import path for installed QML modules
-if [ -d "$SCRIPT_DIR/bin/qml" ]; then
-    export QML2_IMPORT_PATH="$SCRIPT_DIR/bin/qml:$QML2_IMPORT_PATH"
-fi
-
-# Add Qt plugin path for installed plugins
-if [ -d "$SCRIPT_DIR/bin/plugins" ]; then
-    export QT_PLUGIN_PATH="$SCRIPT_DIR/bin/plugins:$QT_PLUGIN_PATH"
-fi
+# Set platform-specific environment variables to help with XCB plugin initialization
+export QT_QPA_EGLFS_DISABLE_INPUT=1
+export QT_QPA_EGLFS_INTEGRATION=none
+export QT_QPA_PLATFORM= xcb
+export QT_DEBUG_PLUGINS=1
 
 # Run the application
-if [ -f "$SCRIPT_DIR/bin/SCADASystem" ]; then
-    echo "Starting SCADASystem..."
-    "$SCRIPT_DIR/bin/SCADASystem"
-else
-    echo "Error: SCADASystem executable not found at $SCRIPT_DIR/bin/SCADASystem"
-    echo "Please build the project first using 'cmake --build .' from the project root"
-    exit 1
-fi
+"$SCRIPT_DIR/SCADASystem"

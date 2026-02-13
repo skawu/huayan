@@ -1,0 +1,4 @@
+module ThreeDComponents
+ThreeDScene 1.0 ThreeDScene.qml
+ModelLoader 1.0 ModelLoader.qml
+CameraController 1.0 CameraController.qml
