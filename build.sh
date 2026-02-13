@@ -333,7 +333,7 @@ copy_qt_libraries() {
     # 创建lib目录
     mkdir -p "$TARGET_DIR/lib"
     
-    # 复制Qt核心库，包括所有可能需要的库
+    # 先复制指定的核心库
     local qt_libs=(
         "Qt6Core"
         "Qt6Gui"
@@ -420,6 +420,41 @@ copy_qt_libraries() {
         "Qt6WebEngineQuick"
         "Qt6WebSockets"
         "Qt6WebView"
+        "Qt6QmlMeta"
+        "Qt6QmlCompiler"
+        "Qt63DAnimation"
+        "Qt6Accessibility"
+        "Qt6DeviceDiscovery"
+        "Qt6EdidSupport"
+        "Qt6EventDispatcherSupport"
+        "Qt6FontDatabaseSupport"
+        "Qt6FbSupport"
+        "Qt6GlxSupport"
+        "Qt6Harfbuzz"
+        "Qt6HbShaper"
+        "Qt6InputSupport"
+        "Qt6KmsSupport"
+        "Qt6LinuxAccessibilitySupport"
+        "Qt6NetworkAuth"
+        "Qt6PlatformCompositorSupport"
+        "Qt6QmlDebug"
+        "Qt6QmlDevTools"
+        "Qt6ThemeSupport"
+        "Qt6VncLib"
+        "Qt6WaylandClient"
+        "Qt6WaylandCompositor"
+        "Qt6WaylandEgl"
+        "Qt6WaylandSupport"
+        "Qt6XcbQpa"
+        "Qt6XkbCommonSupport"
+        "Qt6TlsBackend"
+        "Qt6Bearer"
+        "Qt6Gamepad"
+        "Qt6ShaderTools"
+        "Qt63DRender"
+        "Qt63DCore"
+        "Qt63DQuick"
+        "Qt63DQuickRender"
     )
     
     for lib in "${qt_libs[@]}"; do
@@ -427,6 +462,27 @@ copy_qt_libraries() {
         if ls $lib_file 1> /dev/null 2>&1; then
             cp -f $lib_file "$TARGET_DIR/lib/" 2>/dev/null || true
             print_info "复制 $lib"
+        fi
+    done
+    
+    for lib in "${qt_libs[@]}"; do
+        local lib_file="${QT6_DIR}/lib/lib${lib}".so*
+        if ls $lib_file 1> /dev/null 2>&1; then
+            cp -f $lib_file "$TARGET_DIR/lib/" 2>/dev/null || true
+            print_info "复制 $lib"
+        fi
+    done
+    
+    # 作为补充，扫描Qt目录中的所有Qt6库文件
+    print_info "扫描并复制其他Qt6库文件..."
+    for qt_lib in "${QT6_DIR}"/lib/libQt6*.so*; do
+        if [ -f "$qt_lib" ] && [[ "$qt_lib" =~ libQt6[^/]*.so ]]; then
+            lib_name=$(basename "$qt_lib")
+            # 检查是否已经复制过
+            if [ ! -f "$TARGET_DIR/lib/$lib_name" ]; then
+                cp -f "$qt_lib" "$TARGET_DIR/lib/" 2>/dev/null || true
+                print_info "复制额外库 $lib_name"
+            fi
         fi
     done
     
