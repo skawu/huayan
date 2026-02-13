@@ -40,12 +40,12 @@ add_custom_command(TARGET SCADASystem POST_BUILD
     COMMENT "Copying editor files to build directory"
 )
 
-# Also copy editor files to the bin directory
+# Also copy editor files to the executable directory (next to the built executable)
 add_custom_command(TARGET SCADASystem POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/src/editor
-        ${CMAKE_BINARY_DIR}/bin/editor
-    COMMENT "Copying editor files to bin directory"
+        $<TARGET_FILE_DIR:SCADASystem>/editor
+    COMMENT "Copying editor files to executable directory"
 )
 
 # Also copy editor files to the executable directory
@@ -117,12 +117,12 @@ add_custom_command(TARGET SCADASystem POST_BUILD
     COMMENT "Copying QML files to build directory"
 )
 
-# Also copy QML files to the bin directory where the executable is located
+# Also copy QML files to the executable directory (next to the built executable)
 add_custom_command(TARGET SCADASystem POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/qml
-        ${CMAKE_BINARY_DIR}/bin/qml
-    COMMENT "Copying QML files to bin directory"
+        $<TARGET_FILE_DIR:SCADASystem>/qml
+    COMMENT "Copying QML files to executable directory"
 )
 
 # Also copy QML files to the directory where the executable is built
@@ -135,13 +135,13 @@ add_custom_command(TARGET SCADASystem POST_BUILD
     COMMENT "Copying QML files to executable directory"
 )
 
-# Also copy built QML plugins to the bin directory
+# Also copy built QML plugins to the executable directory
 # This ensures that the plugins are available in the same directory as the executable
 add_custom_command(TARGET SCADASystem POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_BINARY_DIR}/qml/plugins
-        ${CMAKE_BINARY_DIR}/bin/qml/plugins
-    COMMENT "Copying built QML plugins to bin directory"
+        $<TARGET_FILE_DIR:SCADASystem>/qml/plugins
+    COMMENT "Copying built QML plugins to executable directory"
 )
 
 # Copy resources to build directory
@@ -152,12 +152,12 @@ add_custom_command(TARGET SCADASystem POST_BUILD
     COMMENT "Copying resources to build directory"
 )
 
-# Also copy resources to the bin directory
+# Also copy resources to the executable directory
 add_custom_command(TARGET SCADASystem POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/src/resources
-        ${CMAKE_BINARY_DIR}/bin/resources
-    COMMENT "Copying resources to bin directory"
+        $<TARGET_FILE_DIR:SCADASystem>/resources
+    COMMENT "Copying resources to executable directory"
 )
 
 # Also copy resources to the executable directory

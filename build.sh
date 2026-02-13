@@ -447,7 +447,7 @@ main() {
             print_info "或者执行 $(dirname "$BUILD_DIR")/bin/run.sh 脚本来启动应用程序"
         fi
     else
-        print_info "可执行文件已安装到: $(dirname "$BUILD_DIR")/bin/"
+        print_info "构建完成。可执行文件已安装到: $(dirname "$BUILD_DIR")/bin/"
         print_info "要运行应用程序，请进入 $(dirname "$BUILD_DIR")/bin/ 并执行生成的可执行文件"
         print_info "或者执行 $(dirname "$BUILD_DIR")/bin/run.sh 脚本来启动应用程序"
     fi
