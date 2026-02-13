@@ -326,11 +326,69 @@ install_project() {
         
         cd "$BUILD_DIR"
         
-        make install
+        # 根据是否有自定义安装路径决定安装目标
+        if [[ -n "$CUSTOM_INSTALL_PATH" ]]; then
+            INSTALL_TARGET="$CUSTOM_INSTALL_PATH"
+        else
+            INSTALL_TARGET="../bin"
+        fi
         
-        if [ $? -ne 0 ]; then
-            print_error "安装失败"
+        # 绕过make install，直接复制必要的文件
+        print_info "使用直接复制方法进行安装到: $INSTALL_TARGET"
+        
+        # 创建安装目录
+        mkdir -p "$INSTALL_TARGET"
+        
+        # 复制可执行文件
+        if [ -f "./SCADASystem" ]; then
+            cp -f "./SCADASystem" "$INSTALL_TARGET/"
+            print_info "已复制可执行文件"
+        else
+            print_error "可执行文件不存在于构建目录"
             exit 1
+        fi
+        
+        # 复制必要的库文件
+        if [ -f "./src/libSCADASystemQml.so" ]; then
+            mkdir -p "$INSTALL_TARGET/qml/SCADASystemQml"
+            cp -f "./src/libSCADASystemQml.so" "$INSTALL_TARGET/qml/SCADASystemQml/"
+        fi
+        
+        # 复制QML插件
+        if [ -d "./qml/plugins" ]; then
+            mkdir -p "$INSTALL_TARGET/qml"
+            cp -rf "./qml/plugins" "$INSTALL_TARGET/qml/"
+        fi
+        
+        # 复制其他必要文件
+        if [ -f "./run.sh" ]; then
+            cp -f "./run.sh" "$INSTALL_TARGET/"
+        fi
+        
+        # 复制资源文件（避免复制多余目录结构）
+        if [ -d "./qml" ] && [ ! -L "./qml" ]; then
+            # 只复制qml目录内容，不覆盖已有的qml/plugins
+            rsync -av --exclude='plugins' "./qml/" "$INSTALL_TARGET/qml/" 2>/dev/null || cp -rf "./qml" "$INSTALL_TARGET/" 2>/dev/null || true
+        fi
+        
+        if [ -d "./resources" ]; then
+            cp -rf "./resources" "$INSTALL_TARGET/"
+        fi
+        
+        if [ -d "./editor" ]; then
+            cp -rf "./editor" "$INSTALL_TARGET/"
+        fi
+        
+        # 确保不创建多余的 bin/bin 结构
+        if [[ -n "$CUSTOM_INSTALL_PATH" ]]; then
+            # 对于自定义路径，不做特殊处理
+            :
+        else
+            # 对于默认路径，确保不创建多余的bin/bin结构
+            if [ -d "$INSTALL_TARGET/bin" ] && [ -f "$INSTALL_TARGET/bin/SCADASystem" ] && [ -f "$INSTALL_TARGET/SCADASystem" ]; then
+                print_info "移除多余的 $INSTALL_TARGET/bin 目录..."
+                rm -rf "$INSTALL_TARGET/bin"
+            fi
         fi
         
         print_success "项目安装成功"
