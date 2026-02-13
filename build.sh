@@ -402,25 +402,54 @@ copy_qt_libraries() {
         # 复制常用的平台插件
         if [ -d "${QT6_DIR}/plugins/platforms" ]; then
             cp -rf "${QT6_DIR}/plugins/platforms" "$TARGET_DIR/plugins/"
+            print_info "复制平台插件"
         fi
         if [ -d "${QT6_DIR}/plugins/imageformats" ]; then
             cp -rf "${QT6_DIR}/plugins/imageformats" "$TARGET_DIR/plugins/"
+            print_info "复制图像格式插件"
         fi
         if [ -d "${QT6_DIR}/plugins/styles" ]; then
             cp -rf "${QT6_DIR}/plugins/styles" "$TARGET_DIR/plugins/"
+            print_info "复制样式插件"
         fi
         if [ -d "${QT6_DIR}/plugins/tls" ]; then
             cp -rf "${QT6_DIR}/plugins/tls" "$TARGET_DIR/plugins/"
+            print_info "复制TLS插件"
         fi
         if [ -d "${QT6_DIR}/plugins/generic" ]; then
             cp -rf "${QT6_DIR}/plugins/generic" "$TARGET_DIR/plugins/"
+            print_info "复制通用插件"
         fi
         if [ -d "${QT6_DIR}/plugins/bearer" ]; then
             cp -rf "${QT6_DIR}/plugins/bearer" "$TARGET_DIR/plugins/"
+            print_info "复制Bearer插件"
         fi
         if [ -d "${QT6_DIR}/plugins/iconengines" ]; then
             cp -rf "${QT6_DIR}/plugins/iconengines" "$TARGET_DIR/plugins/"
+            print_info "复制图标引擎插件"
         fi
+        
+        # 检查并复制 XCB 相关库（解决平台插件问题）
+    # 首先尝试从 Qt 目录复制
+    if [ -d "${QT6_DIR}/lib" ]; then
+        # 复制 XCB 相关库
+        for xcb_lib in "${QT6_DIR}"/lib/libxcb-*.so*; do
+            if [ -f "$xcb_lib" ]; then
+                cp -f "$xcb_lib" "$TARGET_DIR/lib/" 2>/dev/null || true
+                print_info "复制 XCB 库 $(basename $xcb_lib)"
+            fi
+        done
+    fi
+    
+    # 也从系统位置复制必要的 XCB 库
+    local xcb_system_libs=("libxcb-cursor.so.0" "libxcb-shape.so.0" "libxcb-xfixes.so.0" "libxcb-render.so.0")
+    for lib in "${xcb_system_libs[@]}"; do
+        local system_lib_path=$(find /usr/lib /lib -name "$lib" -type f 2>/dev/null | head -n 1)
+        if [ -n "$system_lib_path" ]; then
+            cp -f "$system_lib_path" "$TARGET_DIR/lib/" 2>/dev/null || true
+            print_info "复制系统 XCB 库 $lib"
+        fi
+    done
     fi
     
     # 复制Qt QML插件
