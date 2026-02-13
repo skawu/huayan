@@ -183,6 +183,13 @@ if "%INSTALL_AFTER_BUILD%"=="true" (
 
 echo 构建成功完成!
 echo 构建文件位于: %BUILD_DIR%/
-echo 可执行文件位于: %BUILD_DIR%\bin\
-echo 要运行应用程序，请进入 %BUILD_DIR%\bin\ 并执行生成的可执行文件
-echo 或者在 %BUILD_DIR%\ 目录下执行 run.bat 脚本来启动应用程序
+
+if "%INSTALL_AFTER_BUILD%"=="true" (
+  echo 可执行文件已安装到: %%HOMEDRIVE%%%%HOMEPATH%%\huayan\bin\
+  echo 要运行已安装的应用程序，请进入 %%HOMEDRIVE%%%%HOMEPATH%%\huayan\bin\ 并执行生成的可执行文件
+  echo 或者执行 %%HOMEDRIVE%%%%HOMEPATH%%\huayan\bin\run.bat 脚本来启动应用程序
+) else (
+  echo 可执行文件位于: %BUILD_DIR%\bin\
+  echo 要运行应用程序，请进入 %BUILD_DIR%\bin\ 并执行生成的可执行文件
+  echo 或者在 %BUILD_DIR%\ 目录下执行 run.bat 脚本来启动应用程序
+)
