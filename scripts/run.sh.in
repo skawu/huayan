@@ -37,8 +37,26 @@ export QT_PLUGIN_PATH="$EXECUTABLE_DIR/plugins:$QT_PLUGIN_PATH"
 # Set platform-specific environment variables to help with XCB plugin initialization
 export QT_QPA_EGLFS_DISABLE_INPUT=1
 export QT_QPA_EGLFS_INTEGRATION=none
-export QT_QPA_PLATFORM= xcb
 export QT_DEBUG_PLUGINS=1
+
+# Try different platform backends in order of preference
+if [ -z "$QT_QPA_PLATFORM" ]; then
+    # Try to detect appropriate platform
+    if command -v xset &> /dev/null; then
+        # X11 environment detected
+        export QT_QPA_PLATFORM=xcb
+    elif [ -n "$WAYLAND_DISPLAY" ]; then
+        # Wayland environment
+        export QT_QPA_PLATFORM=wayland
+    else
+        # Fallback to xcb or offscreen
+        export QT_QPA_PLATFORM=xcb
+    fi
+fi
+
+# Additional environment variables for compatibility
+export QT_ENABLE_HIGHDPI_SCALING=1
+export QT_AUTO_SCREEN_SCALE_FACTOR=1
 
 # Run the application
 "$EXECUTABLE_DIR/SCADASystem"
