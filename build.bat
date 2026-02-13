@@ -50,6 +50,7 @@ set BUILD_TYPE=Release
 set BUILD_DIR=build
 set CLEAN_ONLY=false
 set REBUILD=false
+set DISTCLEAN=false
 set INSTALL_AFTER_BUILD=false
 set NUM_JOBS=4
 
@@ -62,6 +63,7 @@ if "%~1"=="--release" set BUILD_TYPE=Release
 if "%~1"=="-c" set CLEAN_ONLY=true
 if "%~1"=="--clean" set CLEAN_ONLY=true
 if "%~1"=="--rebuild" set REBUILD=true
+if "%~1"=="--distclean" set DISTCLEAN=true
 if "%~1"=="-i" set INSTALL_AFTER_BUILD=true
 if "%~1"=="--install" set INSTALL_AFTER_BUILD=true
 if "%~1"=="-j" set NUM_JOBS=%2& shift
@@ -82,6 +84,7 @@ echo   -d, --debug       Debug 模式构建
 echo   -r, --release     Release 模式构建（默认）
 echo   -c, --clean       清理构建目录
 echo   --rebuild         清理后重新构建
+echo   --distclean       清理构建目录和安装目录
 echo   -i, --install     构建后安装应用程序
 echo   -j, --jobs N      并行作业数（默认：4）
 echo   -b, --build-dir   构建目录（默认：build）
@@ -99,6 +102,29 @@ echo   构建目录: %BUILD_DIR%
 echo   清理构建: %CLEAN_BUILD%
 echo   构建后安装: %INSTALL_AFTER_BUILD%
 echo   并行作业数: %NUM_JOBS%
+
+rem 检查是否分布式清理，清理构建目录和安装目录
+if "%DISTCLEAN%"=="true" (
+  if exist "%BUILD_DIR%" (
+    echo 清理构建目录: %BUILD_DIR%
+    rmdir /s /q "%BUILD_DIR%"
+    echo 目录 %BUILD_DIR% 已清理
+  ) else (
+    echo 构建目录 %BUILD_DIR% 不存在
+  )
+  
+  set INSTALL_DIR=..\bin
+  if exist "%INSTALL_DIR%" (
+    echo 清理安装目录: %INSTALL_DIR%
+    rmdir /s /q "%INSTALL_DIR%"
+    echo 目录 %INSTALL_DIR% 已清理
+  ) else (
+    echo 安装目录 %INSTALL_DIR% 不存在
+  )
+  
+  echo 分布式清理完成!
+  exit /b 0
+)
 
 rem 检查是否仅执行清理操作
 if "%CLEAN_ONLY%"=="true" (
