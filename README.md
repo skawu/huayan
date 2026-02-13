@@ -35,8 +35,10 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - **Real-time Data Processing**: Continuous data collection from devices with configurable intervals
 - **Cross-platform Support**: Windows (MSVC 2022) and Linux (GCC 11+)
 
-### New Features (2026-02-07)
+### New Features (2026-02-13)
 
+- **Comprehensive Unit Test Coverage**: Added C++ and QML unit tests, including tests for core modules such as TagManager, ConfigManager, and ExtensionManager
+- **QML Syntax Error Fixes**: Fixed syntax errors in editor.qml and other files, improving code quality and stability
 - **Enhanced Configuration Editor**: Added canvas layering, alignment snapping, and batch editing capabilities
 - **Rich Component Library**: Added industrial-specific components (gauge, trend chart, industrial buttons/indicators, etc.)
 - **Offline Project Export/Import**: Support for industrial sites without network deployment
