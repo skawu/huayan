@@ -9,7 +9,7 @@ import ControlComponents
 import ChartComponents
 import ThreeDComponents
 
-// 组件项组件
+// Component item component
 Component {
     id: componentItem
     
@@ -31,29 +31,19 @@ Component {
             border.color: "#CCCCCC"
             border.width: 1
             
-            // 组件预览
-            Loader {
+            // Component preview
+            // Simple preview rectangle instead of dynamic component creation
+            Rectangle {
                 anchors.fill: parent
                 anchors.margins: 5
-                sourceComponent: {
-                    // Safely construct component with validation
-                    var typeParts = type.split('.');
-                    if (typeParts.length >= 2) {
-                        var moduleName = typeParts[0];
-                        var componentName = typeParts[1];
-                        // Validate that module and component names are valid identifiers
-                        if (moduleName.match(/^[A-Za-z][A-Za-z0-9]*$/) && componentName.match(/^[A-Za-z][A-Za-z0-9]*$/)) {
-                            return Qt.createQmlObject('import QtQuick; import ' + moduleName + '; ' + componentName + ' {}', preview);
-                        }
-                    }
-                    // Return a default component if validation fails
-                    var defaultComp = Qt.createQmlObject("
-                        import QtQuick;
-                        Rectangle {
-                            color: '#FF0000'
-                            opacity: 0.5
-                        }", preview);
-                    return defaultComp;
+                color: "#F0F0F0"
+                border.color: "#CCCCCC"
+                border.width: 1
+                Text {
+                    anchors.centerIn: parent
+                    text: "Component Preview"
+                    font.pixelSize: 10
+                    color: "#666666"
                 }
             }
         }
@@ -66,24 +56,24 @@ Component {
             font.pixelSize: 12
         }
         
-        // 拖放功能
+        // Drag and drop functionality
         MouseArea {
             anchors.fill: parent
             drag.target: root
             drag.axis: Drag.XAndY
             
             onPressed: {
-                // 开始拖动
+                // Start dragging
             }
             
             onReleased: {
-                // 结束拖动，放置到画布
+                // End dragging, place on canvas
             }
         }
     }
 }
 
-// 画布组件
+// Canvas component
 Component {
     id: canvasComponent
     
@@ -99,7 +89,7 @@ Component {
         width: 100
         height: 100
         
-        // 组件内容
+        // Component content
         Rectangle {
             id: content
             anchors.fill: parent
@@ -109,7 +99,7 @@ Component {
             rotation: root.rotation
         }
         
-        // 选择边框
+        // Selection border
         Rectangle {
             id: selectionBorder
             anchors.fill: parent
@@ -119,7 +109,7 @@ Component {
             visible: root.selected
         }
         
-        // 调整大小句柄
+        // Resize handle
         Item {
             id: resizeHandles
             anchors.fill: parent
@@ -260,7 +250,7 @@ Component {
     }
 }
 
-// 调整大小句柄
+// Resize handle
 Component {
     id: resizeHandle
     
