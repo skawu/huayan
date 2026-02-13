@@ -183,5 +183,6 @@ if "%INSTALL_AFTER_BUILD%"=="true" (
 
 echo 构建成功完成!
 echo 构建文件位于: %BUILD_DIR%/
+echo 可执行文件位于: %BUILD_DIR%\bin\
 echo 要运行应用程序，请进入 %BUILD_DIR%\bin\ 并执行生成的可执行文件
 echo 或者在 %BUILD_DIR%\ 目录下执行 run.bat 脚本来启动应用程序

@@ -346,6 +346,7 @@ main() {
     
     print_success "构建成功完成!"
     print_info "构建文件位于: $BUILD_DIR/"
+    print_info "可执行文件位于: $BUILD_DIR/bin/"
     print_info "要运行应用程序，请进入 $BUILD_DIR/bin/ 并执行生成的可执行文件"
     print_info "或者在 $BUILD_DIR/ 目录下执行 ./run.sh 脚本来启动应用程序"
 }
