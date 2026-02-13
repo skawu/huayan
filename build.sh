@@ -129,6 +129,7 @@ parse_arguments() {
     BUILD_TYPE="Release"
     BUILD_DIR="build"
     CLEAN_BUILD=false
+    CLEAN_ONLY=false
     INSTALL_AFTER_BUILD=false
     NUM_JOBS=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
     
@@ -144,6 +145,10 @@ parse_arguments() {
                 ;;
             -c|--clean)
                 CLEAN_BUILD=true
+                shift
+                ;;
+            --clean-only)
+                CLEAN_ONLY=true
                 shift
                 ;;
             -i|--install)
@@ -168,6 +173,7 @@ parse_arguments() {
                 echo "  -d, --debug       Debug 模式构建"
                 echo "  -r, --release     Release 模式构建（默认）"
                 echo "  -c, --clean       构建前清理之前的构建"
+                echo "  --clean-only      只执行清理操作，不进行构建"
                 echo "  -i, --install     构建后安装应用程序"
                 echo "  -j, --jobs N      并行作业数（默认：自动检测）"
                 echo "  -b, --build-dir   构建目录（默认：build）"
@@ -190,6 +196,9 @@ parse_arguments() {
     print_info "  清理构建: $CLEAN_BUILD"
     print_info "  构建后安装: $INSTALL_AFTER_BUILD"
     print_info "  并行作业数: $NUM_JOBS"
+    if [[ "$CLEAN_ONLY" == true ]]; then
+        print_info "仅执行清理操作"
+    fi
 }
 
 # 准备构建环境
@@ -216,15 +225,22 @@ prepare_environment() {
 
 # 准备构建目录
 prepare_build_directory() {
-    if [[ "$CLEAN_BUILD" == true ]]; then
+    if [[ "$CLEAN_BUILD" == true ]] || [[ "$CLEAN_ONLY" == true ]]; then
         if [[ -d "$BUILD_DIR" ]]; then
             print_info "清理构建目录: $BUILD_DIR"
             rm -rf "$BUILD_DIR"
+            if [[ "$CLEAN_ONLY" == true ]]; then
+                print_success "目录 $BUILD_DIR 已清理"
+                return 0
+            fi
         fi
     fi
     
-    mkdir -p "$BUILD_DIR"
-    print_success "构建目录准备完成: $BUILD_DIR"
+    # 仅在非清理模式下创建目录
+    if [[ "$CLEAN_ONLY" != true ]]; then
+        mkdir -p "$BUILD_DIR"
+        print_success "构建目录准备完成: $BUILD_DIR"
+    fi
 }
 
 # 配置项目
@@ -303,6 +319,14 @@ main() {
     detect_platform
     find_qt6 || exit 1
     parse_arguments "$@"
+    
+    # 如果是仅清理模式，则只清理构建目录
+    if [[ "$CLEAN_ONLY" == true ]]; then
+        prepare_build_directory
+        print_success "清理完成!"
+        return 0
+    fi
+    
     prepare_environment
     prepare_build_directory
     configure_project
