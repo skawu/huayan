@@ -83,18 +83,6 @@ Component {
     }
 }
 
-// 组件项别名
-Item {
-    id: ComponentItem
-    visible: false
-}
-
-// CanvasComponent定义
-Item {
-    id: CanvasComponent
-    visible: false
-}
-
 // 画布组件
 Component {
     id: canvasComponent
