@@ -234,9 +234,9 @@ add_custom_target(clean-all
 
 # Create run target for development
 add_custom_target(run
-    COMMAND ${CMAKE_BINARY_DIR}/src/SCADASystem
+    COMMAND ${CMAKE_BINARY_DIR}/bin/SCADASystem
     DEPENDS SCADASystem
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running SCADASystem"
 )
 

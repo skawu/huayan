@@ -8,6 +8,17 @@ set SCRIPT_DIR=%~dp0
 rem Set PATH to include the lib directory
 set PATH=%SCRIPT_DIR%lib;%PATH%
 
+rem Add Qt library path if available
+if exist "%QT6_DIR%\lib" (
+    set PATH=%QT6_DIR%\lib;%PATH%
+) else if exist "%QTDIR%\lib" (
+    set PATH=%QTDIR%\lib;%PATH%
+) else if exist "C:\Qt\6.8.3\mingw_64\bin" (
+    set PATH=C:\Qt\6.8.3\mingw_64\bin;%PATH%
+) else if exist "C:\Qt\6.8.3\msvc2022_64\bin" (
+    set PATH=C:\Qt\6.8.3\msvc2022_64\bin;%PATH%
+)
+
 rem Set QML_IMPORT_PATH to include the qml directory
 set QML_IMPORT_PATH=%SCRIPT_DIR%qml;%QML_IMPORT_PATH%
 
@@ -15,4 +26,4 @@ rem Set QT_PLUGIN_PATH to include the plugins directory
 set QT_PLUGIN_PATH=%SCRIPT_DIR%plugins;%QT_PLUGIN_PATH%
 
 rem Run the application
-"%SCRIPT_DIR%SCADASystem.exe"
+"%SCRIPT_DIR%bin\SCADASystem.exe"
