@@ -333,7 +333,7 @@ copy_qt_libraries() {
     # 创建lib目录
     mkdir -p "$TARGET_DIR/lib"
     
-    # 复制Qt核心库
+    # 复制Qt核心库，包括所有可能需要的库
     local qt_libs=(
         "Qt6Core"
         "Qt6Gui"
@@ -345,10 +345,85 @@ copy_qt_libraries() {
         "Qt6Network"
         "Qt6Sql"
         "Qt6Svg"
+        "Qt6SerialBus"
+        "Qt6SerialPort"
+        "Qt6Positioning"
+        "Qt6Location"
+        "Qt6Bluetooth"
+        "Qt6Nfc"
+        "Qt6Xml"
+        "Qt6PrintSupport"
+        "Qt6DBus"
+        "Qt6Concurrent"
+        "Qt6StateMachine"
+        "Qt6Gamepad"
+        "Qt63DCore"
+        "Qt63DRender"
+        "Qt63DInput"
+        "Qt63DLogic"
+        "Qt63DAnimation"
+        "Qt63DExtras"
+        "Qt6ShaderTools"
+        "Qt6RemoteObjects"
+        "Qt6WebChannel"
+        "Qt6WebView"
+        "Qt6Pdf"
+        "Qt6PdfWidgets"
+        "Qt6Charts"
+        "Qt6DataVisualization"
+        "Qt6VirtualKeyboard"
+        "Qt6Scxml"
+        "Qt6Speech"
+        "Qt6TextToSpeech"
+        "Qt6Purchasing"
+        "Qt6Quick3D"
+        "Qt6Quick3DAssetImport"
+        "Qt6Quick3DRuntimeRender"
+        "Qt6Quick3DUtils"
+        "Qt6QuickControls2"
+        "Qt6QuickTemplates2"
+        "Qt6QuickParticles"
+        "Qt6QuickShapes"
+        "Qt6QuickTest"
+        "Qt6QmlModels"
+        "Qt6QmlWorkerScript"
+        "Qt6QmlLocalStorage"
+        "Qt6QuickLayouts"
+        "Qt6LabsAnimation"
+        "Qt6LabsFolderListModel"
+        "Qt6LabsQmlModels"
+        "Qt6LabsSettings"
+        "Qt6LabsSharedImage"
+        "Qt6LabsWavefrontMesh"
+        "Qt6LabsWorkers"
+        "Qt6WaylandClient"
+        "Qt6WaylandCompositor"
+        "Qt63DAnimation"
+        "Qt63DInput"
+        "Qt63DLogic"
+        "Qt63DRender"
+        "Qt63DScene2D"
+        "Qt63DScene3D"
+        "Qt6AxBase"
+        "Qt6AxServer"
+        "Qt6AxContainer"
+        "Qt6Designer"
+        "Qt6Help"
+        "Qt6Multimedia"
+        "Qt6MultimediaWidgets"
+        "Qt6MultimediaQuick"
+        "Qt6Sensors"
+        "Qt6ServiceFramework"
+        "Qt6SystemInfo"
+        "Qt6WebEngineCore"
+        "Qt6WebEngineWidgets"
+        "Qt6WebEngineQuick"
+        "Qt6WebSockets"
+        "Qt6WebView"
     )
     
     for lib in "${qt_libs[@]}"; do
-        local lib_file="${QT6_DIR}/lib/lib${lib}.so*"
+        local lib_file="${QT6_DIR}/lib/lib${lib}".so*
         if ls $lib_file 1> /dev/null 2>&1; then
             cp -f $lib_file "$TARGET_DIR/lib/" 2>/dev/null || true
             print_info "复制 $lib"
@@ -371,13 +446,22 @@ copy_qt_libraries() {
         if [ -d "${QT6_DIR}/plugins/tls" ]; then
             cp -rf "${QT6_DIR}/plugins/tls" "$TARGET_DIR/plugins/"
         fi
+        if [ -d "${QT6_DIR}/plugins/generic" ]; then
+            cp -rf "${QT6_DIR}/plugins/generic" "$TARGET_DIR/plugins/"
+        fi
+        if [ -d "${QT6_DIR}/plugins/bearer" ]; then
+            cp -rf "${QT6_DIR}/plugins/bearer" "$TARGET_DIR/plugins/"
+        fi
+        if [ -d "${QT6_DIR}/plugins/iconengines" ]; then
+            cp -rf "${QT6_DIR}/plugins/iconengines" "$TARGET_DIR/plugins/"
+        fi
     fi
     
     # 复制Qt QML插件
     if [ -d "${QT6_DIR}/qml" ]; then
         mkdir -p "$TARGET_DIR/qml"
         # 复制常用的QML模块
-        local qml_modules=("QtQuick" "QtQml" "QtGraphicalEffects" "QtMultimedia" "QtTest")
+        local qml_modules=("QtQuick" "QtQml" "QtGraphicalEffects" "QtMultimedia" "QtTest" "Qt.labs.qmlmodels" "Qt.labs.platform" "Qt.labs.settings" "Qt.labs.folderlistmodel" "Qt.labs.sharedimage")
         for module in "${qml_modules[@]}"; do
             if [ -d "${QT6_DIR}/qml/$module" ]; then
                 cp -rf "${QT6_DIR}/qml/$module" "$TARGET_DIR/qml/"
