@@ -319,6 +319,75 @@ build_project() {
     cd ..
 }
 
+# 复制Qt运行时库到目标目录
+copy_qt_libraries() {
+    local TARGET_DIR="$1"
+    
+    if [[ -z "$TARGET_DIR" ]]; then
+        print_error "目标目录不能为空"
+        return 1
+    fi
+    
+    print_info "开始复制Qt运行时库到 $TARGET_DIR"
+    
+    # 创建lib目录
+    mkdir -p "$TARGET_DIR/lib"
+    
+    # 复制Qt核心库
+    local qt_libs=(
+        "Qt6Core"
+        "Qt6Gui"
+        "Qt6Qml"
+        "Qt6Quick"
+        "Qt6Widgets"
+        "Qt6OpenGL"
+        "Qt6OpenGLWidgets"
+        "Qt6Network"
+        "Qt6Sql"
+        "Qt6Svg"
+    )
+    
+    for lib in "${qt_libs[@]}"; do
+        local lib_file="${QT6_DIR}/lib/lib${lib}.so*"
+        if ls $lib_file 1> /dev/null 2>&1; then
+            cp -f $lib_file "$TARGET_DIR/lib/" 2>/dev/null || true
+            print_info "复制 $lib"
+        fi
+    done
+    
+    # 复制Qt平台插件
+    if [ -d "${QT6_DIR}/plugins" ]; then
+        mkdir -p "$TARGET_DIR/plugins"
+        # 复制常用的平台插件
+        if [ -d "${QT6_DIR}/plugins/platforms" ]; then
+            cp -rf "${QT6_DIR}/plugins/platforms" "$TARGET_DIR/plugins/"
+        fi
+        if [ -d "${QT6_DIR}/plugins/imageformats" ]; then
+            cp -rf "${QT6_DIR}/plugins/imageformats" "$TARGET_DIR/plugins/"
+        fi
+        if [ -d "${QT6_DIR}/plugins/styles" ]; then
+            cp -rf "${QT6_DIR}/plugins/styles" "$TARGET_DIR/plugins/"
+        fi
+        if [ -d "${QT6_DIR}/plugins/tls" ]; then
+            cp -rf "${QT6_DIR}/plugins/tls" "$TARGET_DIR/plugins/"
+        fi
+    fi
+    
+    # 复制Qt QML插件
+    if [ -d "${QT6_DIR}/qml" ]; then
+        mkdir -p "$TARGET_DIR/qml"
+        # 复制常用的QML模块
+        local qml_modules=("QtQuick" "QtQml" "QtGraphicalEffects" "QtMultimedia" "QtTest")
+        for module in "${qml_modules[@]}"; do
+            if [ -d "${QT6_DIR}/qml/$module" ]; then
+                cp -rf "${QT6_DIR}/qml/$module" "$TARGET_DIR/qml/"
+            fi
+        done
+    fi
+    
+    print_info "Qt运行时库复制完成"
+}
+
 # 安装项目
 install_project() {
     if [[ "$INSTALL_AFTER_BUILD" == true ]]; then
@@ -386,6 +455,10 @@ install_project() {
             cp -rf "./editor" "$INSTALL_TARGET/"
         fi
         
+        # 复制Qt运行时库
+        print_info "复制Qt运行时库..."
+        copy_qt_libraries "$INSTALL_TARGET"
+        
         # 确保不创建多余的 bin/bin 结构
         if [[ -n "$CUSTOM_INSTALL_PATH" ]]; then
             # 对于自定义路径，不做特殊处理
@@ -428,11 +501,17 @@ install_only() {
         print_info "使用直接复制方法进行安装..."
         
         # 创建安装目录
-        mkdir -p "../bin"
+        if [[ -n "$CUSTOM_INSTALL_PATH" ]]; then
+            INSTALL_TARGET="$CUSTOM_INSTALL_PATH"
+        else
+            INSTALL_TARGET="../bin"
+        fi
+        
+        mkdir -p "$INSTALL_TARGET"
         
         # 复制可执行文件
         if [ -f "./SCADASystem" ]; then
-            cp -f "./SCADASystem" "../bin/"
+            cp -f "./SCADASystem" "$INSTALL_TARGET/"
             print_info "已复制可执行文件"
         else
             print_error "可执行文件不存在于构建目录"
@@ -441,39 +520,46 @@ install_only() {
         
         # 复制必要的库文件
         if [ -f "./src/libSCADASystemQml.so" ]; then
-            mkdir -p "../bin/qml/SCADASystemQml"
-            cp -f "./src/libSCADASystemQml.so" "../bin/qml/SCADASystemQml/"
+            mkdir -p "$INSTALL_TARGET/qml/SCADASystemQml"
+            cp -f "./src/libSCADASystemQml.so" "$INSTALL_TARGET/qml/SCADASystemQml/"
         fi
         
         # 复制QML插件
         if [ -d "./qml/plugins" ]; then
-            mkdir -p "../bin/qml"
-            cp -rf "./qml/plugins" "../bin/qml/"
+            mkdir -p "$INSTALL_TARGET/qml"
+            cp -rf "./qml/plugins" "$INSTALL_TARGET/qml/"
         fi
         
         # 复制其他必要文件
         if [ -f "./run.sh" ]; then
-            cp -f "./run.sh" "../bin/"
+            cp -f "./run.sh" "$INSTALL_TARGET/"
         fi
         
         # 复制资源文件（避免复制多余目录结构）
         if [ -d "./qml" ] && [ ! -L "./qml" ]; then
             # 只复制qml目录内容，不覆盖已有的qml/plugins
-            rsync -av --exclude='plugins' "./qml/" "../bin/qml/" 2>/dev/null || cp -rf "./qml" "../bin/" 2>/dev/null || true
+            rsync -av --exclude='plugins' "./qml/" "$INSTALL_TARGET/qml/" 2>/dev/null || cp -rf "./qml" "$INSTALL_TARGET/" 2>/dev/null || true
         fi
         
         if [ -d "./resources" ]; then
-            cp -rf "./resources" "../bin/"
+            cp -rf "./resources" "$INSTALL_TARGET/"
         fi
         
         if [ -d "./editor" ]; then
-            cp -rf "./editor" "../bin/"
+            cp -rf "./editor" "$INSTALL_TARGET/"
         fi
         
+        # 复制Qt运行时库
+        print_info "复制Qt运行时库..."
+        copy_qt_libraries "$INSTALL_TARGET"
+        
         # 确保不创建多余的bin/bin结构
-        if [ -d "../bin/bin" ] && [ -f "../bin/bin/SCADASystem" ] && [ -f "../bin/SCADASystem" ]; then
-            print_info "移除多余的 bin/bin 目录..."
-            rm -rf "../bin/bin"
+        if [[ -z "$CUSTOM_INSTALL_PATH" ]]; then
+            # 只在默认路径检查多余的bin/bin结构
+            if [ -d "$INSTALL_TARGET/bin" ] && [ -f "$INSTALL_TARGET/bin/SCADASystem" ] && [ -f "$INSTALL_TARGET/SCADASystem" ]; then
+                print_info "移除多余的 $INSTALL_TARGET/bin 目录..."
+                rm -rf "$INSTALL_TARGET/bin"
+            fi
         fi
         
         print_success "项目安装成功"
@@ -557,9 +643,8 @@ main() {
             print_info "或者执行 $(dirname "$BUILD_DIR")/bin/run.sh 脚本来启动应用程序"
         fi
     else
-        print_info "构建完成。可执行文件已安装到: $(dirname "$BUILD_DIR")/bin/"
-        print_info "要运行应用程序，请进入 $(dirname "$BUILD_DIR")/bin/ 并执行生成的可执行文件"
-        print_info "或者执行 $(dirname "$BUILD_DIR")/bin/run.sh 脚本来启动应用程序"
+        print_info "构建完成。可执行文件位于: $BUILD_DIR/"
+        print_info "要运行应用程序，请进入 $BUILD_DIR/ 并执行生成的可执行文件"
     fi
 }
 
