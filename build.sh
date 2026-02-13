@@ -377,22 +377,15 @@ copy_qt_libraries() {
         fi
     done
     
-    # 复制 ICU 库（如果存在），解决版本兼容性问题
-    print_info "检查并复制 ICU 库..."
+    # 检查并复制 Qt 自带的 ICU 库（如果存在），解决版本兼容性问题
+    print_info "检查并复制 Qt 自带的 ICU 库..."
     local icu_libs=("icui18n" "icuuc" "icudata")
     for lib in "${icu_libs[@]}"; do
-        # 首先检查 Qt 目录是否有 ICU 库
+        # 只检查 Qt 目录的 ICU 库，不使用系统库以避免依赖问题
         local icu_lib_path="${QT6_DIR}/lib/lib${lib}".so*
         if ls $icu_lib_path 1> /dev/null 2>&1; then
             cp -f $icu_lib_path "$TARGET_DIR/lib/" 2>/dev/null || true
-            print_info "复制 ICU 库 $lib"
-        else
-            # 如果 Qt 目录没有，则尝试从系统位置查找
-            local system_icu_path=$(find /usr/lib /lib -name "lib${lib}.so*" -type f 2>/dev/null | head -n 1)
-            if [ -n "$system_icu_path" ]; then
-                cp -f "$system_icu_path" "$TARGET_DIR/lib/" 2>/dev/null || true
-                print_info "复制系统 ICU 库 $lib"
-            fi
+            print_info "复制 Qt 自带 ICU 库 $lib"
         fi
     done
     
@@ -429,43 +422,30 @@ copy_qt_libraries() {
             print_info "复制图标引擎插件"
         fi
         
-        # 检查并复制 XCB 相关库（解决平台插件问题）
-    # 首先尝试从 Qt 目录复制
+        # 检查并复制 Qt 自带的 XCB 相关库（解决平台插件问题）
     if [ -d "${QT6_DIR}/lib" ]; then
-        # 复制 XCB 相关库
+        # 复制 Qt 目录中的 XCB 相关库
         for xcb_lib in "${QT6_DIR}"/lib/libxcb-*.so*; do
             if [ -f "$xcb_lib" ]; then
                 cp -f "$xcb_lib" "$TARGET_DIR/lib/" 2>/dev/null || true
-                print_info "复制 XCB 库 $(basename $xcb_lib)"
+                print_info "复制 Qt 自带 XCB 库 $(basename $xcb_lib)"
+                
+                # 为库创建必要的符号链接
+                local lib_filename=$(basename $xcb_lib)
+                local lib_basename=$(echo $lib_filename | sed 's/\.so\..*//')
+                
+                # 如果库名包含版本号，创建简化版本的符号链接
+                if [[ $lib_filename == *"so."* ]]; then
+                    # 创建 libname0 -> libname.so.version 的符号链接
+                    local symlink_name="${lib_basename}0"
+                    if [ ! -f "$TARGET_DIR/lib/$symlink_name" ]; then
+                        ln -sf "$lib_filename" "$TARGET_DIR/lib/$symlink_name"
+                        print_info "创建符号链接 $symlink_name -> $lib_filename"
+                    fi
+                fi
             fi
         done
     fi
-    
-    # 也从系统位置复制必要的 XCB 库
-    local xcb_system_libs=("libxcb-cursor.so.0" "libxcb-shape.so.0" "libxcb-xfixes.so.0" "libxcb-render.so.0")
-    for lib in "${xcb_system_libs[@]}"; do
-        # 查找系统中匹配的库文件
-        local system_lib_path=$(find /usr/lib /lib -name "$lib*" -type f 2>/dev/null | head -n 1)
-        if [ -n "$system_lib_path" ]; then
-            cp -f "$system_lib_path" "$TARGET_DIR/lib/" 2>/dev/null || true
-            print_info "复制系统 XCB 库 $(basename $system_lib_path)"
-            
-            # 创建必要的符号链接（例如 libxcb-cursor0 -> libxcb-cursor.so.0.0.0）
-            local lib_filename=$(basename $system_lib_path)
-            local lib_basename=$(echo $lib_filename | sed 's/\.so\..*//')
-            local lib_major_version=$(echo $lib_filename | sed 's/.*\.so\.\([0-9]*\).*/\1/')
-            
-            # 如果库名包含版本号，创建简化版本的符号链接
-            if [[ $lib_filename == *"so."* ]]; then
-                # 创建 libname0 -> libname.so.version 的符号链接
-                local symlink_name="${lib_basename}0"
-                if [ ! -f "$TARGET_DIR/lib/$symlink_name" ]; then
-                    ln -sf "$lib_filename" "$TARGET_DIR/lib/$symlink_name"
-                    print_info "创建符号链接 $symlink_name -> $lib_filename"
-                fi
-            fi
-        fi
-    done
     fi
     
     # 复制Qt QML插件
