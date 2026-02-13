@@ -28,4 +28,4 @@ export QML_IMPORT_PATH="$SCRIPT_DIR/qml:$QML_IMPORT_PATH"
 export QT_PLUGIN_PATH="$SCRIPT_DIR/plugins:$QT_PLUGIN_PATH"
 
 # Run the application
-"$SCRIPT_DIR/bin/SCADASystem"
+"$SCRIPT_DIR/SCADASystem"
