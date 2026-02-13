@@ -343,7 +343,9 @@ copy_qt_libraries() {
         "Qt6Network"
         "Qt6Sql"
         "Qt6SerialBus"
-        "Qt6QmlMeta"  # 修复运行时缺少此库的问题
+        "Qt6SerialPort"  # 补充缺失的库
+        "Qt6QmlMeta"     # 修复运行时缺少此库的问题
+        "Qt6QmlWorkerScript"  # 补充缺失的库
     )
     
     for lib in "${qt_libs[@]}"; do
