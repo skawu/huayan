@@ -25,9 +25,11 @@ set_target_properties(IndustrialComponents PROPERTIES
 
 # Install configuration
 install(TARGETS IndustrialComponents
-    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/qml/IndustrialComponents
+    LIBRARY DESTINATION ${CMAKE_INSTALL_QMLDIR}/IndustrialComponents
+    RUNTIME DESTINATION ${CMAKE_INSTALL_QMLDIR}/IndustrialComponents
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_QMLDIR}/IndustrialComponents
 )
 
 install(FILES qmldir
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/qml/IndustrialComponents
+    DESTINATION ${CMAKE_INSTALL_QMLDIR}/IndustrialComponents
 )
