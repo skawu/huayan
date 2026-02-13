@@ -333,128 +333,17 @@ copy_qt_libraries() {
     # 创建lib目录
     mkdir -p "$TARGET_DIR/lib"
     
-    # 先复制指定的核心库
+    # 复制应用程序实际需要的核心Qt库
     local qt_libs=(
         "Qt6Core"
         "Qt6Gui"
         "Qt6Qml"
         "Qt6Quick"
         "Qt6Widgets"
-        "Qt6OpenGL"
-        "Qt6OpenGLWidgets"
         "Qt6Network"
         "Qt6Sql"
-        "Qt6Svg"
         "Qt6SerialBus"
-        "Qt6SerialPort"
-        "Qt6Positioning"
-        "Qt6Location"
-        "Qt6Bluetooth"
-        "Qt6Nfc"
-        "Qt6Xml"
-        "Qt6PrintSupport"
-        "Qt6DBus"
-        "Qt6Concurrent"
-        "Qt6StateMachine"
-        "Qt6Gamepad"
-        "Qt63DCore"
-        "Qt63DRender"
-        "Qt63DInput"
-        "Qt63DLogic"
-        "Qt63DAnimation"
-        "Qt63DExtras"
-        "Qt6ShaderTools"
-        "Qt6RemoteObjects"
-        "Qt6WebChannel"
-        "Qt6WebView"
-        "Qt6Pdf"
-        "Qt6PdfWidgets"
-        "Qt6Charts"
-        "Qt6DataVisualization"
-        "Qt6VirtualKeyboard"
-        "Qt6Scxml"
-        "Qt6Speech"
-        "Qt6TextToSpeech"
-        "Qt6Purchasing"
-        "Qt6Quick3D"
-        "Qt6Quick3DAssetImport"
-        "Qt6Quick3DRuntimeRender"
-        "Qt6Quick3DUtils"
-        "Qt6QuickControls2"
-        "Qt6QuickTemplates2"
-        "Qt6QuickParticles"
-        "Qt6QuickShapes"
-        "Qt6QuickTest"
-        "Qt6QmlModels"
-        "Qt6QmlWorkerScript"
-        "Qt6QmlLocalStorage"
-        "Qt6QuickLayouts"
-        "Qt6LabsAnimation"
-        "Qt6LabsFolderListModel"
-        "Qt6LabsQmlModels"
-        "Qt6LabsSettings"
-        "Qt6LabsSharedImage"
-        "Qt6LabsWavefrontMesh"
-        "Qt6LabsWorkers"
-        "Qt6WaylandClient"
-        "Qt6WaylandCompositor"
-        "Qt63DAnimation"
-        "Qt63DInput"
-        "Qt63DLogic"
-        "Qt63DRender"
-        "Qt63DScene2D"
-        "Qt63DScene3D"
-        "Qt6AxBase"
-        "Qt6AxServer"
-        "Qt6AxContainer"
-        "Qt6Designer"
-        "Qt6Help"
-        "Qt6Multimedia"
-        "Qt6MultimediaWidgets"
-        "Qt6MultimediaQuick"
-        "Qt6Sensors"
-        "Qt6ServiceFramework"
-        "Qt6SystemInfo"
-        "Qt6WebEngineCore"
-        "Qt6WebEngineWidgets"
-        "Qt6WebEngineQuick"
-        "Qt6WebSockets"
-        "Qt6WebView"
-        "Qt6QmlMeta"
-        "Qt6QmlCompiler"
-        "Qt63DAnimation"
-        "Qt6Accessibility"
-        "Qt6DeviceDiscovery"
-        "Qt6EdidSupport"
-        "Qt6EventDispatcherSupport"
-        "Qt6FontDatabaseSupport"
-        "Qt6FbSupport"
-        "Qt6GlxSupport"
-        "Qt6Harfbuzz"
-        "Qt6HbShaper"
-        "Qt6InputSupport"
-        "Qt6KmsSupport"
-        "Qt6LinuxAccessibilitySupport"
-        "Qt6NetworkAuth"
-        "Qt6PlatformCompositorSupport"
-        "Qt6QmlDebug"
-        "Qt6QmlDevTools"
-        "Qt6ThemeSupport"
-        "Qt6VncLib"
-        "Qt6WaylandClient"
-        "Qt6WaylandCompositor"
-        "Qt6WaylandEgl"
-        "Qt6WaylandSupport"
-        "Qt6XcbQpa"
-        "Qt6XkbCommonSupport"
-        "Qt6TlsBackend"
-        "Qt6Bearer"
-        "Qt6Gamepad"
-        "Qt6ShaderTools"
-        "Qt63DRender"
-        "Qt63DCore"
-        "Qt63DQuick"
-        "Qt63DQuickRender"
+        "Qt6QmlMeta"  # 修复运行时缺少此库的问题
     )
     
     for lib in "${qt_libs[@]}"; do
@@ -465,24 +354,24 @@ copy_qt_libraries() {
         fi
     done
     
-    for lib in "${qt_libs[@]}"; do
+    # 作为补充，复制可能需要的其他Qt库
+    local additional_libs=(
+        "Qt6DBus"
+        "Qt6OpenGL"
+        "Qt6OpenGLWidgets"
+        "Qt6Svg"
+        "Qt6PrintSupport"
+        "Qt6QmlModels"
+        "Qt6QuickControls2"
+        "Qt6QuickTemplates2"
+        "Qt6QuickLayouts"
+    )
+    
+    for lib in "${additional_libs[@]}"; do
         local lib_file="${QT6_DIR}/lib/lib${lib}".so*
         if ls $lib_file 1> /dev/null 2>&1; then
             cp -f $lib_file "$TARGET_DIR/lib/" 2>/dev/null || true
-            print_info "复制 $lib"
-        fi
-    done
-    
-    # 作为补充，扫描Qt目录中的所有Qt6库文件
-    print_info "扫描并复制其他Qt6库文件..."
-    for qt_lib in "${QT6_DIR}"/lib/libQt6*.so*; do
-        if [ -f "$qt_lib" ] && [[ "$qt_lib" =~ libQt6[^/]*.so ]]; then
-            lib_name=$(basename "$qt_lib")
-            # 检查是否已经复制过
-            if [ ! -f "$TARGET_DIR/lib/$lib_name" ]; then
-                cp -f "$qt_lib" "$TARGET_DIR/lib/" 2>/dev/null || true
-                print_info "复制额外库 $lib_name"
-            fi
+            print_info "复制附加库 $lib"
         fi
     done
     
