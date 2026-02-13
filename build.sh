@@ -410,9 +410,13 @@ main() {
      if [[ "$INSTALL_ONLY" == true ]]; then
          install_only
          print_success "安装完成!"
-         print_info "可执行文件已安装到: $(dirname "$BUILD_DIR")/bin/"
-         print_info "要运行应用程序，请进入 $(dirname "$BUILD_DIR")/bin/ 并执行生成的可执行文件"
-         print_info "或者执行 $(dirname "$BUILD_DIR")/bin/run.sh 脚本来启动应用程序"
+         if [[ -n "$CUSTOM_INSTALL_PATH" ]]; then
+             print_info "可执行文件已安装到: $CUSTOM_INSTALL_PATH"
+             print_info "要运行应用程序，请进入 $CUSTOM_INSTALL_PATH 并执行生成的可执行文件"
+         else
+             print_info "可执行文件已安装到: $(dirname "$BUILD_DIR")/bin/"
+             print_info "要运行应用程序，请进入 $(dirname "$BUILD_DIR")/bin/ 并执行生成的可执行文件"
+         fi
          return 0
      fi
      
@@ -443,9 +447,9 @@ main() {
             print_info "或者执行 $(dirname "$BUILD_DIR")/bin/run.sh 脚本来启动应用程序"
         fi
     else
-        print_info "可执行文件位于: $BUILD_DIR/bin/"
-        print_info "要运行应用程序，请进入 $BUILD_DIR/bin/ 并执行生成的可执行文件"
-        print_info "或者在 $BUILD_DIR/ 目录下执行 ./run.sh 脚本来启动应用程序"
+        print_info "可执行文件已安装到: $(dirname "$BUILD_DIR")/bin/"
+        print_info "要运行应用程序，请进入 $(dirname "$BUILD_DIR")/bin/ 并执行生成的可执行文件"
+        print_info "或者执行 $(dirname "$BUILD_DIR")/bin/run.sh 脚本来启动应用程序"
     fi
 }
 
