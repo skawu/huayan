@@ -377,6 +377,25 @@ copy_qt_libraries() {
         fi
     done
     
+    # 复制 ICU 库（如果存在），解决版本兼容性问题
+    print_info "检查并复制 ICU 库..."
+    local icu_libs=("icui18n" "icuuc" "icudata")
+    for lib in "${icu_libs[@]}"; do
+        # 首先检查 Qt 目录是否有 ICU 库
+        local icu_lib_path="${QT6_DIR}/lib/lib${lib}".so*
+        if ls $icu_lib_path 1> /dev/null 2>&1; then
+            cp -f $icu_lib_path "$TARGET_DIR/lib/" 2>/dev/null || true
+            print_info "复制 ICU 库 $lib"
+        else
+            # 如果 Qt 目录没有，则尝试从系统位置查找
+            local system_icu_path=$(find /usr/lib /lib -name "lib${lib}.so*" -type f 2>/dev/null | head -n 1)
+            if [ -n "$system_icu_path" ]; then
+                cp -f "$system_icu_path" "$TARGET_DIR/lib/" 2>/dev/null || true
+                print_info "复制系统 ICU 库 $lib"
+            fi
+        fi
+    done
+    
     # 复制Qt平台插件
     if [ -d "${QT6_DIR}/plugins" ]; then
         mkdir -p "$TARGET_DIR/plugins"
