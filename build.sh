@@ -131,7 +131,9 @@ parse_arguments() {
     CLEAN_ONLY=false
     REBUILD=false
     DISTCLEAN=false
+    INSTALL_ONLY=false
     INSTALL_AFTER_BUILD=false
+    CUSTOM_INSTALL_PATH=""
     NUM_JOBS=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
     
     while [[ $# -gt 0 ]]; do
@@ -157,8 +159,13 @@ parse_arguments() {
                 shift
                 ;;
             -i|--install)
-                INSTALL_AFTER_BUILD=true
+                INSTALL_ONLY=true
                 shift
+                ;;
+            --install-to)
+                CUSTOM_INSTALL_PATH="$2"
+                INSTALL_AFTER_BUILD=true
+                shift 2
                 ;;
             -j|--jobs)
                 NUM_JOBS="$2"
@@ -175,16 +182,17 @@ parse_arguments() {
             -h|--help)
                 echo "用法: $0 [选项]"
                 echo "选项:"
-                echo "  -d, --debug       Debug 模式构建"
-                echo "  -r, --release     Release 模式构建（默认）"
-                echo "  -c, --clean       清理构建目录"
-                 echo "  --rebuild         清理后重新构建"
-                 echo "  --distclean       清理构建目录和安装目录"
-                 echo "  -i, --install     构建后安装应用程序"
-                echo "  -j, --jobs N      并行作业数（默认：自动检测）"
-                echo "  -b, --build-dir   构建目录（默认：build）"
-                echo "  -q, --qt-path     Qt6 安装路径（默认：自动检测）"
-                echo "  -h, --help        显示此帮助信息"
+                echo "  -d, --debug         Debug 模式构建"
+                echo "  -r, --release       Release 模式构建（默认）"
+                echo "  -c, --clean         清理构建目录"
+                echo "  --rebuild           清理后重新构建"
+                echo "  --distclean         清理构建目录和安装目录"
+                echo "  -i, --install       仅安装（不构建，需要先构建）"
+                echo "  --install-to PATH   构建后安装到指定目录"
+                echo "  -j, --jobs N        并行作业数（默认：自动检测）"
+                echo "  -b, --build-dir     构建目录（默认：build）"
+                echo "  -q, --qt-path       Qt6 安装路径（默认：自动检测）"
+                echo "  -h, --help          显示此帮助信息"
                 exit 0
                 ;;
             *)
@@ -199,11 +207,15 @@ parse_arguments() {
     print_info "  Qt6 路径: $QT6_DIR"
     print_info "  构建类型: $BUILD_TYPE"
     print_info "  构建目录: $BUILD_DIR"
-    print_info "  清理构建: $CLEAN_BUILD"
+    print_info "  仅安装模式: $INSTALL_ONLY"
     print_info "  构建后安装: $INSTALL_AFTER_BUILD"
+    print_info "  自定义安装路径: ${CUSTOM_INSTALL_PATH:-无}"
     print_info "  并行作业数: $NUM_JOBS"
     if [[ "$CLEAN_ONLY" == true ]]; then
         print_info "仅执行清理操作"
+    fi
+    if [[ "$INSTALL_ONLY" == true ]]; then
+        print_info "仅执行安装操作（跳过构建）"
     fi
 }
 
@@ -267,11 +279,19 @@ configure_project() {
         GENERATOR=""
     fi
     
-    # 使用 Qt6 路径配置
-    cmake .. \
-        -DCMAKE_PREFIX_PATH="$QT6_DIR" \
-        -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
-        $GENERATOR
+    # 使用 Qt6 路径配置，如果有自定义安装路径则设置CMAKE_INSTALL_PREFIX
+    if [[ -n "$CUSTOM_INSTALL_PATH" ]]; then
+        cmake .. \
+            -DCMAKE_PREFIX_PATH="$QT6_DIR" \
+            -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+            -DCMAKE_INSTALL_PREFIX="$CUSTOM_INSTALL_PATH" \
+            $GENERATOR
+    else
+        cmake .. \
+            -DCMAKE_PREFIX_PATH="$QT6_DIR" \
+            -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+            $GENERATOR
+    fi
     
     if [ $? -ne 0 ]; then
         print_error "CMake 配置失败"
@@ -303,6 +323,39 @@ build_project() {
 install_project() {
     if [[ "$INSTALL_AFTER_BUILD" == true ]]; then
         print_info "安装项目..."
+        
+        cd "$BUILD_DIR"
+        
+        make install
+        
+        if [ $? -ne 0 ]; then
+            print_error "安装失败"
+            exit 1
+        fi
+        
+        print_success "项目安装成功"
+        cd ..
+    fi
+}
+
+# 仅安装项目（不构建）
+install_only() {
+    if [[ "$INSTALL_ONLY" == true ]]; then
+        print_info "检查构建目录是否存在..."
+        
+        if [[ ! -d "$BUILD_DIR" ]]; then
+            print_error "构建目录 $BUILD_DIR 不存在！"
+            print_error "请先执行 ./build.sh 进行构建，然后再执行 ./build.sh --install"
+            exit 1
+        fi
+        
+        if [[ ! -f "$BUILD_DIR/Makefile" ]]; then
+            print_error "构建文件不存在！"
+            print_error "请先执行 ./build.sh 进行构建，然后再执行 ./build.sh --install"
+            exit 1
+        fi
+        
+        print_info "构建目录存在，开始安装..."
         
         cd "$BUILD_DIR"
         
@@ -353,6 +406,16 @@ main() {
          return 0
      fi
      
+     # 如果是仅安装模式，则只安装而不构建
+     if [[ "$INSTALL_ONLY" == true ]]; then
+         install_only
+         print_success "安装完成!"
+         print_info "可执行文件已安装到: $(dirname "$BUILD_DIR")/bin/"
+         print_info "要运行应用程序，请进入 $(dirname "$BUILD_DIR")/bin/ 并执行生成的可执行文件"
+         print_info "或者执行 $(dirname "$BUILD_DIR")/bin/run.sh 脚本来启动应用程序"
+         return 0
+     fi
+     
      # 如果是重建模式，先清理再构建
      if [[ "$REBUILD" == true ]]; then
          if [[ -d "$BUILD_DIR" ]]; then
@@ -371,9 +434,14 @@ main() {
     print_info "构建文件位于: $BUILD_DIR/"
     
     if [[ "$INSTALL_AFTER_BUILD" == true ]]; then
-        print_info "可执行文件已安装到: $(dirname "$BUILD_DIR")/bin/"
-        print_info "要运行已安装的应用程序，请进入 $(dirname "$BUILD_DIR")/bin/ 并执行生成的可执行文件"
-        print_info "或者执行 $(dirname "$BUILD_DIR")/bin/run.sh 脚本来启动应用程序"
+        if [[ -n "$CUSTOM_INSTALL_PATH" ]]; then
+            print_info "可执行文件已安装到: $CUSTOM_INSTALL_PATH"
+            print_info "要运行应用程序，请进入 $CUSTOM_INSTALL_PATH 并执行生成的可执行文件"
+        else
+            print_info "可执行文件已安装到: $(dirname "$BUILD_DIR")/bin/"
+            print_info "要运行已安装的应用程序，请进入 $(dirname "$BUILD_DIR")/bin/ 并执行生成的可执行文件"
+            print_info "或者执行 $(dirname "$BUILD_DIR")/bin/run.sh 脚本来启动应用程序"
+        fi
     else
         print_info "可执行文件位于: $BUILD_DIR/bin/"
         print_info "要运行应用程序，请进入 $BUILD_DIR/bin/ 并执行生成的可执行文件"
