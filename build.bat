@@ -49,6 +49,7 @@ rem 解析命令行参数
 set BUILD_TYPE=Release
 set BUILD_DIR=build
 set CLEAN_BUILD=false
+set CLEAN_ONLY=false
 set INSTALL_AFTER_BUILD=false
 set NUM_JOBS=4
 
@@ -60,6 +61,7 @@ if "%~1"=="-r" set BUILD_TYPE=Release
 if "%~1"=="--release" set BUILD_TYPE=Release
 if "%~1"=="-c" set CLEAN_BUILD=true
 if "%~1"=="--clean" set CLEAN_BUILD=true
+if "%~1"=="--clean-only" set CLEAN_ONLY=true
 if "%~1"=="-i" set INSTALL_AFTER_BUILD=true
 if "%~1"=="--install" set INSTALL_AFTER_BUILD=true
 if "%~1"=="-j" set NUM_JOBS=%2& shift
@@ -79,6 +81,7 @@ echo 选项:
 echo   -d, --debug       Debug 模式构建
 echo   -r, --release     Release 模式构建（默认）
 echo   -c, --clean       构建前清理之前的构建
+echo   --clean-only      只执行清理操作，不进行构建
 echo   -i, --install     构建后安装应用程序
 echo   -j, --jobs N      并行作业数（默认：4）
 echo   -b, --build-dir   构建目录（默认：build）
@@ -96,6 +99,19 @@ echo   构建目录: %BUILD_DIR%
 echo   清理构建: %CLEAN_BUILD%
 echo   构建后安装: %INSTALL_AFTER_BUILD%
 echo   并行作业数: %NUM_JOBS%
+
+rem 检查是否仅执行清理操作
+if "%CLEAN_ONLY%"=="true" (
+  if exist "%BUILD_DIR%" (
+    echo 清理构建目录: %BUILD_DIR%
+    rmdir /s /q "%BUILD_DIR%"
+    echo 目录 %BUILD_DIR% 已清理
+  ) else (
+    echo 构建目录 %BUILD_DIR% 不存在
+  )
+  echo 清理完成!
+  exit /b 0
+)
 
 rem 准备构建目录
 if "%CLEAN_BUILD%"=="true" (
