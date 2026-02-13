@@ -2,7 +2,7 @@
 
 # Add subdirectories for each plugin module
 add_subdirectory(BasicComponents)
-# add_subdirectory(IndustrialComponents)  # 暂时注释掉，有构建问题
+add_subdirectory(IndustrialComponents)
 # add_subdirectory(ChartComponents)
 # add_subdirectory(ControlComponents)
 # add_subdirectory(HMIControls)
