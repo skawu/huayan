@@ -1,5 +1,4 @@
 import QtQuick 2.15
-import QtQuick.Controls 2.15
 
 Item {
     id: root
@@ -9,7 +8,10 @@ Item {
     property color offColor: "#9E9E9E"
     property color handleColor: "#FFFFFF"
     property color handleBorderColor: "#BDBDBD"
-    property int width: 80
+    property int controlDefaultWidth: 80
+
+    implicitWidth: controlDefaultWidth
+    Layout.preferredWidth: controlDefaultWidth
     property int height: 40
     property int handleSize: 32
     
