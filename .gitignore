@@ -119,4 +119,8 @@ Testing/
 # IDE配置
 .vscode/
 .idea/
-*.user
+*.user# 临时/调试输出（自动添加）
+*.so.disabled
+qmllint_*.txt
+qmllint*.txt
+run_log.txt
