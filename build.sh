@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Huayan SCADA System Build Script
-# 支持增量构建和完整构建
+# Huayan SCADA System Build Script (修订版)
+# 明确使用Qt安装包自带的构建工具
 
 set -e
 
@@ -51,12 +51,6 @@ show_help() {
     echo "  --version          显示版本信息"
 }
 
-# 显示版本信息
-show_version() {
-    echo "Huayan SCADA System Build Script v2.0.0"
-    echo "Copyright (c) 2026 Huayan Industrial Automation"
-}
-
 # 日志函数
 log_info() {
     echo -e "${GREEN}[INFO]${NC} $1" | tee -a "$LOG_FILE"
@@ -70,19 +64,45 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1" | tee -a "$LOG_FILE"
 }
 
+# 检查Qt环境
+check_qt_environment() {
+    log_info "检查Qt环境..."
+    
+    if [ -z "$QTDIR" ]; then
+        log_error "QTDIR环境变量未设置"
+        log_info "请先运行环境配置脚本:"
+        log_info "  source setup_env.sh"
+        exit 1
+    fi
+    
+    if [ ! -d "$QTDIR" ]; then
+        log_error "Qt目录不存在: $QTDIR"
+        exit 1
+    fi
+    
+    log_info "Qt环境检查通过: $QTDIR"
+}
+
 # 检查依赖
 check_dependencies() {
     log_info "检查构建依赖..."
     
-    # 检查Qt
-    if ! command -v qmake6 &> /dev/null; then
-        log_error "未找到 Qt6 qmake，请安装 Qt6 开发包"
+    # 检查Qt工具
+    if ! command -v "$QTDIR/bin/qmake" &> /dev/null; then
+        log_error "未找到 Qt qmake: $QTDIR/bin/qmake"
         exit 1
     fi
     
-    # 检查CMake
-    if ! command -v cmake &> /dev/null; then
-        log_error "未找到 CMake，请安装 CMake 3.22 或更高版本"
+    # 检查CMake（优先使用Qt自带的）
+    local cmake_path=""
+    if [ -f "$QTDIR/bin/cmake" ]; then
+        cmake_path="$QTDIR/bin/cmake"
+        log_info "使用Qt自带CMake: $cmake_path"
+    elif command -v cmake &> /dev/null; then
+        cmake_path="cmake"
+        log_warn "使用系统CMake，建议使用Qt自带版本"
+    else
+        log_error "未找到 CMake"
         exit 1
     fi
     
@@ -93,6 +113,7 @@ check_dependencies() {
     fi
     
     log_info "依赖检查通过"
+    echo "CMake路径: $cmake_path"
 }
 
 # 清理构建目录
@@ -112,17 +133,22 @@ build_shared() {
     mkdir -p "$shared_build_dir"
     cd "$shared_build_dir"
     
-    # 构建共享库
+    # 使用Qt环境中的CMake
+    local cmake_cmd="${QTDIR}/bin/cmake"
+    if [ ! -f "$cmake_cmd" ]; then
+        cmake_cmd="cmake"  # 回退到系统CMake
+    fi
+    
+    # 构建共享库（INTERFACE库只需要配置，不需要编译）
     if [ -f "$PROJECT_ROOT/shared/CMakeLists.txt" ]; then
-        cmake "$PROJECT_ROOT/shared" \
+        "$cmake_cmd" "$PROJECT_ROOT/shared" \
             -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
             -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
+            -DCMAKE_PREFIX_PATH="$QTDIR" \
             ${VERBOSE:+-DCMAKE_VERBOSE_MAKEFILE=ON}
         
-        make -j$(nproc) VERBOSE=$VERBOSE
-        make install
-        
-        log_info "共享组件构建完成"
+        # INTERFACE库不需要make和make install
+        log_info "共享组件配置完成（INTERFACE库）"
     else
         log_warn "共享组件 CMakeLists.txt 不存在，跳过构建"
     fi
@@ -136,11 +162,18 @@ build_designer() {
     mkdir -p "$designer_build_dir"
     cd "$designer_build_dir"
     
+    # 使用Qt环境中的CMake
+    local cmake_cmd="${QTDIR}/bin/cmake"
+    if [ ! -f "$cmake_cmd" ]; then
+        cmake_cmd="cmake"  # 回退到系统CMake
+    fi
+    
     # 构建设计器应用
     if [ -f "$PROJECT_ROOT/designer/CMakeLists.txt" ]; then
-        cmake "$PROJECT_ROOT/designer" \
+        "$cmake_cmd" "$PROJECT_ROOT/designer" \
             -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
             -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
+            -DCMAKE_PREFIX_PATH="$QTDIR" \
             ${VERBOSE:+-DCMAKE_VERBOSE_MAKEFILE=ON}
         
         make -j$(nproc) VERBOSE=$VERBOSE
@@ -165,11 +198,18 @@ build_runtime() {
     mkdir -p "$runtime_build_dir"
     cd "$runtime_build_dir"
     
+    # 使用Qt环境中的CMake
+    local cmake_cmd="${QTDIR}/bin/cmake"
+    if [ ! -f "$cmake_cmd" ]; then
+        cmake_cmd="cmake"  # 回退到系统CMake
+    fi
+    
     # 构建运行时应用
     if [ -f "$PROJECT_ROOT/runtime/CMakeLists.txt" ]; then
-        cmake "$PROJECT_ROOT/runtime" \
+        "$cmake_cmd" "$PROJECT_ROOT/runtime" \
             -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
             -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
+            -DCMAKE_PREFIX_PATH="$QTDIR" \
             ${VERBOSE:+-DCMAKE_VERBOSE_MAKEFILE=ON}
         
         make -j$(nproc) VERBOSE=$VERBOSE
@@ -257,6 +297,9 @@ echo -e "${BLUE}========================================${NC}"
 
 # 初始化日志
 echo "构建开始时间: $(date)" > "$LOG_FILE"
+
+# 检查Qt环境
+check_qt_environment
 
 # 检查依赖
 check_dependencies
