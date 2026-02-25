@@ -1,5 +1,5 @@
 import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
 /**
  * @brief 滑块控件组件
@@ -122,8 +122,10 @@ Item {
      */
     property color textColor: "#333333"
     
-    width: 200
-    height: 60
+    implicitWidth: 200
+    implicitHeight: 60
+    Layout.preferredWidth: 200
+    Layout.preferredHeight: 60
     
     Rectangle {
         id: background
