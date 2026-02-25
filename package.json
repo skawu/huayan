@@ -1,0 +1,44 @@
+{
+  "name": "huayan-scada",
+  "version": "2.0.0",
+  "description": "Professional Industrial SCADA System with Dual-Mode Architecture",
+  "author": "Huayan Industrial Automation",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/skawu/huayan.git"
+  },
+  "directories": {
+    "designer": "designer",
+    "runtime": "runtime",
+    "shared": "shared",
+    "docs": "docs",
+    "tests": "tests"
+  },
+  "scripts": {
+    "build-designer": "cd designer && qmake && make",
+    "build-runtime": "cd runtime && qmake && make",
+    "build-all": "./build.sh --all",
+    "test": "cd tests && ctest",
+    "clean": "./clean.sh",
+    "package": "./package.sh"
+  },
+  "dependencies": {
+    "qt": ">=6.8.0",
+    "qt-modules": [
+      "Core",
+      "Quick",
+      "QuickControls2",
+      "Network",
+      "Sql",
+      "Charts"
+    ]
+  },
+  "devDependencies": {
+    "cmake": ">=3.22.0",
+    "gcc": ">=11.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
