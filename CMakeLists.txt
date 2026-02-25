@@ -1,5 +1,68 @@
 cmake_minimum_required(VERSION 3.22)
 
+# 项目基本信息
+project(HuayanSCADA VERSION 2.0.0 LANGUAGES CXX)
+
+# 设置C++标准
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# 编译选项
+if(MSVC)
+    add_compile_options(/W4 /permissive-)
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic)
+    add_compile_options(-Wno-unused-parameter -Wno-unused-variable)
+endif()
+
+# Qt配置
+find_package(Qt6 6.8 REQUIRED COMPONENTS
+    Core
+    Quick
+    QuickControls2
+    Network
+    Sql
+    Charts
+)
+
+# 启用Qt特性
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+# 设置输出目录
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+# 包含目录
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/shared
+)
+
+# 子目录
+add_subdirectory(shared)
+add_subdirectory(designer)
+add_subdirectory(runtime)
+
+# 安装配置
+install(DIRECTORY shared/themes DESTINATION share/huayan)
+install(DIRECTORY shared/components DESTINATION share/huayan)
+install(FILES README.md LICENSE DESTINATION share/doc/huayan)
+
+# CPack配置
+set(CPACK_PACKAGE_NAME "HuayanSCADA")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Professional Industrial SCADA System")
+set(CPACK_PACKAGE_VENDOR "Huayan Industrial Automation")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+include(CPack)
+cmake_minimum_required(VERSION 3.22)
+
 project(SCADASystem VERSION 1.0 LANGUAGES CXX)
 
 # 设置C++标准
