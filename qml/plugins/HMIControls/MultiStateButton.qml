@@ -1,5 +1,4 @@
 import QtQuick 2.15
-import QtQuick.Controls 2.15
 
 Item {
     id: root
@@ -89,6 +88,7 @@ Item {
     signal longPressed()
     
     // 默认尺寸
-    width: 120
+    implicitWidth: 120
+    Layout.preferredWidth: 120
     height: 40
 }
