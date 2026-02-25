@@ -1,8 +1,36 @@
+# 运行时应用 CMakeLists.txt
+cmake_minimum_required(VERSION 3.16)
+
+# 明确指定使用Qt自带的CMake
+if(DEFINED ENV{QTDIR})
+    set(CMAKE_PREFIX_PATH "$ENV{QTDIR}")
+endif()
+
+# 查找Qt6
+find_package(Qt6 6.8 REQUIRED COMPONENTS
+    Core
+    Quick
+    QuickControls2
+    Network
+    Sql
+    Charts
+)
+
+# 启用Qt特性
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+# 包含目录
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../shared
+)
+
 # 运行时应用
 qt_add_executable(SCADARuntime
-    runtime/main.cpp
-    runtime/main.qml
-    runtime/resources.qrc
+    src/main.cpp
+    main.qml
 )
 
 # 设置目标属性
@@ -13,7 +41,6 @@ set_target_properties(SCADARuntime PROPERTIES
 
 # 链接库
 target_link_libraries(SCADARuntime PRIVATE
-    HuayanShared
     Qt6::Core
     Qt6::Quick
     Qt6::QuickControls2
@@ -22,20 +49,8 @@ target_link_libraries(SCADARuntime PRIVATE
     Qt6::Charts
 )
 
-# 包含目录
-target_include_directories(SCADARuntime PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/runtime
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-)
-
 # 安装规则
 install(TARGETS SCADARuntime
     RUNTIME DESTINATION bin
     BUNDLE DESTINATION .
-)
-
-# 安装QML文件
-install(DIRECTORY runtime/qml/
-    DESTINATION qml/Runtime
-    FILES_MATCHING PATTERN "*.qml"
 )
