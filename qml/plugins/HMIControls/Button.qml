@@ -1,10 +1,13 @@
 import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
-Button {
+Item {
     id: root
-    
-    // 可自定义属性
+
+    // Compatible API for code expecting a Button type (pure QtQuick fallback)
+    property alias text: label.text
+    property bool enabled: true
+    property bool down: false
     property color normalColor: "#4CAF50"
     property color pressedColor: "#388E3C"
     property color disabledColor: "#9E9E9E"
@@ -12,74 +15,65 @@ Button {
     property int cornerRadius: 4
     property int borderWidth: 1
     property color borderColor: "#2E7D32"
-    
-    // 设备点位绑定
+
+    // 点位绑定兼容属性
     property string tagName: ""
     property bool bindToTag: false
     property bool tagValue: false
-    
-    // 长按属性
+
+    // 长按
     property int longPressDuration: 500
     property bool isLongPress: false
-    
-    // 样式
-    background: Rectangle {
-        color: root.enabled ? (root.down ? pressedColor : normalColor) : disabledColor
-        radius: cornerRadius
-        border.width: borderWidth
-        border.color: borderColor
+
+    signal clicked()
+    signal longPressed()
+    signal tagClicked()
+
+    Rectangle {
+        id: bg
+        anchors.fill: parent
+        color: root.enabled ? (root.down ? root.pressedColor : root.normalColor) : root.disabledColor
+        radius: root.cornerRadius
+        border.width: root.borderWidth
+        border.color: root.borderColor
     }
-    
-    label: Text {
-        text: root.text
-        color: textColor
+
+    Text {
+        id: label
+        anchors.centerIn: parent
+        color: root.textColor
         font.pixelSize: 14
         font.bold: true
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
     }
-    
-    // 长按检测
+
     MouseArea {
+        id: ma
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton
-        
         property int pressTime: 0
-        
+
         onPressed: {
+            root.down = true
             pressTime = Date.now()
-            isLongPress = false
+            root.isLongPress = false
         }
-        
         onReleased: {
-            if (Date.now() - pressTime >= longPressDuration) {
-                isLongPress = true
+            root.down = false
+            if (Date.now() - pressTime >= root.longPressDuration) {
+                root.isLongPress = true
                 root.longPressed()
+            }
+            root.clicked()
+            if (root.bindToTag && root.tagName !== "") {
+                root.tagValue = !root.tagValue
+                root.tagClicked()
             }
         }
     }
-    
-    // 点位值变化处理
-    onTagValueChanged: {
-        if (bindToTag) {
-            root.checked = tagValue
-        }
-    }
-    
-    // 点击处理
-    onClicked: {
-        if (bindToTag && tagName !== "") {
-            // 触发点位值变化
-            tagValue = !tagValue
-            root.tagClicked()
-        }
-    }
-    
-    // 信号
-    signal longPressed()
-    signal tagClicked()
-    
+
     // 默认尺寸
-    width: 100
-    height: 40
+    implicitWidth: 100
+    implicitHeight: 40
+    Layout.preferredWidth: 100
+    Layout.preferredHeight: 40
 }
