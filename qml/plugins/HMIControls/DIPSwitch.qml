@@ -1,5 +1,4 @@
 import QtQuick 2.15
-import QtQuick.Controls 2.15
 
 Item {
     id: root
@@ -22,7 +21,8 @@ Item {
     property int tagValue: 0
     
     // 尺寸计算
-    width: switchCount * (switchSize + spacing) - spacing
+    implicitWidth: switchCount * (switchSize + spacing) - spacing
+    Layout.preferredWidth: switchCount * (switchSize + spacing) - spacing
     height: switchSize
     
     // 初始化开关状态
