@@ -3,12 +3,27 @@
 # 获取脚本所在目录的绝对路径
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 检查是否在 bin 目录中存在可执行文件，如果是则使用 bin 目录作为基础目录
+# 如果尚未安装则尝试自动安装到工程的 bin 目录
+if [ ! -f "$SCRIPT_DIR/bin/SCADASystem" ]; then
+    if [ -f "$SCRIPT_DIR/build.sh" ]; then
+        echo "未检测到已安装的可执行文件，尝试执行 ./build.sh --install 来安装到 bin/ ..."
+        (cd "$SCRIPT_DIR" && ./build.sh --install) || echo "自动安装失败，继续尝试直接运行构建产物"
+    fi
+fi
+
+# 决定可执行文件所在目录（优先使用安装目录 bin/，其次工程根目录和 build/）
 if [ -f "$SCRIPT_DIR/bin/SCADASystem" ]; then
     EXECUTABLE_DIR="$SCRIPT_DIR/bin"
-else
+elif [ -f "$SCRIPT_DIR/SCADASystem" ]; then
     EXECUTABLE_DIR="$SCRIPT_DIR"
+elif [ -f "$SCRIPT_DIR/build/SCADASystem" ]; then
+    EXECUTABLE_DIR="$SCRIPT_DIR/build"
+else
+    echo "未找到可执行文件 SCADASystem，请先构建或安装（执行 ./build.sh --install）"
+    exit 1
 fi
+
+echo "使用可执行文件目录: $EXECUTABLE_DIR"
 
 # 设置库路径，优先使用可执行文件所在目录的 lib 子目录
 export LD_LIBRARY_PATH="$EXECUTABLE_DIR/lib:$LD_LIBRARY_PATH"
@@ -55,6 +70,11 @@ fi
 # Additional environment variables for compatibility
 export QT_ENABLE_HIGHDPI_SCALING=1
 export QT_AUTO_SCREEN_SCALE_FACTOR=1
+
+# Print environment for debugging
+echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+echo "QML_IMPORT_PATH: $QML_IMPORT_PATH"
+echo "QT_PLUGIN_PATH: $QT_PLUGIN_PATH"
 
 # Run the application
 "$EXECUTABLE_DIR/SCADASystem"
