@@ -4,475 +4,407 @@ import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
 import "./themes"
 
+/**
+ * @brief 拖拽布局编辑器主界面
+ * 
+ * 提供完整的可视化布局编辑功能：
+ * - 左侧组件库面板
+ * - 中央画布区域
+ * - 右侧属性编辑面板
+ * - 顶部工具栏
+ * - 支持组件的拖拽、选择、编辑
+ */
 ApplicationWindow {
-    id: designerWindow
+    id: layoutEditor
     visible: true
     width: 1200
     height: 800
-    title: "Huayan SCADA Designer"
+    title: "SCADA布局编辑器"
     
-    // 设计器状态
-    property bool isDesignMode: true
-    property string currentProject: ""
-    property int selectedTool: 0  // 0:选择, 1:拖拽组件, 2:连线
+    // ==================== 属性定义 ====================
+    property var placedComponents: []  // 已放置的组件列表
+    property var selectedComponent: null  // 当前选中的组件
+    property bool showGrid: true  // 是否显示网格
+    property int gridSize: 20  // 网格大小
     
     // 主题
     property var theme: IndustrialTheme {}
     
-    // 工具栏
-    header: Rectangle {
-        height: 60
-        color: theme.primaryColor
-        
+    // ==================== 信号定义 ====================
+    signal componentAdded(string componentType, point position)
+    signal componentSelected(var component)
+    signal componentMoved(var component, point newPosition)
+    
+    // ==================== 顶部工具栏 ====================
+    header: ToolBar {
         RowLayout {
             anchors.fill: parent
-            anchors.margins: 10
-            spacing: 15
+            spacing: 10
             
-            // Logo和标题
-            RowLayout {
-                spacing: 10
-                
-                Text {
-                    text: "🎨"
-                    font.pixelSize: 24
-                }
-                
-                Text {
-                    text: "Huayan Designer"
-                    font.pixelSize: 18
-                    font.bold: true
-                    color: theme.textLight
-                }
+            ToolButton {
+                text: "新建"
+                icon.source: "qrc:/icons/new.png"
+                onClicked: newProject()
             }
             
-            Item { Layout.fillWidth: true }
-            
-            // 项目操作
-            RowLayout {
-                spacing: 5
-                
-                Button {
-                    text: "📁 新建"
-                    onClicked: newProject()
-                }
-                
-                Button {
-                    text: "📂 打开"
-                    onClicked: openProject()
-                }
-                
-                Button {
-                    text: "💾 保存"
-                    onClicked: saveProject()
-                }
-                
-                Button {
-                    text: "📤 导出"
-                    onClicked: exportProject()
-                }
+            ToolButton {
+                text: "打开"
+                icon.source: "qrc:/icons/open.png"
+                onClicked: openProject()
             }
             
-            // 运行模式切换
-            Switch {
-                text: "设计模式"
-                checked: isDesignMode
-                onCheckedChanged: {
-                    isDesignMode = checked
-                    if (!checked) {
-                        // 切换到运行模式预览
-                        previewRuntime()
-                    }
-                }
+            ToolButton {
+                text: "保存"
+                icon.source: "qrc:/icons/save.png"
+                onClicked: saveProject()
+            }
+            
+            Item { Layout.fillWidth: true }  // 弹簧元素
+            
+            ToolButton {
+                text: "网格"
+                checkable: true
+                checked: showGrid
+                onClicked: showGrid = !showGrid
+            }
+            
+            ToolButton {
+                text: "预览"
+                icon.source: "qrc:/icons/preview.png"
+                onClicked: previewMode()
             }
         }
     }
     
-    // 主工作区
+    // ==================== 主要布局 ====================
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 10
-        spacing: 10
+        spacing: 0
         
         // 左侧组件库面板
-        Rectangle {
+        ComponentLibraryPanel {
+            id: libraryPanel
             Layout.preferredWidth: 250
             Layout.fillHeight: true
-            color: theme.surfaceColor
-            border.color: theme.borderColor
-            border.width: 1
-            radius: 8
             
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 10
-                spacing: 15
-                
-                // 组件分类标题
-                Text {
-                    text: "🧩 组件库"
-                    font.pixelSize: 16
-                    font.bold: true
-                    color: theme.textPrimary
-                }
-                
-                // 基础组件
-                GroupBox {
-                    title: "基础组件"
-                    Layout.fillWidth: true
-                    
-                    Column {
-                        spacing: 8
-                        
-                        Repeater {
-                            model: ListModel {
-                                ListElement { name: "指示灯"; type: "Indicator"; icon: "🔴" }
-                                ListElement { name: "按钮"; type: "PushButton"; icon: "🔘" }
-                                ListElement { name: "文本标签"; type: "TextLabel"; icon: "📝" }
-                            }
-                            
-                            delegate: Button {
-                                text: model.icon + " " + model.name
-                                width: parent.width
-                                onClicked: {
-                                    selectedTool = 1
-                                    currentComponentType = model.type
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // 工业组件
-                GroupBox {
-                    title: "工业组件"
-                    Layout.fillWidth: true
-                    
-                    Column {
-                        spacing: 8
-                        
-                        Repeater {
-                            model: ListModel {
-                                ListElement { name: "阀门"; type: "Valve"; icon: "🔐" }
-                                ListElement { name: "储罐"; type: "Tank"; icon: "📦" }
-                                ListElement { name: "电机"; type: "Motor"; icon: "⚙️" }
-                                ListElement { name: "泵"; type: "Pump"; icon: "🔄" }
-                                ListElement { name: "仪表盘"; type: "Gauge"; icon: "📊" }
-                            }
-                            
-                            delegate: Button {
-                                text: model.icon + " " + model.name
-                                width: parent.width
-                                onClicked: {
-                                    selectedTool = 1
-                                    currentComponentType = model.type
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // 图表组件
-                GroupBox {
-                    title: "图表组件"
-                    Layout.fillWidth: true
-                    
-                    Column {
-                        spacing: 8
-                        
-                        Repeater {
-                            model: ListModel {
-                                ListElement { name: "趋势图"; type: "TrendChart"; icon: "📈" }
-                                ListElement { name: "柱状图"; type: "BarChart"; icon: "📊" }
-                            }
-                            
-                            delegate: Button {
-                                text: model.icon + " " + model.name
-                                width: parent.width
-                                onClicked: {
-                                    selectedTool = 1
-                                    currentComponentType = model.type
-                                }
-                            }
-                        }
-                    }
+            onComponentSelected: {
+                // 开始拖拽创建新组件
+                var componentInfo = getComponentInfo(componentType)
+                if (componentInfo) {
+                    createNewComponent(componentType, position)
                 }
             }
+        }
+        
+        // 中央分割线
+        Rectangle {
+            width: 1
+            color: "#dee2e6"
+            Layout.fillHeight: true
         }
         
         // 中央画布区域
         Rectangle {
+            id: canvasArea
             Layout.fillWidth: true
             Layout.fillHeight: true
-            color: "#2d2d2d"
-            border.color: theme.borderColor
-            border.width: 1
-            radius: 8
+            color: "#fafafa"
             
             // 网格背景
-            Grid {
-                id: grid
-                anchors.fill: parent
-                anchors.margins: 20
-                rows: Math.floor((parent.height - 40) / 20)
-                columns: Math.floor((parent.width - 40) / 20)
-                spacing: 20
+            Repeater {
+                model: showGrid ? ((canvasArea.width / gridSize) * (canvasArea.height / gridSize)) : 0
                 
-                Repeater {
-                    model: grid.rows * grid.columns
-                    
-                    Rectangle {
-                        width: 1
-                        height: 1
-                        color: "#444444"
-                    }
-                }
-            }
-            
-            // 画布内容区域
-            Item {
-                id: canvas
-                anchors.fill: parent
-                anchors.margins: 20
-                
-                // 示例组件（后续会被动态创建的组件替换）
                 Rectangle {
-                    x: 100
-                    y: 100
-                    width: 120
-                    height: 80
-                    color: theme.cardColor
-                    border.color: theme.primaryColor
-                    border.width: 2
-                    radius: 8
+                    x: (index % Math.floor(canvasArea.width / gridSize)) * gridSize
+                    y: Math.floor(index / Math.floor(canvasArea.width / gridSize)) * gridSize
+                    width: 1
+                    height: 1
+                    color: "#e9ecef"
+                    visible: showGrid
+                }
+            }
+            
+            // 组件放置区域
+            DropArea {
+                anchors.fill: parent
+                keys: ["component"]
+                
+                onDropped: {
+                    // 处理组件放置
+                    var dropX = drop.x - 60  // 调整为中心点
+                    var dropY = drop.y - 40
+                    createComponentAt(drop.drag.source.componentType, dropX, dropY)
+                }
+                
+                // 已放置的组件
+                Repeater {
+                    model: placedComponents
                     
-                    Text {
-                        anchors.centerIn: parent
-                        text: "拖拽组件到这里\n开始设计"
-                        color: theme.textSecondary
-                        horizontalAlignment: Text.AlignHCenter
+                    DraggableIndustrialComponent {
+                        id: placedComponent
+                        x: modelData.x
+                        y: modelData.y
+                        width: modelData.width
+                        height: modelData.height
+                        componentName: modelData.name
+                        componentType: modelData.type
+                        boundTag: modelData.boundTag || ""
+                        
+                        onSelectedChanged: {
+                            if (isSelected) {
+                                layoutEditor.selectedComponent = placedComponent
+                                componentSelected(placedComponent)
+                            }
+                        }
+                        
+                        onMoved: {
+                            // 更新组件位置
+                            modelData.x = newX
+                            modelData.y = newY
+                            componentMoved(placedComponent, Qt.point(newX, newY))
+                        }
+                        
+                        onDoubleClicked: {
+                            // 双击编辑组件属性
+                            editComponentProperties(placedComponent)
+                        }
                     }
                 }
             }
             
-            // 画布工具栏
-            Row {
-                anchors.top: parent.top
-                anchors.right: parent.right
-                anchors.margins: 10
-                spacing: 5
-                
-                Button {
-                    text: "➕"
-                    tooltip: "放大"
-                    onClicked: {
-                        // 放大画布
-                    }
-                }
-                
-                Button {
-                    text: "➖"
-                    tooltip: "缩小"
-                    onClicked: {
-                        // 缩小画布
-                    }
-                }
-                
-                Button {
-                    text: "↺"
-                    tooltip: "撤销"
-                    onClicked: {
-                        // 撤销操作
-                    }
-                }
-                
-                Button {
-                    text: "↻"
-                    tooltip: "重做"
-                    onClicked: {
-                        // 重做操作
-                    }
-                }
+            // 画布标题
+            Text {
+                anchors.centerIn: parent
+                text: "拖拽组件到此处进行布局设计"
+                color: "#adb5bd"
+                font.pixelSize: 16
+                visible: placedComponents.length === 0
             }
+        }
+        
+        // 右侧分割线
+        Rectangle {
+            width: 1
+            color: "#dee2e6"
+            Layout.fillHeight: true
         }
         
         // 右侧属性面板
         Rectangle {
-            Layout.preferredWidth: 250
+            id: propertyPanel
+            Layout.preferredWidth: 280
             Layout.fillHeight: true
-            color: theme.surfaceColor
-            border.color: theme.borderColor
+            color: "#f8f9fa"
+            border.color: "#dee2e6"
             border.width: 1
-            radius: 8
             
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 10
-                spacing: 15
+            // 属性面板标题
+            Rectangle {
+                id: propertyHeader
+                height: 40
+                color: "#e9ecef"
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
                 
                 Text {
-                    text: "🔧 属性面板"
+                    anchors.centerIn: parent
+                    text: selectedComponent ? selectedComponent.componentName : "属性面板"
                     font.pixelSize: 16
                     font.bold: true
-                    color: theme.textPrimary
+                    color: "#495057"
                 }
+            }
+            
+            // 属性内容区域
+            ScrollView {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: propertyHeader.bottom
+                anchors.bottom: parent.bottom
+                anchors.margins: 10
                 
-                // 项目属性
-                GroupBox {
-                    title: "项目设置"
-                    Layout.fillWidth: true
+                Column {
+                    width: parent.width
+                    spacing: 15
                     
-                    ColumnLayout {
-                        spacing: 10
+                    // 位置属性
+                    GroupBox {
+                        title: "位置和尺寸"
+                        width: parent.width
                         
-                        Label {
-                            text: "项目名称:"
-                        }
-                        
-                        TextField {
-                            Layout.fillWidth: true
-                            text: currentProject || "未命名项目"
-                        }
-                        
-                        Label {
-                            text: "更新频率(ms):"
-                        }
-                        
-                        SpinBox {
-                            Layout.fillWidth: true
-                            value: 500
-                            from: 100
-                            to: 5000
-                            stepSize: 100
-                        }
-                    }
-                }
-                
-                // 组件属性（当选中组件时显示）
-                GroupBox {
-                    title: "组件属性"
-                    Layout.fillWidth: true
-                    visible: selectedComponent !== null
-                    
-                    ColumnLayout {
-                        spacing: 10
-                        
-                        Label {
-                            text: "位置:"
-                        }
-                        
-                        RowLayout {
-                            Label { text: "X:" }
-                            SpinBox { 
+                        GridLayout {
+                            columns: 2
+                            rowSpacing: 10
+                            columnSpacing: 10
+                            
+                            Label { text: "X坐标:" }
+                            SpinBox {
                                 value: selectedComponent ? selectedComponent.x : 0
-                                onValueChanged: if(selectedComponent) selectedComponent.x = value
+                                onValueChanged: if (selectedComponent) selectedComponent.moveTo(value, selectedComponent.y)
                             }
-                            Label { text: "Y:" }
-                            SpinBox { 
+                            
+                            Label { text: "Y坐标:" }
+                            SpinBox {
                                 value: selectedComponent ? selectedComponent.y : 0
-                                onValueChanged: if(selectedComponent) selectedComponent.y = value
+                                onValueChanged: if (selectedComponent) selectedComponent.moveTo(selectedComponent.x, value)
+                            }
+                            
+                            Label { text: "宽度:" }
+                            SpinBox {
+                                value: selectedComponent ? selectedComponent.width : 120
+                                onValueChanged: if (selectedComponent) selectedComponent.resize(value, selectedComponent.height)
+                            }
+                            
+                            Label { text: "高度:" }
+                            SpinBox {
+                                value: selectedComponent ? selectedComponent.height : 80
+                                onValueChanged: if (selectedComponent) selectedComponent.resize(selectedComponent.width, value)
                             }
                         }
+                    }
+                    
+                    // 数据绑定属性
+                    GroupBox {
+                        title: "数据绑定"
+                        width: parent.width
+                        visible: selectedComponent !== null
                         
-                        Label {
-                            text: "尺寸:"
-                        }
-                        
-                        RowLayout {
-                            Label { text: "宽:" }
-                            SpinBox { 
-                                value: selectedComponent ? selectedComponent.width : 100
-                                onValueChanged: if(selectedComponent) selectedComponent.width = value
+                        Column {
+                            width: parent.width
+                            spacing: 10
+                            
+                            Label { 
+                                text: "绑定标签:"
+                                font.bold: true
                             }
-                            Label { text: "高:" }
-                            SpinBox { 
-                                value: selectedComponent ? selectedComponent.height : 100
-                                onValueChanged: if(selectedComponent) selectedComponent.height = value
+                            
+                            ComboBox {
+                                model: ["temperature", "pressure", "flow_rate", "motor_status", "valve_position"]
+                                width: parent.width
+                                onActivated: {
+                                    if (selectedComponent) {
+                                        selectedComponent.boundTag = currentText
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 组件信息
+                    GroupBox {
+                        title: "组件信息"
+                        width: parent.width
+                        visible: selectedComponent !== null
+                        
+                        GridLayout {
+                            columns: 2
+                            rowSpacing: 8
+                            columnSpacing: 10
+                            
+                            Label { text: "ID:" }
+                            Label { 
+                                text: selectedComponent ? selectedComponent.componentId : ""
+                                color: "#6c757d"
+                            }
+                            
+                            Label { text: "类型:" }
+                            Label { 
+                                text: selectedComponent ? selectedComponent.componentType : ""
+                                color: "#6c757d"
                             }
                         }
                     }
                 }
-                
-                Item { Layout.fillHeight: true }
             }
         }
     }
     
-    // 状态栏
-    footer: Rectangle {
-        height: 30
-        color: theme.surfaceColor
-        border.color: theme.borderColor
-        border.width: 1
-        
-        RowLayout {
-            anchors.fill: parent
-            anchors.margins: 5
-            spacing: 15
-            
-            Text {
-                text: "就绪"
-                color: theme.textSecondary
+    // ==================== 方法实现 ====================
+    
+    /**
+     * @brief 创建新组件
+     */
+    function createNewComponent(componentType, startPosition) {
+        var componentInfo = libraryPanel.getComponentInfo(componentType)
+        if (componentInfo) {
+            var newComponent = {
+                "id": "comp_" + Date.now(),
+                "name": componentInfo.name,
+                "type": componentType,
+                "x": startPosition.x,
+                "y": startPosition.y,
+                "width": 120,
+                "height": 80,
+                "boundTag": ""
             }
             
-            Item { Layout.fillWidth: true }
-            
-            Text {
-                text: "坐标: X:" + (mouseArea.mouseX || 0) + " Y:" + (mouseArea.mouseY || 0)
-                color: theme.textSecondary
-            }
-            
-            Text {
-                text: new Date().toLocaleTimeString()
-                color: theme.textSecondary
-            }
+            placedComponents.push(newComponent)
+            componentAdded(componentType, startPosition)
+            console.log("创建新组件:", componentInfo.name)
         }
     }
     
-    // 鼠标区域用于坐标显示
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        hoverEnabled: true
-        acceptedButtons: Qt.NoButton
+    /**
+     * @brief 在指定位置创建组件
+     */
+    function createComponentAt(componentType, x, y) {
+        var componentInfo = libraryPanel.getComponentInfo(componentType)
+        if (componentInfo) {
+            var newComponent = {
+                "id": "comp_" + Date.now(),
+                "name": componentInfo.name,
+                "type": componentType,
+                "x": x,
+                "y": y,
+                "width": 120,
+                "height": 80,
+                "boundTag": ""
+            }
+            
+            placedComponents.push(newComponent)
+            componentAdded(componentType, Qt.point(x, y))
+        }
     }
     
-    // 当前选中组件
-    property var selectedComponent: null
-    property string currentComponentType: ""
+    /**
+     * @brief 编辑组件属性
+     */
+    function editComponentProperties(component) {
+        selectedComponent = component
+        console.log("编辑组件属性:", component.componentName)
+    }
     
-    // 项目操作函数
+    /**
+     * @brief 新建项目
+     */
     function newProject() {
-        console.log("创建新项目")
-        currentProject = "未命名项目"
-        // 清空画布
-        clearCanvas()
+        placedComponents = []
+        selectedComponent = null
+        console.log("新建项目")
     }
     
+    /**
+     * @brief 打开项目
+     */
     function openProject() {
         console.log("打开项目")
-        // 实现文件选择对话框
+        // TODO: 实现项目文件加载
     }
     
+    /**
+     * @brief 保存项目
+     */
     function saveProject() {
         console.log("保存项目")
-        // 实现项目保存逻辑
+        // TODO: 实现项目文件保存
     }
     
-    function exportProject() {
-        console.log("导出项目")
-        // 实现项目导出逻辑
-    }
-    
-    function previewRuntime() {
-        console.log("预览运行时")
-        // 切换到运行时预览模式
-    }
-    
-    function clearCanvas() {
-        // 清空画布内容
-        while(canvas.children.length > 0) {
-            canvas.children[0].destroy()
-        }
+    /**
+     * @brief 预览模式
+     */
+    function previewMode() {
+        console.log("进入预览模式")
+        // TODO: 实现预览功能
     }
 }
