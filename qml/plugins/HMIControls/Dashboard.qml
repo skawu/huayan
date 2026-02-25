@@ -7,8 +7,8 @@ Item {
     
     // 可自定义属性
     property color backgroundColor: "#212121"
-    property color borderColor: "#616161"
-    property color scaleColor: "#9E9E9E"
+
+    Item {
     property color needleColor: "#F44336"
     property color valueColor: "#FFFFFF"
     property color labelColor: "#9E9E9E"
@@ -32,7 +32,8 @@ Item {
     property int animationDuration: 500
     
     // 尺寸
-    width: size
+    implicitWidth: size
+    Layout.preferredWidth: size
     height: size
     
     // 背景
