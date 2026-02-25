@@ -1,5 +1,4 @@
 import QtQuick 2.15
-import QtQuick.Controls 2.15
 
 Item {
     id: root
@@ -25,8 +24,10 @@ Item {
     property int animationDuration: 200
     
     // 尺寸
-    width: size
-    height: size
+    implicitWidth: size
+    implicitHeight: size
+    Layout.preferredWidth: size
+    Layout.preferredHeight: size
     
     // 指示灯主体
     Rectangle {
