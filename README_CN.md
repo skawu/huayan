@@ -1,3 +1,188 @@
+# Huayan SCADA System - 华颜SCADA系统
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Qt](https://img.shields.io/badge/Qt-6.8+-green.svg)](https://www.qt.io/)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey.svg)]()
+
+华颜SCADA系统是一个现代化的工业监控和数据采集系统，专为制造业、能源和过程控制行业设计。系统采用双模式架构，提供直观的可视化设计工具和高性能的实时监控功能。
+
+## 🌟 核心特性
+
+### 🔧 设计器模式 (Designer Mode)
+- **拖拽式布局编辑**：直观的可视化界面设计工具
+- **丰富的组件库**：预置6种常用工业监控组件
+- **实时预览功能**：设计效果即时呈现
+- **属性配置面板**：精细的组件参数调节
+- **网格对齐辅助**：精确的布局控制
+
+### 📊 运行时模式 (Runtime Mode)  
+- **实时数据监控**：毫秒级数据更新显示
+- **多数据源支持**：Modbus、OPC UA、MQTT等协议
+- **告警管理系统**：智能报警和事件处理
+- **历史数据查询**：趋势分析和报表生成
+- **多屏显示支持**：适应不同规模的监控需求
+
+### 🏗️ 系统架构
+- **双模式分离**：设计时与运行时完全独立
+- **模块化设计**：清晰的组件层次结构
+- **跨平台支持**：Linux、Windows、macOS全平台兼容
+- **可扩展架构**：插件化组件和自定义开发接口
+
+## 📁 项目结构
+
+```
+huayan-scada/
+├── designer/              # 🎨 SCADA设计器应用
+│   ├── main.qml          # 设计器主界面
+│   └── src/main.cpp      # 设计器入口程序
+├── runtime/               # 📊 SCADA运行时应用  
+│   ├── main.qml          # 运行时监控界面
+│   └── src/main.cpp      # 运行时入口程序
+├── shared/                # 🔧 共享组件库
+│   ├── components/       # 可复用UI组件
+│   ├── models/           # 业务逻辑模型
+│   ├── resources/        # 共享资源文件
+│   └── themes/           # 主题样式配置
+├── docs/                  # 📚 文档资料
+│   ├── developer_guide.md # 开发者指南
+│   └── roadmap.md        # 项目发展规划
+├── examples/              # 💡 使用示例
+│   └── steel_plant_monitoring/ # 钢铁厂监控示例
+├── scripts/               # 🛠️ 辅助脚本
+│   ├── package_with_deps.sh   # 依赖打包脚本
+│   └── run.sh.in         # 运行脚本模板
+├── projects/              # 📁 用户项目目录
+├── tests/                 # 🧪 测试代码
+└── assets/                # 🎨 静态资源文件
+```
+
+## 🚀 快速开始
+
+### 系统要求
+- **操作系统**: Linux (Ubuntu 20.04+/CentOS 8+) / Windows 10+ / macOS 10.15+
+- **Qt版本**: Qt 6.8 或更高版本
+- **编译器**: GCC 9+/Clang 10+/MSVC 2019+
+- **内存**: 最低4GB RAM，推荐8GB+
+- **存储**: 至少2GB可用磁盘空间
+
+### 环境配置
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/skawu/huayan.git
+cd huayan
+
+# 2. 配置Qt环境（自动检测）
+./setup_env.sh
+
+# 3. 验证环境
+source ~/.huayan_scada_env
+```
+
+### 构建项目
+
+```bash
+# 完整构建（推荐）
+./build.sh --all
+
+# 仅构建设计器
+./build.sh --designer
+
+# 仅构建运行时
+./build.sh --runtime
+
+# 清理重新构建
+./build.sh --clean --all
+```
+
+### 运行系统
+
+```bash
+# 智能启动（自动选择模式）
+./scada_launcher.sh
+
+# 启动设计器模式
+./scada_launcher.sh --designer
+
+# 启动运行时模式  
+./scada_launcher.sh --runtime
+```
+
+## 🎯 使用指南
+
+### 设计器模式操作
+1. **启动设计器**：运行 `./scada_launcher.sh --designer`
+2. **选择组件**：从左侧组件库中选择所需组件
+3. **拖拽布局**：将组件拖拽到中央画布区域
+4. **调整属性**：在右侧属性面板中配置组件参数
+5. **保存项目**：使用工具栏保存设计成果
+
+### 运行时模式操作
+1. **启动运行时**：运行 `./scada_launcher.sh --runtime`
+2. **加载项目**：系统自动加载已保存的监控布局
+3. **实时监控**：查看各组件的实时数据更新
+4. **处理告警**：响应系统发出的报警信息
+5. **数据分析**：使用历史数据查询功能
+
+## 🔧 开发文档
+
+详细的开发文档请参考：
+- [开发者指南](docs/developer_guide.md) - 系统架构和API说明
+- [二次开发手册](二次开发手册.md) - 自定义组件开发教程
+- [软件设计文档](华颜软件设计文档.md) - 详细技术规格
+
+## 📈 项目状态
+
+### ✅ 已完成功能
+- [x] 双模式架构分离
+- [x] 拖拽式布局编辑器
+- [x] 基础工业组件库
+- [x] 实时数据模拟显示
+- [x] 标准化构建系统
+- [x] 跨平台支持
+
+### 🚧 开发中功能
+- [ ] 工业通信协议集成（Modbus/OPC UA）
+- [ ] 项目文件导入导出功能
+- [ ] 高级数据分析组件
+- [ ] 用户权限管理系统
+
+### 🔮 规划中功能
+- [ ] 3D可视化监控
+- [ ] 移动端适配
+- [ ] 云端部署支持
+- [ ] AI辅助诊断功能
+
+## 🤝 贡献指南
+
+欢迎参与项目开发！请遵循以下步骤：
+
+1. Fork 项目仓库
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
+
+### 开发规范
+- 遵循小粒度提交原则
+- 使用有意义的提交信息
+- 保持代码风格一致性
+- 编写必要的测试用例
+
+## 📄 许可证
+
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+
+## 📞 联系方式
+
+- **项目主页**: [https://github.com/skawu/huayan](https://github.com/skawu/huayan)
+- **问题反馈**: [Issues](https://github.com/skawu/huayan/issues)
+- **开发讨论**: [Discussions](https://github.com/skawu/huayan/discussions)
+
+---
+
+**Huayan SCADA System** - 让工业监控变得更简单、更智能！ 🚀
+
 # 华颜工业SCADA系统
 
 [![CI/CD Pipeline](https://github.com/skawu/huayan/actions/workflows/ci.yml/badge.svg)](https://github.com/skawu/huayan/actions/workflows/ci.yml)

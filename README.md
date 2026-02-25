@@ -1,125 +1,184 @@
-# Huayan Industrial SCADA System
+# Huayan SCADA System
 
-<div align="center">
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Qt](https://img.shields.io/badge/Qt-6.8+-green.svg)](https://www.qt.io/)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey.svg)]()
 
-![Huayan SCADA](https://img.shields.io/badge/SCADA-Industrial%20Automation-blue)
-![Qt](https://img.shields.io/badge/Qt-6.8+-green)
-![License](https://img.shields.io/badge/license-Apache%202.0-blue)
+Huayan SCADA System is a modern industrial monitoring and data acquisition system designed for manufacturing, energy, and process control industries. The system adopts a dual-mode architecture, providing intuitive visual design tools and high-performance real-time monitoring capabilities.
 
-**Professional Industrial Monitoring & Control System**
+## 🌟 Key Features
 
-</div>
+### 🔧 Designer Mode
+- **Drag-and-drop Layout Editing**: Intuitive visual interface design tool
+- **Rich Component Library**: Pre-built 6 common industrial monitoring components
+- **Real-time Preview**: Instant visualization of design effects
+- **Property Configuration Panel**: Fine-grained component parameter adjustment
+- **Grid Alignment Assistance**: Precise layout control
 
-## 🎯 系统特色
+### 📊 Runtime Mode  
+- **Real-time Data Monitoring**: Millisecond-level data update display
+- **Multi-data Source Support**: Modbus, OPC UA, MQTT and other protocols
+- **Alarm Management System**: Intelligent alarm and event processing
+- **Historical Data Query**: Trend analysis and report generation
+- **Multi-screen Display Support**: Adaptable to different scale monitoring needs
 
-- **双模式架构**: 设计器模式 + 运行时模式
-- **现代化界面**: 基于Qt Quick的流畅用户体验
-- **工业级组件**: 丰富的工业自动化专用组件库
-- **跨平台支持**: Windows/Linux/macOS全平台兼容
-- **开放扩展**: 模块化设计，易于二次开发
-- **实时数据处理**: 动态刷新延迟 < 1秒
-- **时序数据库集成**: 支持InfluxDB/TimescaleDB历史数据查询
-- **3D可视化**: 深度集成WebGL/Three.js用于数字孪生场景
+### 🏗️ System Architecture
+- **Dual-mode Separation**: Complete independence between design time and runtime
+- **Modular Design**: Clear component hierarchy structure
+- **Cross-platform Support**: Full compatibility with Linux, Windows, macOS
+- **Extensible Architecture**: Plugin-based components and custom development interfaces
 
-## 🏗️ 系统架构
+## 📁 Project Structure
 
 ```
 huayan-scada/
-├── designer/          # 设计器应用 (设计监控界面)
-├── runtime/           # 运行时应用 (工业现场监控)
-├── shared/            # 共享组件库
-│   ├── components/    # 基础组件
-│   ├── themes/        # 主题系统
-│   └── utils/         # 工具函数
-├── projects/          # 用户项目目录
-├── docs/              # 文档资料
-└── tests/             # 测试用例
+├── designer/              # 🎨 SCADA Designer Application
+│   ├── main.qml          # Designer main interface
+│   └── src/main.cpp      # Designer entry program
+├── runtime/               # 📊 SCADA Runtime Application  
+│   ├── main.qml          # Runtime monitoring interface
+│   └── src/main.cpp      # Runtime entry program
+├── shared/                # 🔧 Shared Component Library
+│   ├── components/       # Reusable UI components
+│   ├── models/           # Business logic models
+│   ├── resources/        # Shared resource files
+│   └── themes/           # Theme style configuration
+├── docs/                  # 📚 Documentation
+│   ├── developer_guide.md # Developer guide
+│   └── roadmap.md        # Project development plan
+├── examples/              # 💡 Usage Examples
+│   └── steel_plant_monitoring/ # Steel plant monitoring example
+├── scripts/               # 🛠️ Helper Scripts
+│   ├── package_with_deps.sh   # Dependency packaging script
+│   └── run.sh.in         # Run script template
+├── projects/              # 📁 User Project Directory
+├── tests/                 # 🧪 Test Code
+└── assets/                # 🎨 Static Resource Files
 ```
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 系统要求
-- Qt 6.8 或更高版本
-- CMake 3.22 或更高版本
-- GCC 11 或更高版本 (Linux)
-- Visual Studio 2022 或更高版本 (Windows)
+### System Requirements
+- **Operating System**: Linux (Ubuntu 20.04+/CentOS 8+) / Windows 10+ / macOS 10.15+
+- **Qt Version**: Qt 6.8 or higher
+- **Compiler**: GCC 9+/Clang 10+/MSVC 2019+
+- **Memory**: Minimum 4GB RAM, recommended 8GB+
+- **Storage**: At least 2GB available disk space
 
-### 安装依赖
+### Environment Setup
+
 ```bash
-# Ubuntu/Debian
-sudo apt update
-sudo apt install qt6-base-dev qt6-declarative-dev qt6-charts-dev
-
-# CentOS/RHEL
-sudo yum install qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtcharts-devel
-```
-
-### 构建项目
-```bash
-# 克隆仓库
-git clone http://github.com/skawu/huayan.git
+# 1. Clone the project
+git clone https://github.com/skawu/huayan.git
 cd huayan
 
-# 构建所有组件
+# 2. Configure Qt environment (auto-detection)
+./setup_env.sh
+
+# 3. Verify environment
+source ~/.huayan_scada_env
+```
+
+### Build Project
+
+```bash
+# Full build (recommended)
 ./build.sh --all
 
-# 或分别构建
-./build.sh --designer  # 构建设计器
-./build.sh --runtime   # 构建运行时
+# Build designer only
+./build.sh --designer
+
+# Build runtime only
+./build.sh --runtime
+
+# Clean rebuild
+./build.sh --clean --all
 ```
 
-### 启动系统
+### Run System
+
 ```bash
-# 使用启动器（推荐）
+# Smart launch (auto mode selection)
 ./scada_launcher.sh
 
-# 或直接启动
-./bin/SCADADesigner  # 设计器模式
-./bin/SCADARuntime   # 运行时模式
+# Launch designer mode
+./scada_launcher.sh --designer
+
+# Launch runtime mode  
+./scada_launcher.sh --runtime
 ```
 
-## 🛠️ 使用指南
+## 🎯 Usage Guide
 
-### 设计器模式
-1. 启动设计器应用
-2. 创建新项目或打开现有项目
-3. 从组件库拖拽组件到画布
-4. 配置组件属性和数据绑定
-5. 导出运行时包
+### Designer Mode Operations
+1. **Launch Designer**: Run `./scada_launcher.sh --designer`
+2. **Select Components**: Choose required components from the left component library
+3. **Drag Layout**: Drag components to the central canvas area
+4. **Adjust Properties**: Configure component parameters in the right property panel
+5. **Save Project**: Use toolbar to save design results
 
-### 运行时模式
-1. 启动运行时应用
-2. 加载导出的运行时包
-3. 配置设备通信参数
-4. 开始实时监控
+### Runtime Mode Operations
+1. **Launch Runtime**: Run `./scada_launcher.sh --runtime`
+2. **Load Project**: System automatically loads saved monitoring layouts
+3. **Real-time Monitoring**: View real-time data updates of various components
+4. **Handle Alarms**: Respond to system-generated alarm information
+5. **Data Analysis**: Use historical data query functions
 
-## 📚 文档资源
+## 🔧 Development Documentation
 
-- [用户使用指南](docs/user_guide.md) - 详细操作说明
-- [开发者文档](docs/developer_guide.md) - 二次开发指南
-- [API参考](docs/api_reference.md) - 组件接口文档
-- [部署手册](docs/deployment_guide.md) - 系统部署说明
+For detailed development documentation, please refer to:
+- [Developer Guide](docs/developer_guide.md) - System architecture and API documentation
+- [Secondary Development Manual](二次开发手册.md) - Custom component development tutorial
+- [Software Design Document](华颜软件设计文档.md) - Detailed technical specifications
 
-## 🤝 贡献指南
+## 📈 Project Status
 
-我们欢迎任何形式的贡献！
+### ✅ Completed Features
+- [x] Dual-mode architecture separation
+- [x] Drag-and-drop layout editor
+- [x] Basic industrial component library
+- [x] Real-time data simulation display
+- [x] Standardized build system
+- [x] Cross-platform support
 
-1. Fork 项目
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+### 🚧 In Development
+- [ ] Industrial communication protocol integration (Modbus/OPC UA)
+- [ ] Project file import/export functionality
+- [ ] Advanced data analysis components
+- [ ] User permission management system
 
-## 📄 许可证
+### 🔮 Planned Features
+- [ ] 3D visualization monitoring
+- [ ] Mobile platform adaptation
+- [ ] Cloud deployment support
+- [ ] AI-assisted diagnostic functions
 
-本项目采用 Apache License 2.0 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+## 🤝 Contribution Guidelines
 
-## 📞 技术支持
+Welcome to participate in project development! Please follow these steps:
 
-- 📧 邮箱: support@huayan-industry.com
-- 💬 微信: huayan_scada_support
-- 🌐 官网: https://www.huayan-industry.com
+1. Fork the project repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
+
+### Development Standards
+- Follow small-granularity commit principle
+- Use meaningful commit messages
+- Maintain code style consistency
+- Write necessary test cases
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+
+## 📞 Contact
+
+- **Project Homepage**: [https://github.com/skawu/huayan](https://github.com/skawu/huayan)
+- **Issue Tracking**: [Issues](https://github.com/skawu/huayan/issues)
+- **Development Discussion**: [Discussions](https://github.com/skawu/huayan/discussions)
 
 ---
 
-<p align="center">Made with ❤️ by Huayan Industrial Automation</p>
+**Huayan SCADA System** - Making industrial monitoring simpler and smarter! 🚀
