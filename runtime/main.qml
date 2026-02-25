@@ -1,503 +1,224 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import QtQuick.Window 2.15
-import "./themes"
+import "../shared/components"
 
+/**
+ * @brief SCADA运行时监控界面
+ * 
+ * 提供工业监控的运行时显示界面：
+ * - 实时数据显示
+ * - 状态监控面板
+ * - 告警信息显示
+ * - 系统状态概览
+ */
 ApplicationWindow {
-    id: runtimeWindow
+    id: runtimeMonitor
     visible: true
     width: 1024
     height: 768
-    title: "Huayan SCADA Runtime"
+    title: "SCADA运行时监控系统"
     
-    // 运行时状态
-    property bool isFullscreen: false
-    property string currentScreen: "dashboard"
-    property var projectConfig: ({})
+    // ==================== 属性定义 ====================
+    property bool isConnected: false
+    property var systemStatus: "正常运行"
+    property var currentTime: new Date()
     
-    // 主题
-    property var theme: IndustrialTheme {}
-    
-    // 全屏切换快捷键
-    Shortcut {
-        sequence: "F11"
-        onActivated: toggleFullscreen()
-    }
-    
-    // ESC退出全屏
-    Shortcut {
-        sequence: "Escape"
-        onActivated: {
-            if (isFullscreen) {
-                toggleFullscreen()
-            }
+    // ==================== 定时器 ====================
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        onTriggered: {
+            currentTime = new Date()
         }
     }
     
-    // 主布局
+    // ==================== 主要布局 ====================
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
         
-        // 顶部导航栏（非全屏时显示）
+        // 顶部状态栏
         Rectangle {
-            Layout.fillWidth: true
-            height: isFullscreen ? 0 : 60
-            color: theme.primaryColor
-            visible: !isFullscreen
+            Layout.preferredHeight: 40
+            color: "#2c3e50"
             
             RowLayout {
                 anchors.fill: parent
                 anchors.margins: 10
-                spacing: 20
                 
-                // Logo和系统名称
-                RowLayout {
-                    spacing: 10
-                    
-                    Text {
-                        text: "🏭"
-                        font.pixelSize: 24
-                    }
-                    
-                    Text {
-                        text: projectConfig.projectName || "Huayan SCADA"
-                        font.pixelSize: 18
-                        font.bold: true
-                        color: theme.textLight
-                    }
+                // 系统标题
+                Text {
+                    text: "工业监控系统"
+                    font.pixelSize: 18
+                    font.bold: true
+                    color: "white"
                 }
                 
-                Item { Layout.fillWidth: true }
+                Item { Layout.fillWidth: true }  // 弹簧元素
                 
-                // 导航按钮
-                RowLayout {
-                    spacing: 5
+                // 连接状态
+                Row {
+                    spacing: 8
                     
-                    Repeater {
-                        model: ListModel {
-                            ListElement { name: "仪表盘"; screen: "dashboard"; icon: "📊" }
-                            ListElement { name: "监控"; screen: "monitor"; icon: "👁️" }
-                            ListElement { name: "告警"; screen: "alarm"; icon: "⚠️" }
-                            ListElement { name: "历史"; screen: "history"; icon: "🕒" }
-                            ListElement { name: "报表"; screen: "report"; icon: "📋" }
-                        }
-                        
-                        delegate: Button {
-                            text: model.icon + "\n" + model.name
-                            width: 80
-                            height: 50
-                            checkable: true
-                            checked: currentScreen === model.screen
-                            onClicked: currentScreen = model.screen
-                            
-                            background: Rectangle {
-                                color: checked ? theme.secondaryColor : "transparent"
-                                border.color: theme.textLight
-                                border.width: 1
-                                radius: 4
-                            }
-                            
-                            contentItem: Text {
-                                text: parent.text
-                                color: theme.textLight
-                                font.pixelSize: 10
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                        }
-                    }
-                }
-                
-                Item { Layout.fillWidth: true }
-                
-                // 系统状态
-                RowLayout {
-                    spacing: 15
-                    
-                    // 连接状态
                     Rectangle {
-                        width: 120
-                        height: 30
-                        color: getConnectionStatusColor()
-                        radius: 15
-                        
-                        RowLayout {
-                            anchors.centerIn: parent
-                            spacing: 5
-                            
-                            Rectangle {
-                                width: 12
-                                height: 12
-                                color: "white"
-                                radius: 6
-                            }
-                            
-                            Text {
-                                text: getConnectionStatusText()
-                                color: "white"
-                                font.pixelSize: 12
-                            }
-                        }
+                        width: 12
+                        height: 12
+                        radius: 6
+                        color: isConnected ? "#27ae60" : "#e74c3c"
                     }
                     
-                    // 时间显示
                     Text {
-                        text: new Date().toLocaleString()
-                        color: theme.textLight
-                        font.pixelSize: 14
+                        text: isConnected ? "已连接" : "未连接"
+                        color: "white"
+                        verticalAlignment: Text.AlignVCenter
                     }
-                    
-                    // 全屏按钮
-                    Button {
-                        text: isFullscreen ? "❐" : "⛶"
-                        onClicked: toggleFullscreen()
-                        background: Rectangle {
-                            color: "transparent"
-                            border.color: theme.textLight
-                            border.width: 1
-                            radius: 4
-                        }
-                        contentItem: Text {
-                            text: parent.text
-                            color: theme.textLight
-                            font.pixelSize: 16
-                        }
-                    }
+                }
+                
+                // 系统时间
+                Text {
+                    text: Qt.formatDateTime(currentTime, "yyyy-MM-dd hh:mm:ss")
+                    color: "white"
+                    font.family: "monospace"
                 }
             }
         }
         
-        // 主内容区域
-        StackLayout {
-            id: contentStack
+        // 主要内容区域
+        RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            currentIndex: getScreenIndex(currentScreen)
+            spacing: 10
             
-            // 仪表盘页面
-            Item {
-                id: dashboardScreen
+            // 左侧监控面板
+            Rectangle {
+                Layout.preferredWidth: 300
+                Layout.fillHeight: true
+                color: "#ecf0f1"
+                border.color: "#bdc3c7"
+                border.width: 1
                 
-                // 背景渐变
-                Rectangle {
+                Column {
                     anchors.fill: parent
-                    gradient: Gradient {
-                        GradientStop { position: 0.0; color: "#1a1a2e" }
-                        GradientStop { position: 1.0; color: "#16213e" }
-                    }
-                }
-                
-                // 仪表盘网格布局
-                GridLayout {
-                    anchors.fill: parent
-                    anchors.margins: 20
-                    columns: 3
-                    rowSpacing: 20
-                    columnSpacing: 20
-                    
-                    // 关键指标卡片
-                    Repeater {
-                        model: ListModel {
-                            ListElement { 
-                                title: "生产状态"; 
-                                value: "正常运行"; 
-                                unit: ""; 
-                                color: "#4CAF50";
-                                icon: "⚙️"
-                            }
-                            ListElement { 
-                                title: "当前产量"; 
-                                value: "1250"; 
-                                unit: "吨/小时"; 
-                                color: "#2196F3";
-                                icon: "📊"
-                            }
-                            ListElement { 
-                                title: "设备效率"; 
-                                value: "94.5"; 
-                                unit: "%"; 
-                                color: "#FF9800";
-                                icon: "⚡"
-                            }
-                            ListElement { 
-                                title: "能耗水平"; 
-                                value: "285"; 
-                                unit: "kWh"; 
-                                color: "#9C27B0";
-                                icon: "💡"
-                            }
-                            ListElement { 
-                                title: "质量指数"; 
-                                value: "98.7"; 
-                                unit: "%"; 
-                                color: "#E91E63";
-                                icon: "🎯"
-                            }
-                            ListElement { 
-                                title: "安全状态"; 
-                                value: "无告警"; 
-                                unit: ""; 
-                                color: "#4CAF50";
-                                icon: "🛡️"
-                            }
-                        }
-                        
-                        delegate: Rectangle {
-                            Layout.fillWidth: true
-                            Layout.minimumHeight: 150
-                            color: theme.cardColor
-                            border.color: theme.borderColor
-                            border.width: 1
-                            radius: 12
-                            
-                            // 阴影效果
-                            layer.enabled: true
-                            layer.effect: DropShadow {
-                                horizontalOffset: 0
-                                verticalOffset: 4
-                                radius: 8
-                                samples: 16
-                                color: "#40000000"
-                            }
-                            
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 20
-                                spacing: 15
-                                
-                                // 标题行
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    
-                                    Text {
-                                        text: model.icon
-                                        font.pixelSize: 20
-                                    }
-                                    
-                                    Text {
-                                        text: model.title
-                                        font.pixelSize: 16
-                                        font.bold: true
-                                        color: theme.textPrimary
-                                        Layout.fillWidth: true
-                                    }
-                                }
-                                
-                                Item { Layout.fillHeight: true }
-                                
-                                // 数值显示
-                                RowLayout {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    
-                                    Text {
-                                        text: model.value
-                                        font.pixelSize: 28
-                                        font.bold: true
-                                        color: model.color
-                                    }
-                                    
-                                    Text {
-                                        text: model.unit
-                                        font.pixelSize: 14
-                                        color: theme.textSecondary
-                                        visible: model.unit !== ""
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // 监控页面
-            Item {
-                // 实时监控布局
-                ColumnLayout {
-                    anchors.fill: parent
-                    anchors.margins: 20
+                    anchors.margins: 15
                     spacing: 20
                     
-                    Text {
-                        text: "🏭 生产线实时监控"
-                        font.pixelSize: 24
-                        font.bold: true
-                        color: theme.textPrimary
+                    // 系统概览
+                    GroupBox {
+                        title: "系统概览"
+                        width: parent.width
+                        
+                        Column {
+                            width: parent.width
+                            spacing: 10
+                            
+                            Row {
+                                width: parent.width
+                                spacing: 10
+                                
+                                Text { 
+                                    text: "运行状态:"
+                                    width: 80
+                                }
+                                Text {
+                                    text: systemStatus
+                                    color: systemStatus === "正常运行" ? "#27ae60" : "#e74c3c"
+                                    font.bold: true
+                                }
+                            }
+                            
+                            Row {
+                                width: parent.width
+                                spacing: 10
+                                
+                                Text { 
+                                    text: "设备数量:"
+                                    width: 80
+                                }
+                                Text {
+                                    text: "12"
+                                    color: "#3498db"
+                                }
+                            }
+                            
+                            Row {
+                                width: parent.width
+                                spacing: 10
+                                
+                                Text { 
+                                    text: "在线设备:"
+                                    width: 80
+                                }
+                                Text {
+                                    text: "10"
+                                    color: "#27ae60"
+                                }
+                            }
+                        }
                     }
                     
-                    // 监控画面网格
-                    GridLayout {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        columns: 2
-                        rowSpacing: 15
-                        columnSpacing: 15
+                    // 告警信息
+                    GroupBox {
+                        title: "最新告警"
+                        width: parent.width
                         
-                        // 高炉监控
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: theme.cardColor
-                            border.color: theme.borderColor
-                            border.width: 1
-                            radius: 8
+                        Column {
+                            width: parent.width
+                            spacing: 8
                             
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
+                            Repeater {
+                                model: [
+                                    { level: "警告", message: "温度传感器#3 超过阈值", time: "14:32:15" },
+                                    { level: "信息", message: "设备#7 启动完成", time: "14:28:42" },
+                                    { level: "警告", message: "压力传感器#1 波动较大", time: "14:25:33" }
+                                ]
                                 
-                                Text {
-                                    text: "🔥 高炉 #1"
-                                    font.pixelSize: 16
-                                    font.bold: true
-                                    color: theme.textPrimary
-                                }
-                                
-                                Item { Layout.fillHeight: true }
-                                
-                                // 模拟温度显示
-                                RowLayout {
-                                    Layout.alignment: Qt.AlignHCenter
+                                Rectangle {
+                                    width: parent.width
+                                    height: 60
+                                    color: index % 2 === 0 ? "#ffffff" : "#f8f9fa"
+                                    border.color: "#dee2e6"
+                                    border.width: 1
+                                    radius: 4
                                     
-                                    Text {
-                                        text: "温度:"
-                                        font.pixelSize: 14
-                                        color: theme.textSecondary
-                                    }
-                                    
-                                    Text {
-                                        text: "1850°C"
-                                        font.pixelSize: 20
-                                        font.bold: true
-                                        color: "#FF5722"
-                                    }
-                                }
-                            }
-                        }
-                        
-                        // 轧机监控
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: theme.cardColor
-                            border.color: theme.borderColor
-                            border.width: 1
-                            radius: 8
-                            
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                
-                                Text {
-                                    text: "⚙️ 轧机 #1"
-                                    font.pixelSize: 16
-                                    font.bold: true
-                                    color: theme.textPrimary
-                                }
-                                
-                                Item { Layout.fillHeight: true }
-                                
-                                // 模拟状态显示
-                                RowLayout {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    
-                                    Rectangle {
-                                        width: 16
-                                        height: 16
-                                        color: "#4CAF50"
-                                        radius: 8
-                                    }
-                                    
-                                    Text {
-                                        text: "运行中"
-                                        font.pixelSize: 16
-                                        color: "#4CAF50"
-                                        font.bold: true
-                                    }
-                                }
-                            }
-                        }
-                        
-                        // 电力监控
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: theme.cardColor
-                            border.color: theme.borderColor
-                            border.width: 1
-                            radius: 8
-                            
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                
-                                Text {
-                                    text: "⚡ 电力系统"
-                                    font.pixelSize: 16
-                                    font.bold: true
-                                    color: theme.textPrimary
-                                }
-                                
-                                Item { Layout.fillHeight: true }
-                                
-                                // 模拟功率显示
-                                RowLayout {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    
-                                    Text {
-                                        text: "功率:"
-                                        font.pixelSize: 14
-                                        color: theme.textSecondary
-                                    }
-                                    
-                                    Text {
-                                        text: "2.4 MW"
-                                        font.pixelSize: 20
-                                        font.bold: true
-                                        color: "#2196F3"
-                                    }
-                                }
-                            }
-                        }
-                        
-                        // 环保监控
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: theme.cardColor
-                            border.color: theme.borderColor
-                            border.width: 1
-                            radius: 8
-                            
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                
-                                Text {
-                                    text: "🌍 环保监测"
-                                    font.pixelSize: 16
-                                    font.bold: true
-                                    color: theme.textPrimary
-                                }
-                                
-                                Item { Layout.fillHeight: true }
-                                
-                                // 模拟排放显示
-                                RowLayout {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    
-                                    Text {
-                                        text: "排放:"
-                                        font.pixelSize: 14
-                                        color: theme.textSecondary
-                                    }
-                                    
-                                    Text {
-                                        text: "达标"
-                                        font.pixelSize: 16
-                                        font.bold: true
-                                        color: "#4CAF50"
+                                    Column {
+                                        anchors.fill: parent
+                                        anchors.margins: 8
+                                        spacing: 4
+                                        
+                                        Row {
+                                            spacing: 8
+                                            
+                                            Rectangle {
+                                                width: 8
+                                                height: 8
+                                                radius: 4
+                                                color: modelData.level === "警告" ? "#f39c12" : "#3498db"
+                                            }
+                                            
+                                            Text {
+                                                text: modelData.level
+                                                font.bold: true
+                                                color: modelData.level === "警告" ? "#f39c12" : "#3498db"
+                                            }
+                                            
+                                            Item { Layout.fillWidth: true }
+                                            
+                                            Text {
+                                                text: modelData.time
+                                                color: "#7f8c8d"
+                                                font.pixelSize: 10
+                                            }
+                                        }
+                                        
+                                        Text {
+                                            text: modelData.message
+                                            color: "#2c3e50"
+                                            font.pixelSize: 12
+                                            elide: Text.ElideRight
+                                            width: parent.width
+                                        }
                                     }
                                 }
                             }
@@ -506,168 +227,218 @@ ApplicationWindow {
                 }
             }
             
-            // 告警页面
-            Item {
-                ColumnLayout {
+            // 中央主显示屏
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                color: "#2c3e50"
+                
+                // 模拟的工艺流程图
+                Item {
                     anchors.fill: parent
                     anchors.margins: 20
                     
+                    // 标题
                     Text {
-                        text: "⚠️ 实时告警"
+                        id: mainScreenTitle
+                        text: "主工艺流程监控"
+                        color: "white"
                         font.pixelSize: 24
                         font.bold: true
-                        color: theme.textPrimary
+                        anchors.top: parent.top
+                        anchors.horizontalCenter: parent.horizontalCenter
                     }
                     
-                    // 告警列表
-                    ListView {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        clip: true
+                    // 温度显示器
+                    DraggableIndustrialComponent {
+                        id: temperatureDisplay
+                        x: 100
+                        y: 100
+                        width: 150
+                        height: 100
+                        componentName: "反应釜温度"
+                        backgroundColor: "#34495e"
+                        currentValue: (Math.sin(Date.now() / 2000) * 50 + 150).toFixed(1)
+                        boundTag: "temperature"
+                    }
+                    
+                    // 压力显示器
+                    DraggableIndustrialComponent {
+                        id: pressureDisplay
+                        x: 300
+                        y: 100
+                        width: 150
+                        height: 100
+                        componentName: "系统压力"
+                        backgroundColor: "#34495e"
+                        currentValue: (Math.cos(Date.now() / 3000) * 3 + 10).toFixed(2)
+                        boundTag: "pressure"
+                    }
+                    
+                    // 电机状态
+                    DraggableIndustrialComponent {
+                        id: motorStatus
+                        x: 100
+                        y: 250
+                        width: 120
+                        height: 80
+                        componentName: "主电机"
+                        backgroundColor: "#34495e"
+                        currentValue: Math.random() > 0.3 ? "运行" : "停止"
+                        boundTag: "motor_status"
+                    }
+                    
+                    // 阀门位置
+                    DraggableIndustrialComponent {
+                        id: valvePosition
+                        x: 300
+                        y: 250
+                        width: 120
+                        height: 80
+                        componentName: "调节阀"
+                        backgroundColor: "#34495e"
+                        currentValue: (Math.random() * 100).toFixed(0) + "%"
+                        boundTag: "valve_position"
+                    }
+                }
+            }
+            
+            // 右侧详细信息面板
+            Rectangle {
+                Layout.preferredWidth: 250
+                Layout.fillHeight: true
+                color: "#ecf0f1"
+                border.color: "#bdc3c7"
+                border.width: 1
+                
+                Column {
+                    anchors.fill: parent
+                    anchors.margins: 15
+                    spacing: 20
+                    
+                    // 实时数据
+                    GroupBox {
+                        title: "关键参数"
+                        width: parent.width
                         
-                        model: ListModel {
-                            ListElement { 
-                                level: "紧急"; 
-                                message: "高炉温度过高"; 
-                                time: "14:32:15"; 
-                                color: "#F44336" 
-                            }
-                            ListElement { 
-                                level: "警告"; 
-                                message: "轧机轴承温度偏高"; 
-                                time: "14:28:33"; 
-                                color: "#FF9800" 
-                            }
-                            ListElement { 
-                                level: "提示"; 
-                                message: "设备维护周期到期"; 
-                                time: "14:15:47"; 
-                                color: "#2196F3" 
+                        Column {
+                            width: parent.width
+                            spacing: 15
+                            
+                            Repeater {
+                                model: [
+                                    { name: "入口温度", value: "145°C", trend: "上升" },
+                                    { name: "出口压力", value: "2.3MPa", trend: "稳定" },
+                                    { name: "流量计读数", value: "1250m³/h", trend: "下降" },
+                                    { name: "能耗统计", value: "285kWh", trend: "上升" }
+                                ]
+                                
+                                Column {
+                                    width: parent.width
+                                    spacing: 5
+                                    
+                                    Text {
+                                        text: modelData.name
+                                        font.bold: true
+                                        color: "#2c3e50"
+                                    }
+                                    
+                                    Row {
+                                        spacing: 10
+                                        
+                                        Text {
+                                            text: modelData.value
+                                            color: "#3498db"
+                                            font.pixelSize: 16
+                                        }
+                                        
+                                        Text {
+                                            text: modelData.trend
+                                            color: modelData.trend === "上升" ? "#e74c3c" : 
+                                                   modelData.trend === "下降" ? "#27ae60" : "#f39c12"
+                                            font.pixelSize: 12
+                                        }
+                                    }
+                                }
                             }
                         }
+                    }
+                    
+                    // 控制按钮
+                    GroupBox {
+                        title: "系统控制"
+                        width: parent.width
                         
-                        delegate: Rectangle {
+                        Column {
                             width: parent.width
-                            height: 60
-                            color: index % 2 === 0 ? theme.cardColor : theme.surfaceColor
-                            border.color: model.color
-                            border.width: 2
-                            radius: 8
-                            margin: 5
+                            spacing: 10
                             
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.margins: 15
-                                
-                                Rectangle {
-                                    width: 12
-                                    height: 12
-                                    color: model.color
-                                    radius: 6
+                            Button {
+                                text: "紧急停机"
+                                width: parent.width
+                                height: 40
+                                background: Rectangle {
+                                    color: "#e74c3c"
+                                    radius: 4
                                 }
-                                
-                                Text {
-                                    text: model.level
-                                    font.pixelSize: 14
-                                    font.bold: true
-                                    color: model.color
-                                    Layout.preferredWidth: 60
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: "white"
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
                                 }
-                                
-                                Text {
-                                    text: model.message
-                                    font.pixelSize: 14
-                                    color: theme.textPrimary
-                                    Layout.fillWidth: true
+                            }
+                            
+                            Button {
+                                text: "系统重启"
+                                width: parent.width
+                                height: 40
+                                background: Rectangle {
+                                    color: "#f39c12"
+                                    radius: 4
                                 }
-                                
-                                Text {
-                                    text: model.time
-                                    font.pixelSize: 12
-                                    color: theme.textSecondary
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: "white"
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                            }
+                            
+                            Button {
+                                text: "数据导出"
+                                width: parent.width
+                                height: 40
+                                background: Rectangle {
+                                    color: "#3498db"
+                                    radius: 4
+                                }
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: "white"
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
                                 }
                             }
                         }
                     }
                 }
             }
-            
-            // 历史数据页面和其他页面...
-            Item {
-                Text {
-                    anchors.centerIn: parent
-                    text: "历史数据页面正在开发中..."
-                    font.pixelSize: 18
-                    color: theme.textSecondary
-                }
-            }
-            
-            Item {
-                Text {
-                    anchors.centerIn: parent
-                    text: "报表页面正在开发中..."
-                    font.pixelSize: 18
-                    color: theme.textSecondary
-                }
-            }
         }
     }
     
-    // 工具函数
-    function toggleFullscreen() {
-        isFullscreen = !isFullscreen
-        if (isFullscreen) {
-            showFullScreen()
-        } else {
-            showNormal()
-        }
-    }
-    
-    function getScreenIndex(screenName) {
-        switch(screenName) {
-            case "dashboard": return 0
-            case "monitor": return 1
-            case "alarm": return 2
-            case "history": return 3
-            case "report": return 4
-            default: return 0
-        }
-    }
-    
-    function getConnectionStatusColor() {
-        // 模拟连接状态
-        return "#4CAF50" // 绿色表示连接正常
-    }
-    
-    function getConnectionStatusText() {
-        return "连接正常"
-    }
-    
-    // 初始化项目配置
+    // ==================== 初始化 ====================
     Component.onCompleted: {
-        // 加载项目配置
-        loadProjectConfig()
+        // 模拟连接过程
+        Timer {
+            interval: 2000
+            running: true
+            onTriggered: {
+                isConnected = true
+                systemStatus = "正常运行"
+            }
+        }
         
-        // 启动定时器更新时间
-        timeUpdater.start()
-    }
-    
-    // 时间更新器
-    Timer {
-        id: timeUpdater
-        interval: 1000
-        repeat: true
-        onTriggered: {
-            // 时间会自动更新
-        }
-    }
-    
-    // 加载项目配置
-    function loadProjectConfig() {
-        // 这里应该从项目文件加载配置
-        projectConfig = {
-            projectName: "钢铁厂监控系统",
-            version: "1.0.0"
-        }
+        console.log("SCADA运行时监控系统启动")
     }
 }
