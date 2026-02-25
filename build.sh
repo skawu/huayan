@@ -414,6 +414,9 @@ copy_qt_libraries() {
         "Qt6SerialPort"  # 补充缺失的库
         "Qt6QmlMeta"     # 修复运行时缺少此库的问题
         "Qt6QmlWorkerScript"  # 补充缺失的库
+        "Qt6QuickControls2Impl"  # 修复QuickControls2Impl缺失的问题
+        "Qt6QuickControls2Fusion"  # 修复Fusion风格库缺失的问题
+        "Qt6QuickControls2FusionStyleImpl"  # 修复Fusion风格实现库缺失的问题
     )
     
     for lib in "${qt_libs[@]}"; do
@@ -863,51 +866,22 @@ main() {
          print_success "清理完成!"
          return 0
      fi
-     
-     # 如果是仅安装模式，则只安装而不构建
-     if [[ "$INSTALL_ONLY" == true ]]; then
-         install_only
-         print_success "安装完成!"
-         if [[ -n "$CUSTOM_INSTALL_PATH" ]]; then
-             print_info "可执行文件已安装到: $CUSTOM_INSTALL_PATH"
-             print_info "要运行应用程序，请进入 $CUSTOM_INSTALL_PATH 并执行生成的可执行文件"
-         else
-             print_info "可执行文件已安装到: $(dirname "$BUILD_DIR")/bin/"
-             print_info "要运行应用程序，请进入 $(dirname "$BUILD_DIR")/bin/ 并执行生成的可执行文件"
-         fi
-         return 0
-     fi
-     
-     # 如果是重建模式，先清理再构建
-     if [[ "$REBUILD" == true ]]; then
-         if [[ -d "$BUILD_DIR" ]]; then
-             print_info "清理构建目录: $BUILD_DIR"
-             rm -rf "$BUILD_DIR"
-         fi
-     fi
     
     prepare_environment
     prepare_build_directory
-    configure_project
-    build_project
-    install_project
     
-    print_success "构建成功完成!"
-    print_info "构建文件位于: $BUILD_DIR/"
-    
-    if [[ "$INSTALL_AFTER_BUILD" == true ]]; then
-        if [[ -n "$CUSTOM_INSTALL_PATH" ]]; then
-            print_info "可执行文件已安装到: $CUSTOM_INSTALL_PATH"
-            print_info "要运行应用程序，请进入 $CUSTOM_INSTALL_PATH 并执行生成的可执行文件"
-        else
-            print_info "可执行文件已安装到: $(dirname "$BUILD_DIR")/bin/"
-            print_info "要运行已安装的应用程序，请进入 $(dirname "$BUILD_DIR")/bin/ 并执行生成的可执行文件"
-            print_info "或者执行 $(dirname "$BUILD_DIR")/bin/run.sh 脚本来启动应用程序"
-        fi
-    else
-        print_info "构建完成。可执行文件位于: $BUILD_DIR/"
-        print_info "要运行应用程序，请进入 $BUILD_DIR/ 并执行生成的可执行文件"
+    if [[ "$INSTALL_ONLY" == false ]]; then
+        configure_project
+        build_project
     fi
+    
+    install_project
+    install_only
+    
+    # 修改这里的提示信息
+    print_success "安装完成!"
+    print_info "可执行文件已安装到: ./bin/"
+    print_info "要运行应用程序，请在项目根目录下执行: ./run.sh"
 }
 
 # Execute main function with all arguments
