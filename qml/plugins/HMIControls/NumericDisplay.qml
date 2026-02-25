@@ -1,5 +1,5 @@
 import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
 Item {
     id: root
@@ -83,6 +83,8 @@ Item {
     }
     
     // 默认尺寸
-    width: 150
-    height: 60
+    implicitWidth: 150
+    implicitHeight: 60
+    Layout.preferredWidth: 150
+    Layout.preferredHeight: 60
 }
