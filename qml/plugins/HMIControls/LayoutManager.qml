@@ -1,5 +1,5 @@
 import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 import Huayan.HMIControls 1.0
 
 Item {
@@ -373,6 +373,7 @@ Item {
     }
     
     // 默认尺寸
-    width: 800
+    implicitWidth: 800
+    Layout.preferredWidth: 800
     height: 600
 }
