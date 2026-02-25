@@ -69,7 +69,14 @@ update_cmake_configs() {
     
     # 更新根CMakeLists.txt
     cat > "$PROJECT_ROOT/CMakeLists.txt" << 'EOF'
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.16)
+
+# 明确使用Qt安装包的工具
+if(DEFINED ENV{QTDIR})
+    set(CMAKE_PREFIX_PATH "$ENV{QTDIR}")
+endif()
+
+# 项目基本信息
 project(HuayanSCADA VERSION 2.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -123,6 +130,29 @@ EOF
 
     # 更新设计器CMakeLists.txt
     cat > "$PROJECT_ROOT/designer/CMakeLists.txt" << 'EOF'
+cmake_minimum_required(VERSION 3.16)
+
+# 明确指定使用Qt自带的CMake
+if(DEFINED ENV{QTDIR})
+    set(CMAKE_PREFIX_PATH "$ENV{QTDIR}")
+endif()
+
+# 查找Qt6
+find_package(Qt6 6.8 REQUIRED COMPONENTS
+    Core Quick QuickControls2 Network
+)
+
+# 启用Qt特性
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+# 包含目录
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../shared
+)
+
 # 设计器应用
 qt_add_executable(SCADADesigner
     src/main.cpp
@@ -137,12 +167,34 @@ target_link_libraries(SCADADesigner PRIVATE
     HuayanShared
 )
 
-# 安装规则
 install(TARGETS SCADADesigner RUNTIME DESTINATION bin)
 EOF
 
     # 更新运行时CMakeLists.txt
     cat > "$PROJECT_ROOT/runtime/CMakeLists.txt" << 'EOF'
+cmake_minimum_required(VERSION 3.16)
+
+# 明确指定使用Qt自带的CMake
+if(DEFINED ENV{QTDIR})
+    set(CMAKE_PREFIX_PATH "$ENV{QTDIR}")
+endif()
+
+# 查找Qt6
+find_package(Qt6 6.8 REQUIRED COMPONENTS
+    Core Quick QuickControls2 Network Sql Charts
+)
+
+# 启用Qt特性
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+# 包含目录
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../shared
+)
+
 # 运行时应用
 qt_add_executable(SCADARuntime
     src/main.cpp
@@ -157,7 +209,6 @@ target_link_libraries(SCADARuntime PRIVATE
     HuayanShared
 )
 
-# 安装规则
 install(TARGETS SCADARuntime RUNTIME DESTINATION bin)
 EOF
 
