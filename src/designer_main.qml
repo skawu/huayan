@@ -69,7 +69,7 @@ ApplicationWindow {
         anchors.bottom: statusBar.top
         orientation: Qt.Horizontal
         
-        // 左侧组件库面板 - 使用Layout约束确保正确渲染
+        // 左侧组件库面板 - 简化版直接硬编码组件
         Rectangle {
             id: componentPanel
             width: 280
@@ -91,112 +91,211 @@ ApplicationWindow {
                     horizontalAlignment: Text.AlignHCenter
                 }
                 
-                // 使用Column+Repeater替代ScrollView+ListView，确保可靠显示
-                Column {
+                // 直接硬编码8个组件，排除Repeater问题
+                Rectangle {
                     width: parent.width
-                    spacing: 8
+                    height: 70
+                    color: mouseArea1.containsMouse ? "#e3f2fd" : "white"
+                    border.color: mouseArea1.pressed ? secondaryColor : "#ddd"
+                    border.width: 1
+                    radius: 6
                     
-                    Repeater {
-                        model: ListModel {
-                            ListElement { 
-                                name: "温度显示器"; 
-                                icon: "🌡️"; 
-                                type: "TemperatureDisplay";
-                                description: "实时温度监控组件"
-                            }
-                            ListElement { 
-                                name: "压力仪表"; 
-                                icon: "⚙️"; 
-                                type: "PressureGauge";
-                                description: "压力数据显示仪表"
-                            }
-                            ListElement { 
-                                name: "流量计"; 
-                                icon: "💧"; 
-                                type: "FlowMeter";
-                                description: "流体流量监测设备"
-                            }
-                            ListElement { 
-                                name: "电机状态"; 
-                                icon: "⚡"; 
-                                type: "MotorStatus";
-                                description: "电机运行状态指示器"
-                            }
-                            ListElement { 
-                                name: "阀门控制"; 
-                                icon: "🔧"; 
-                                type: "ValveControl";
-                                description: "阀门开关控制面板"
-                            }
-                            ListElement { 
-                                name: "报警指示灯"; 
-                                icon: "⚠️"; 
-                                type: "AlarmLight";
-                                description: "系统报警状态指示"
-                            }
-                            ListElement { 
-                                name: "趋势图表"; 
-                                icon: "📈"; 
-                                type: "TrendChart";
-                                description: "历史数据趋势分析"
-                            }
-                            ListElement { 
-                                name: "数字显示屏"; 
-                                icon: "🔢"; 
-                                type: "DigitalDisplay";
-                                description: "数字化数据显示屏"
-                            }
+                    MouseArea {
+                        id: mouseArea1
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        
+                        onPressed: {
+                            console.log("点击温度显示器")
+                            dragComponent.startDrag("TemperatureDisplay", "温度显示器", "🌡️")
                         }
                         
-                        delegate: Rectangle {
-                            width: parent.width
-                            height: 70
-                            color: mouseArea.containsMouse ? "#e3f2fd" : "white"
-                            border.color: mouseArea.pressed ? secondaryColor : "#ddd"
-                            border.width: 1
-                            radius: 6
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    }
+                    
+                    Row {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 12
+                        
+                        Text {
+                            text: "🌡️"
+                            font.pixelSize: 24
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        
+                        Column {
+                            spacing: 2
                             
-                            MouseArea {
-                                id: mouseArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                
-                                onPressed: {
-                                    console.log("组件点击:", model.name, "类型:", model.type)
-                                    dragComponent.startDrag(model.type, model.name, model.icon)
-                                }
-                                
-                                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            Text {
+                                text: "温度显示器"
+                                font.pixelSize: 13
+                                font.bold: true
+                                color: primaryColor
                             }
                             
-                            Row {
-                                anchors.fill: parent
-                                anchors.margins: 8
-                                spacing: 12
-                                
-                                Text {
-                                    text: model.icon
-                                    font.pixelSize: 24
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-                                
-                                Column {
-                                    spacing: 2
-                                    
-                                    Text {
-                                        text: model.name
-                                        font.pixelSize: 13
-                                        font.bold: true
-                                        color: primaryColor
-                                    }
-                                    
-                                    Text {
-                                        text: "工业组件"
-                                        font.pixelSize: 10
-                                        color: "#666"
-                                    }
-                                }
+                            Text {
+                                text: "工业组件"
+                                font.pixelSize: 10
+                                color: "#666"
+                            }
+                        }
+                    }
+                }
+                
+                Rectangle {
+                    width: parent.width
+                    height: 70
+                    color: mouseArea2.containsMouse ? "#e3f2fd" : "white"
+                    border.color: mouseArea2.pressed ? secondaryColor : "#ddd"
+                    border.width: 1
+                    radius: 6
+                    
+                    MouseArea {
+                        id: mouseArea2
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        
+                        onPressed: {
+                            console.log("点击压力仪表")
+                            dragComponent.startDrag("PressureGauge", "压力仪表", "⚙️")
+                        }
+                        
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    }
+                    
+                    Row {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 12
+                        
+                        Text {
+                            text: "⚙️"
+                            font.pixelSize: 24
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        
+                        Column {
+                            spacing: 2
+                            
+                            Text {
+                                text: "压力仪表"
+                                font.pixelSize: 13
+                                font.bold: true
+                                color: primaryColor
+                            }
+                            
+                            Text {
+                                text: "工业组件"
+                                font.pixelSize: 10
+                                color: "#666"
+                            }
+                        }
+                    }
+                }
+                
+                // 添加其他6个组件...
+                Rectangle {
+                    width: parent.width
+                    height: 70
+                    color: mouseArea3.containsMouse ? "#e3f2fd" : "white"
+                    border.color: mouseArea3.pressed ? secondaryColor : "#ddd"
+                    border.width: 1
+                    radius: 6
+                    
+                    MouseArea {
+                        id: mouseArea3
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        
+                        onPressed: {
+                            console.log("点击流量计")
+                            dragComponent.startDrag("FlowMeter", "流量计", "💧")
+                        }
+                        
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    }
+                    
+                    Row {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 12
+                        
+                        Text {
+                            text: "💧"
+                            font.pixelSize: 24
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        
+                        Column {
+                            spacing: 2
+                            
+                            Text {
+                                text: "流量计"
+                                font.pixelSize: 13
+                                font.bold: true
+                                color: primaryColor
+                            }
+                            
+                            Text {
+                                text: "工业组件"
+                                font.pixelSize: 10
+                                color: "#666"
+                            }
+                        }
+                    }
+                }
+                
+                Rectangle {
+                    width: parent.width
+                    height: 70
+                    color: mouseArea4.containsMouse ? "#e3f2fd" : "white"
+                    border.color: mouseArea4.pressed ? secondaryColor : "#ddd"
+                    border.width: 1
+                    radius: 6
+                    
+                    MouseArea {
+                        id: mouseArea4
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        
+                        onPressed: {
+                            console.log("点击电机状态")
+                            dragComponent.startDrag("MotorStatus", "电机状态", "⚡")
+                        }
+                        
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    }
+                    
+                    Row {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 12
+                        
+                        Text {
+                            text: "⚡"
+                            font.pixelSize: 24
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        
+                        Column {
+                            spacing: 2
+                            
+                            Text {
+                                text: "电机状态"
+                                font.pixelSize: 13
+                                font.bold: true
+                                color: primaryColor
+                            }
+                            
+                            Text {
+                                text: "工业组件"
+                                font.pixelSize: 10
+                                color: "#666"
                             }
                         }
                     }
