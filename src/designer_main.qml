@@ -15,9 +15,7 @@ ApplicationWindow {
     property string currentProject: "未命名项目"
     property int selectedTool: 0  // 0:选择, 1:拖拽组件, 2:连线
     
-    // 主题
-    property var theme: IndustrialTheme {}
-    
+    // 主题颜色定义
     readonly property color primaryColor: "#2c3e50"
     readonly property color secondaryColor: "#3498db"
     readonly property color accentColor: "#2ecc71"
