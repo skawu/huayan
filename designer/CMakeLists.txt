@@ -8,10 +8,7 @@ endif()
 
 # 查找Qt6
 find_package(Qt6 6.8 REQUIRED COMPONENTS
-    Core
-    Quick
-    QuickControls2
-    Network
+    Core Quick QuickControls2 Network
 )
 
 # 启用Qt特性
@@ -28,13 +25,13 @@ include_directories(
 # 设计器应用
 qt_add_executable(SCADADesigner
     src/main.cpp
+    ../shared/models/core/tagmanager.cpp
+    ../shared/models/core/tagmanager.h
     main.qml
 )
 
-# 设置目标属性
 set_target_properties(SCADADesigner PROPERTIES
     WIN32_EXECUTABLE TRUE
-    MACOSX_BUNDLE TRUE
 )
 
 # 链接库
@@ -45,8 +42,8 @@ target_link_libraries(SCADADesigner PRIVATE
     Qt6::Network
 )
 
-# 安装规则
-install(TARGETS SCADADesigner
-    RUNTIME DESTINATION bin
+# 修复安装路径 - 直接安装到bin目录，而不是bin/bin
+install(TARGETS SCADADesigner 
+    RUNTIME DESTINATION .
     BUNDLE DESTINATION .
 )

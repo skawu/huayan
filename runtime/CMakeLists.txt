@@ -30,13 +30,14 @@ include_directories(
 # 运行时应用
 qt_add_executable(SCADARuntime
     src/main.cpp
+    ../shared/models/core/tagmanager.cpp
+    ../shared/models/core/tagmanager.h
     main.qml
 )
 
 # 设置目标属性
 set_target_properties(SCADARuntime PROPERTIES
     WIN32_EXECUTABLE TRUE
-    MACOSX_BUNDLE TRUE
 )
 
 # 链接库

@@ -19,47 +19,32 @@
 
 int main(int argc, char *argv[])
 {
-    // 设置Qt应用程序属性
-    QCoreApplication::setApplicationName("SCADARuntime");
-    QCoreApplication::setApplicationVersion("2.0.0");
-    QCoreApplication::setOrganizationName("Huayan Industrial Automation");
-
-    // 创建QML应用程序实例
     QGuiApplication app(argc, argv);
-
-    // 输出版本信息
-    qDebug() << "SCADA Runtime Version:" << QCoreApplication::applicationVersion();
-    qDebug() << "Qt Version:" << QT_VERSION_STR;
-
-    // 设置应用程序图标
-    app.setWindowIcon(QIcon(":/icons/runtime.png"));
-
+    
+    // 设置应用程序属性
+    app.setApplicationName("SCADA Runtime");
+    app.setApplicationVersion("1.0.0");
+    app.setOrganizationName("Huayan Tech");
+    
     // 创建QML引擎
     QQmlApplicationEngine engine;
-
-    // 注册自定义类型
-    qmlRegisterType<TagManager>("Huayan.Models", 1, 0, "TagManager");
-
-    // 创建核心管理器实例
+    
+    // 创建标签管理器实例
     TagManager *tagManager = new TagManager(&app);
-
-    // 初始化一些示例标签用于演示
-    tagManager->addTag("temperature", 25.0, "当前温度");
-    tagManager->addTag("pressure", 10.5, "系统压力");
-    tagManager->addTag("motor_status", false, "电机状态");
-    tagManager->addTag("valve_position", 0.0, "阀门位置");
-
-    // 设置QML上下文属性
-    QQmlContext *context = engine.rootContext();
-    context->setContextProperty("tagManager", tagManager);
-    context->setContextProperty("applicationVersion", QCoreApplication::applicationVersion());
-
+    
+    // 注册C++类型到QML
+    qmlRegisterType<TagManager>("Huayan.SCADA", 1, 0, "TagManager");
+    
+    // 将标签管理器暴露给QML
+    engine.rootContext()->setContextProperty("tagManager", tagManager);
+    
     // 设置QML导入路径
-    QString qmlPath = QCoreApplication::applicationDirPath() + "/qml";
-    if (QDir(qmlPath).exists()) {
-        engine.addImportPath(qmlPath);
-    }
     engine.addImportPath("qrc:/");
+    engine.addImportPath(":/");
+    
+    // 添加当前目录到导入路径
+    QDir currentDir(QDir::currentPath());
+    engine.addImportPath(currentDir.absolutePath());
 
     // 连接引擎错误信号
     QObject::connect(&engine, &QQmlApplicationEngine::warnings, [](const QList<QQmlError> &warnings) {
@@ -78,19 +63,11 @@ int main(int argc, char *argv[])
     
     engine.load(url);
 
-    // 检查QML加载是否成功
     if (engine.rootObjects().isEmpty()) {
-        qCritical() << "Failed to load QML file";
+        qWarning() << "Failed to load QML file:" << url.toString();
         return -1;
     }
-
-    qDebug() << "Runtime started successfully";
-
-    // 运行应用程序
-    int result = app.exec();
-
-    // 清理资源
-    delete tagManager;
-
-    return result;
+    
+    qDebug() << "SCADA Runtime started successfully";
+    return app.exec();
 }
