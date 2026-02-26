@@ -77,26 +77,25 @@ ApplicationWindow {
             border.color: "#dee2e6"
             border.width: 1
             
-            ColumnLayout {
+            Column {
                 anchors.fill: parent
                 anchors.margins: 10
-                spacing: 15
+                spacing: 10
                 
                 Text {
                     text: "📊 组件库"
                     font.pixelSize: 18
                     font.bold: true
                     color: primaryColor
-                    Layout.alignment: Qt.AlignHCenter
+                    horizontalAlignment: Text.AlignHCenter
                 }
                 
-                ScrollView {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    clip: true
+                // 使用Column+Repeater替代ScrollView+ListView，确保可靠显示
+                Column {
+                    width: parent.width
+                    spacing: 8
                     
-                    ListView {
-                        id: componentList
+                    Repeater {
                         model: ListModel {
                             ListElement { 
                                 name: "温度显示器"; 
@@ -149,16 +148,13 @@ ApplicationWindow {
                         }
                         
                         delegate: Rectangle {
-                            width: parent.width - 20
-                            height: 80
+                            width: parent.width
+                            height: 70
                             color: mouseArea.containsMouse ? "#e3f2fd" : "white"
                             border.color: mouseArea.pressed ? secondaryColor : "#ddd"
                             border.width: 1
-                            radius: 8
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 80
+                            radius: 6
                             
-                            // 确保MouseArea在最上层
                             MouseArea {
                                 id: mouseArea
                                 anchors.fill: parent
@@ -170,48 +166,39 @@ ApplicationWindow {
                                     dragComponent.startDrag(model.type, model.name, model.icon)
                                 }
                                 
-                                // 确保接收所有事件
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                             }
                             
                             Row {
                                 anchors.fill: parent
-                                anchors.margins: 10
+                                anchors.margins: 8
                                 spacing: 12
                                 
                                 Text {
                                     text: model.icon
-                                    font.pixelSize: 28
-                                    anchors.verticalCenter: parent.verticalCenter
+                                    font.pixelSize: 24
+                                    verticalAlignment: Text.AlignVCenter
                                 }
                                 
                                 Column {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    spacing: 4
+                                    verticalAlignment: Text.AlignVCenter
+                                    spacing: 2
                                     
                                     Text {
                                         text: model.name
-                                        font.pixelSize: 14
+                                        font.pixelSize: 13
                                         font.bold: true
                                         color: primaryColor
                                     }
                                     
                                     Text {
                                         text: model.description
-                                        font.pixelSize: 11
+                                        font.pixelSize: 10
                                         color: "#666"
-                                        wrapMode: Text.Wrap
-                                        width: 150
                                     }
                                 }
                             }
                         }
-                        
-                        // 确保ListView使用垂直布局
-                        orientation: Qt.Vertical
-                        spacing: 8
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
                     }
                 }
             }
