@@ -93,6 +93,7 @@ ApplicationWindow {
                 ScrollView {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    clip: true
                     
                     ListView {
                         id: componentList
@@ -154,8 +155,8 @@ ApplicationWindow {
                             border.color: mouseArea.pressed ? secondaryColor : "#ddd"
                             border.width: 1
                             radius: 8
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.margins: 5
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 80
                             
                             MouseArea {
                                 id: mouseArea
@@ -200,6 +201,12 @@ ApplicationWindow {
                                 }
                             }
                         }
+                        
+                        // 确保ListView使用垂直布局
+                        orientation: Qt.Vertical
+                        spacing: 8
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
                     }
                 }
             }
