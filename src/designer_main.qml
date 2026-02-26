@@ -2,7 +2,6 @@ import QtQuick 6.5
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
-import "./themes"
 
 ApplicationWindow {
     id: designerWindow
