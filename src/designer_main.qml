@@ -158,6 +158,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 80
                             
+                            // 确保MouseArea在最上层
                             MouseArea {
                                 id: mouseArea
                                 anchors.fill: parent
@@ -165,8 +166,12 @@ ApplicationWindow {
                                 cursorShape: Qt.PointingHandCursor
                                 
                                 onPressed: {
+                                    console.log("组件点击:", model.name, "类型:", model.type)
                                     dragComponent.startDrag(model.type, model.name, model.icon)
                                 }
+                                
+                                // 确保接收所有事件
+                                acceptedButtons: Qt.LeftButton | Qt.RightButton
                             }
                             
                             Row {
