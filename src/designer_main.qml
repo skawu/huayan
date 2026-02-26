@@ -73,6 +73,7 @@ ApplicationWindow {
         Rectangle {
             id: componentPanel
             width: 280
+            height: parent.height - headerBar.height - statusBar.height  // 明确设置高度
             color: "#f8f9fa"
             border.color: "#dee2e6"
             border.width: 1
@@ -181,7 +182,6 @@ ApplicationWindow {
                                 }
                                 
                                 Column {
-                                    verticalAlignment: Text.AlignVCenter
                                     spacing: 2
                                     
                                     Text {
@@ -192,7 +192,7 @@ ApplicationWindow {
                                     }
                                     
                                     Text {
-                                        text: model.description
+                                        text: "工业组件"
                                         font.pixelSize: 10
                                         color: "#666"
                                     }
