@@ -27,7 +27,7 @@ qt_add_executable(SCADADesigner
     src/main.cpp
     ../shared/models/core/tagmanager.cpp
     ../shared/models/core/tagmanager.h
-    main.qml
+    ../resources.qrc
 )
 
 set_target_properties(SCADADesigner PROPERTIES

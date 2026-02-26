@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>src/designer_main.qml</file>
+        <file>src/runtime_main.qml</file>
+        <file>designer/main.qml</file>
+        <file>designer/InfoDialog.qml</file>
+        <file>shared/components/TemperatureDisplay.qml</file>
+        <file>shared/components/PressureGauge.qml</file>
+        <file>shared/components/MotorStatus.qml</file>
+        <file>shared/components/BaseIndustrialComponent.qml</file>
+        <file>shared/components/DraggableIndustrialComponent.qml</file>
+        <file>shared/components/ComponentLibraryPanel.qml</file>
+    </qresource>
+</RCC>
