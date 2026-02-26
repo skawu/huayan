@@ -6,13 +6,13 @@ import QtQuick.Window 2.15
 ApplicationWindow {
     id: designerWindow
     visible: true
-    width: 1200
-    height: 800
+    width: 1000
+    height: 700
     title: "华颜SCADA设计器 v2.0 - 工业监控系统开发平台"
     
     // 设计器状态
     property bool isDesignMode: true
-    property string currentProject: "未命名项目"
+    property string currentProject: "测试项目"
     property int selectedTool: 0  // 0:选择, 1:拖拽组件, 2:连线
     
     // 主题颜色定义
@@ -31,33 +31,11 @@ ApplicationWindow {
         height: 60
         color: primaryColor
         
-        RowLayout {
-            anchors.fill: parent
-            anchors.margins: 15
-            
-            Image {
-                source: "qrc:/icons/scada_icon.png"
-                width: 32
-                height: 32
-                Layout.alignment: Qt.AlignVCenter
-            }
-            
-            Text {
-                text: "华颜SCADA设计器"
-                color: "white"
-                font.pixelSize: 22
-                font.bold: true
-                Layout.alignment: Qt.AlignVCenter
-            }
-            
-            Item { Layout.fillWidth: true }
-            
-            Text {
-                text: "v2.0.0"
-                color: "#bdc3c7"
-                font.pixelSize: 14
-                Layout.alignment: Qt.AlignVCenter
-            }
+        Text {
+            text: "华颜SCADA设计器 v2.0 - 工业监控系统开发平台"
+            color: "white"
+            font.pixelSize: 16
+            anchors.centerIn: parent
         }
     
     // 主要工作区域
@@ -69,14 +47,17 @@ ApplicationWindow {
         anchors.bottom: statusBar.top
         orientation: Qt.Horizontal
         
-        // 左侧组件库面板 - 简化版直接硬编码组件
+        // 左侧组件库面板 - 使用Qt 6正确的SplitView约束
         Rectangle {
             id: componentPanel
-            width: 280
-            Layout.fillHeight: true
             color: "#f8f9fa"
             border.color: "#dee2e6"
             border.width: 1
+            
+            // 使用SplitView附加属性设置尺寸
+            SplitView.preferredWidth: 280
+            SplitView.minimumWidth: 200
+            SplitView.maximumWidth: 350
             
             Column {
                 anchors.fill: parent
@@ -91,7 +72,7 @@ ApplicationWindow {
                     horizontalAlignment: Text.AlignHCenter
                 }
                 
-                // 直接硬编码8个组件，排除Repeater问题
+                // 直接硬编码4个组件
                 Rectangle {
                     width: parent.width
                     height: 70
@@ -195,195 +176,32 @@ ApplicationWindow {
                         }
                     }
                 }
-                
-                // 添加其他6个组件...
-                Rectangle {
-                    width: parent.width
-                    height: 70
-                    color: mouseArea3.containsMouse ? "#e3f2fd" : "white"
-                    border.color: mouseArea3.pressed ? secondaryColor : "#ddd"
-                    border.width: 1
-                    radius: 6
-                    
-                    MouseArea {
-                        id: mouseArea3
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        
-                        onPressed: {
-                            console.log("点击流量计")
-                            dragComponent.startDrag("FlowMeter", "流量计", "💧")
-                        }
-                        
-                        acceptedButtons: Qt.LeftButton | Qt.RightButton
-                    }
-                    
-                    Row {
-                        anchors.fill: parent
-                        anchors.margins: 8
-                        spacing: 12
-                        
-                        Text {
-                            text: "💧"
-                            font.pixelSize: 24
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        
-                        Column {
-                            spacing: 2
-                            
-                            Text {
-                                text: "流量计"
-                                font.pixelSize: 13
-                                font.bold: true
-                                color: primaryColor
-                            }
-                            
-                            Text {
-                                text: "工业组件"
-                                font.pixelSize: 10
-                                color: "#666"
-                            }
-                        }
-                    }
-                }
-                
-                Rectangle {
-                    width: parent.width
-                    height: 70
-                    color: mouseArea4.containsMouse ? "#e3f2fd" : "white"
-                    border.color: mouseArea4.pressed ? secondaryColor : "#ddd"
-                    border.width: 1
-                    radius: 6
-                    
-                    MouseArea {
-                        id: mouseArea4
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        
-                        onPressed: {
-                            console.log("点击电机状态")
-                            dragComponent.startDrag("MotorStatus", "电机状态", "⚡")
-                        }
-                        
-                        acceptedButtons: Qt.LeftButton | Qt.RightButton
-                    }
-                    
-                    Row {
-                        anchors.fill: parent
-                        anchors.margins: 8
-                        spacing: 12
-                        
-                        Text {
-                            text: "⚡"
-                            font.pixelSize: 24
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        
-                        Column {
-                            spacing: 2
-                            
-                            Text {
-                                text: "电机状态"
-                                font.pixelSize: 13
-                                font.bold: true
-                                color: primaryColor
-                            }
-                            
-                            Text {
-                                text: "工业组件"
-                                font.pixelSize: 10
-                                color: "#666"
-                            }
-                        }
-                    }
-                }
             }
         }
         
         // 中央画布区域
         Rectangle {
             id: canvasArea
-            Layout.fillWidth: true
             color: "white"
             border.color: "#ddd"
             border.width: 1
             
-            DropArea {
-                id: dropArea
-                anchors.fill: parent
-                keys: ["scada_component"]
-                
-                onDropped: {
-                    if (drop.hasText) {
-                        var componentType = drop.text
-                        var mouseX = drop.x
-                        var mouseY = drop.y
-                        canvas.addComponent(componentType, mouseX, mouseY)
-                    }
-                }
-                
-                // 画布背景网格
-                Repeater {
-                    model: Math.ceil(canvasArea.width / 20)
-                    Rectangle {
-                        x: index * 20
-                        width: 1
-                        height: canvasArea.height
-                        color: "#f0f0f0"
-                    }
-                }
-                
-                Repeater {
-                    model: Math.ceil(canvasArea.height / 20)
-                    Rectangle {
-                        y: index * 20
-                        width: canvasArea.width
-                        height: 1
-                        color: "#f0f0f0"
-                    }
-                }
-                
-                // 画布内容区域
-                Item {
-                    id: canvas
-                    anchors.fill: parent
-                    
-                    // 添加组件的方法
-                    function addComponent(type, x, y) {
-                        var component = Qt.createComponent("qrc:/components/" + type + ".qml")
-                        if (component.status === Component.Ready) {
-                            var instance = component.createObject(canvas, {
-                                "x": x,
-                                "y": y
-                            })
-                            console.log("添加组件:", type, "位置:", x, y)
-                        }
-                    }
-                    
-                    // 示例背景提示
-                    Text {
-                        anchors.centerIn: parent
-                        text: "🎨 拖拽组件到这里开始设计\n工业监控界面"
-                        color: "#999"
-                        font.pixelSize: 16
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-                }
+            Text {
+                anchors.centerIn: parent
+                text: "🎨 中央画布\n拖拽组件到这里"
+                color: "#999"
+                font.pixelSize: 16
             }
         }
         
         // 右侧属性面板
         Rectangle {
             id: propertyPanel
-            width: 250
             color: "#f8f9fa"
             border.color: "#dee2e6"
             border.width: 1
             
-            ColumnLayout {
+            Column {
                 anchors.fill: parent
                 anchors.margins: 15
                 spacing: 20
@@ -392,11 +210,11 @@ ApplicationWindow {
                     text: "🔧 属性面板"
                     font.pixelSize: 18
                     font.bold: true
-                    color: primaryColor
-                    Layout.alignment: Qt.AlignHCenter
+                    color: "#2c3e50"
+                    horizontalAlignment: Text.AlignHCenter
                 }
                 
-                // 项目属性
+                // 项目设置区域
                 GroupBox {
                     title: "项目设置"
                     Layout.fillWidth: true
@@ -410,7 +228,7 @@ ApplicationWindow {
                             font.bold: true
                         }
                         TextField {
-                            text: currentProject
+                            text: "测试项目"
                             Layout.fillWidth: true
                         }
                         
@@ -426,7 +244,7 @@ ApplicationWindow {
                     }
                 }
                 
-                // 实时数据监控
+                // 实时数据监控区域
                 GroupBox {
                     title: "实时数据"
                     Layout.fillWidth: true
@@ -438,89 +256,40 @@ ApplicationWindow {
                         
                         Label { text: "温度:" }
                         Text {
-                            text: (50 + Math.random() * 150).toFixed(1) + "°C"
+                            text: "93.0°C"
                             color: "#e74c3c"
                             font.bold: true
                         }
                         
                         Label { text: "压力:" }
                         Text {
-                            text: (5 + Math.random() * 10).toFixed(2) + "MPa"
+                            text: "10.5MPa"
                             color: "#3498db"
                             font.bold: true
                         }
                         
                         Label { text: "流量:" }
                         Text {
-                            text: (Math.random() * 1000).toFixed(0) + "m³/h"
+                            text: "458m³/h"
                             color: "#2ecc71"
                             font.bold: true
                         }
                         
                         Label { text: "状态:" }
                         Text {
-                            text: ["运行", "停止", "故障"][Math.floor(Math.random() * 3)]
-                            color: ["#2ecc71", "#f39c12", "#e74c3c"][Math.floor(Math.random() * 3)]
+                            text: "运行"
+                            color: "#27ae60"
                             font.bold: true
                         }
                     }
                 }
                 
-                Item { Layout.fillHeight: true }
-                
-                // 操作按钮
-                Column {
-                    Layout.fillWidth: true
-                    spacing: 10
-                    
-                    Button {
-                        text: "💾 保存项目"
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        width: parent.width - 20
-                        height: 40
-                        
-                        background: Rectangle {
-                            color: secondaryColor
-                            radius: 5
-                        }
-                        
-                        contentItem: Text {
-                            text: parent.text
-                            color: "white"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            font.bold: true
-                        }
-                        
-                        onClicked: {
-                            saveProject()
-                        }
-                    }
-                    
-                    Button {
-                        text: "▶️ 运行预览"
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        width: parent.width - 20
-                        height: 40
-                        
-                        background: Rectangle {
-                            color: accentColor
-                            radius: 5
-                        }
-                        
-                        contentItem: Text {
-                            text: parent.text
-                            color: "white"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            font.bold: true
-                        }
-                        
-                        onClicked: {
-                            isDesignMode = false
-                            previewRuntime()
-                        }
-                    }
+                // 项目名称显示
+                Text {
+                    text: "项目名称: 测试项目"
+                    font.bold: true
+                    color: "#2c3e50"
+                    horizontalAlignment: Text.AlignLeft
                 }
             }
         }
@@ -535,9 +304,9 @@ ApplicationWindow {
         height: 30
         color: primaryColor
         
-        RowLayout {
+        Row {
             anchors.fill: parent
-            anchors.margins: 8
+            anchors.margins: 5
             
             Text {
                 text: "就绪"
@@ -545,24 +314,19 @@ ApplicationWindow {
                 font.pixelSize: 12
             }
             
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
             
             Text {
                 text: "坐标: X:0 Y:0"
-                color: "#bdc3c7"
+                color: "white"
                 font.pixelSize: 12
             }
             
             Text {
-                text: "|"
-                color: "#7f8c8d"
-                font.pixelSize: 12
-                Layout.margins: 5
-            }
-            
-            Text {
-                text: new Date().toLocaleTimeString()
-                color: "#bdc3c7"
+                text: "中国标准时间 " + new Date().toLocaleTimeString()
+                color: "white"
                 font.pixelSize: 12
             }
         }
