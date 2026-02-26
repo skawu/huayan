@@ -69,13 +69,11 @@ ApplicationWindow {
         anchors.bottom: statusBar.top
         orientation: Qt.Horizontal
         
-        // 左侧组件库面板 - 使用绝对定位确保可见性
+        // 左侧组件库面板 - 使用Layout约束确保正确渲染
         Rectangle {
             id: componentPanel
-            x: 0
-            y: headerBar.height
             width: 280
-            height: parent.height - headerBar.height - statusBar.height
+            Layout.fillHeight: true
             color: "#f8f9fa"
             border.color: "#dee2e6"
             border.width: 1
